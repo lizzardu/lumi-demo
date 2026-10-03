@@ -99,7 +99,10 @@ assets/
   js/proms-pediatricos.js       os instrumentos, por faixa etária e por momento
   js/main.js                    lógica partilhada: mascote, prioridade, alertas
   img/lumi-*.{png,jpg}          marca e mascote
-database/                       esquema e migrações (correr por ordem numérica)
+database/
+  000_instalacao_completa.sql   projeto novo: cola-se este e está feito
+  001_contas_iniciais.sql       liga as contas de login aos perfis
+  schema.sql + 006..022         os ficheiros originais, por ordem numérica
   021_lumi_pediatria.sql        o que torna esta base de dados pediátrica
 supabase/functions/             envio de email (Edge Functions)
 _marca/                         os JPEG originais da marca, antes de tratados

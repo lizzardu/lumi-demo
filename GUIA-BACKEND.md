@@ -96,25 +96,41 @@ sem guardar dados a sério. Para isso, siga a Parte B.
 4. Aguarde 1–2 minutos enquanto o projeto é criado
 
 ### B2. Criar as tabelas da base de dados
+
+**Num projeto novo e vazio, é um único ficheiro.**
+
 1. No painel do projeto, vá a **SQL Editor** (barra lateral)
 2. **New query**
-3. Abra o ficheiro `database/schema.sql` (incluído neste projeto), copie todo
-   o conteúdo e cole no editor
-4. Clique em **Run**
-5. Deve ver "Success. No rows returned" — isto significa que todas as tabelas,
-   ligações e regras de acesso foram criadas. Pode confirmar em **Table Editor**
-   na barra lateral: deve ver `doentes`, `perfis`, `metas`, `duvidas`, etc.
-6. **Corra as migrações por ordem numérica**, uma de cada vez, da `006` à
-   `021`. Cada uma é um ficheiro em `database/`, e cada uma explica no
-   cabeçalho o que acrescenta e porquê.
-7. A última, **`021_lumi_pediatria.sql`, é a que torna esta base de dados
-   pediátrica**: acrescenta a `proms_respostas` as colunas que dizem **quem
-   respondeu** (a criança ou quem cuida), **com que bateria** e **em que
-   momento**; acrescenta a `formularios_alta` os sinais da revisão de sistemas
-   pediátrica; e acrescenta a `doentes` a escola e o cuidador principal.
-   Sem ela, o site funciona mas grava respostas sem contexto — e uma
-   pontuação de dor sem saber se foi observada ou autorrelatada não é
-   interpretável.
+3. Abra o ficheiro **`database/000_instalacao_completa.sql`**, copie o conteúdo
+   todo e cole no editor
+4. **Run**
+5. No fim aparece uma tabela de verificação, com uma linha por cada coisa que
+   tinha de ficar criada e a palavra `ok` à frente. Se alguma disser `FALTA`,
+   alguma coisa correu mal acima.
+
+Esse ficheiro é a concatenação, pela ordem certa, do `schema.sql` e das
+dezassete migrações — mais a criação do *bucket* das fotos das metas, que de
+outra forma seria um passo manual no meio da instalação. Está gerado a partir
+dos ficheiros originais, que continuam todos lá: **quem já tenha uma base de
+dados a meio deve correr as migrações uma a uma**, a partir da que lhe falta, e
+não este ficheiro.
+
+Duas delas merecem nota:
+
+- **`021_lumi_pediatria.sql` é a que torna esta base de dados pediátrica.**
+  Acrescenta a `proms_respostas` as colunas que dizem **quem respondeu** (a
+  criança ou quem cuida), **com que bateria** e **em que momento**; acrescenta
+  a `formularios_alta` os sinais da revisão de sistemas pediátrica; e
+  acrescenta a `doentes` a escola e o cuidador principal. Sem ela o site
+  funciona, mas grava respostas sem contexto — e uma pontuação de dor sem se
+  saber se foi observada ou autorrelatada não é interpretável.
+
+- **`022_colunas_em_falta.sql` corrige um buraco herdado da plataforma de
+  adultos.** O Formulário de Alta escreve três campos em `doentes` — `email`,
+  `genero` e `gestor_caso_id` — que existiam na base de dados de produção
+  porque foram acrescentados à mão no painel, mas que não estavam em migração
+  nenhuma. Numa instalação nova, sem esta migração, a avaliação de alta seria
+  preenchida inteira e só rebentaria ao gravar.
 
 ### B3. Criar o espaço de armazenamento para as fotos das metas
 1. Vá a **Storage** na barra lateral
@@ -155,7 +171,20 @@ sem guardar dados a sério. Para isso, siga a Parte B.
    ```
 3. Guarde o ficheiro
 
-### B6. Criar as duas primeiras contas de teste (uma de profissional, uma de doente)
+### B6. Criar as duas primeiras contas de teste (uma de profissional, uma da família)
+
+**Atalho:** depois de criar as duas contas em **Authentication → Users → Add
+user** (marcando **Auto Confirm User** nas duas, ou o login não funciona),
+cole o ficheiro **`database/001_contas_iniciais.sql`** no SQL Editor e corra.
+Ele liga as contas aos perfis, cria uma criança de demonstração de 9 anos com
+alta há 3 meses — idade que cai na bateria dos 5-10, a mais interessante de
+mostrar, por já incluir o PSQ e o SCQ — e termina com uma tabela a confirmar o
+que ficou ligado a quê. Correr duas vezes não duplica nada.
+
+O resto desta secção explica o que esse ficheiro faz, para quem preferir fazê-lo
+à mão.
+
+
 1. No Supabase, vá a **Authentication → Users → Add user** e crie um utilizador
    com um email e password à sua escolha (ex. `profissional@teste.pt`)
 2. Volte ao **Table Editor → perfis → Insert row**, e crie uma linha associada
