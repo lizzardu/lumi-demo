@@ -11,19 +11,73 @@
         <script src="../assets/js/supabase-config.js"></script>
         <script src="../assets/js/supabase-client.js"></script>
    2. Ter criado supabase-config.js a partir do exemplo (ver esse ficheiro).
-   3. Ter corrido database/schema.sql no seu projeto Supabase, e depois
-      002_historico_agendamentos.sql e 003_avaliacoes_recursos.sql (adicionam
-      as tabelas usadas mais abaixo nas secções HISTÓRICO CLÍNICO,
-      AGENDAMENTOS e AVALIAÇÃO DE RECURSOS).
+   3. Ter corrido as migrações em database/, por ordem numérica. As tabelas
+      usadas mais abaixo nas secções HISTÓRICO CLÍNICO, AGENDAMENTOS e
+      AVALIAÇÃO DE RECURSOS vinham das migrações 002 e 003, que nunca foram
+      commitadas — estão reconstruídas em 005_tabelas_em_falta.sql.
 
    Todas as funções devolvem Promises (usar com "await" dentro de uma
    função "async", tal como nos exemplos no fundo deste ficheiro).
    ========================================================================= */
 
-const sb = window.supabase.createClient(
-  window.LUMI_CONFIG.SUPABASE_URL,
-  window.LUMI_CONFIG.SUPABASE_ANON_KEY
-);
+/* ----------------------------------------------------------------------------
+   SEM CONFIGURAÇÃO, FALHAR DE FORMA LEGÍVEL
+
+   Antes, este ficheiro começava por ler window.LUMI_CONFIG.SUPABASE_URL
+   diretamente. Quando o ficheiro de configuração não está presente — o que
+   acontece sempre que o site é publicado sem ele, por estar no .gitignore —
+   essa linha lança um TypeError, o script aborta aqui, e "const lumiApi"
+   nunca chega a ser inicializado.
+
+   O que o utilizador via, ao tentar entrar, era:
+
+       can't access lexical declaration 'lumiApi' before initialization
+
+   que é verdade e não serve de nada: fala do sintoma três camadas acima da
+   causa, e não diz a ninguém que falta um ficheiro.
+
+   Agora o módulo carrega sempre. Se a configuração faltar, "sb" passa a ser
+   um objeto que lança uma mensagem clara à primeira utilização — e como
+   todas as chamadas passam por ele, qualquer página mostra o motivo real no
+   sítio onde já mostra os outros erros.
+   -------------------------------------------------------------------------- */
+const LUMI_PROBLEMA_CONFIG = (function () {
+  const c = window.LUMI_CONFIG;
+  if (!c || !c.SUPABASE_URL || !c.SUPABASE_ANON_KEY) {
+    return "Falta o ficheiro assets/js/supabase-config.js, ou está incompleto. "
+         + "Se isto é o site publicado, o ficheiro está no .gitignore e não foi enviado: "
+         + "ver a secção B5 do GUIA-BACKEND.md.";
+  }
+  if (/SEU-PROJETO|cole-aqui/.test(String(c.SUPABASE_URL) + String(c.SUPABASE_ANON_KEY))) {
+    return "O ficheiro assets/js/supabase-config.js ainda tem os valores de exemplo. "
+         + "Substitua-os pelo endereço e pela chave publicável do seu projeto Supabase.";
+  }
+  return null;
+})();
+
+const sb = LUMI_PROBLEMA_CONFIG
+  ? new Proxy({}, {
+      get: function () {
+        throw new Error("Lumi: não foi possível ligar à base de dados. " + LUMI_PROBLEMA_CONFIG);
+      }
+    })
+  : window.supabase.createClient(
+      window.LUMI_CONFIG.SUPABASE_URL,
+      window.LUMI_CONFIG.SUPABASE_ANON_KEY
+    );
+
+/* E um aviso visível, para quem abre a página e não a consola. */
+if (LUMI_PROBLEMA_CONFIG) {
+  console.error("Lumi:", LUMI_PROBLEMA_CONFIG);
+  window.addEventListener("DOMContentLoaded", function () {
+    const aviso = document.createElement("div");
+    aviso.setAttribute("role", "alert");
+    aviso.style.cssText = "position:fixed; left:0; right:0; bottom:0; z-index:9999;"
+      + "background:#C6402E; color:#fff; padding:14px 18px; font:500 .88rem/1.5 system-ui,sans-serif;";
+    aviso.textContent = "⚠️ Lumi: não foi possível ligar à base de dados. " + LUMI_PROBLEMA_CONFIG;
+    document.body.appendChild(aviso);
+  });
+}
 
 const lumiApi = {
 
