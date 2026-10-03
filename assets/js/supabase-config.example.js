@@ -1,17 +1,21 @@
 /* ============================================================================
-   LUMI — configuração de ligação ao Supabase
+   Lumi — ligação ao Supabase (MODELO)
    ============================================================================
-   1. Copie este ficheiro para "supabase-config.js" (mesmo diretório).
-   2. Vá ao seu projeto em https://supabase.com/dashboard → Project Settings
-      → API, e copie os dois valores abaixo.
-   3. NUNCA coloque aqui a "service_role key" — apenas a "anon public key".
-      A anon key é segura para expor no browser; é a Row Level Security (RLS)
-      definida em database/schema.sql que protege os dados, não este ficheiro.
-   4. "supabase-config.js" já está listado no .gitignore deste projeto para
-      não ser confundido com o exemplo — mas como a anon key é segura para
-      expor publicamente, não há problema de segurança em publicá-la no
-      GitHub Pages; o ficheiro só é ignorado para evitar confusão entre
-      ambientes (ex.: demo vs. produção).
+   Este é o modelo. O ficheiro que o site lê chama-se "supabase-config.js", no
+   mesmo diretório, e está no repositório com os valores do projeto de
+   demonstração — não precisa de o criar para ver o site a funcionar.
+
+   Use este modelo quando quiser apontar o site para OUTRO projeto Supabase:
+   copie os dois valores do seu projeto para lá.
+
+   1. No painel do seu projeto, botão Connect (no topo), ou engrenagem das
+      definições → API Keys.
+   2. Copie o Project URL e a chave PUBLICÁVEL (sb_publishable_...).
+   3. NUNCA a chave secreta (sb_secret_...) nem a service_role: essas ignoram
+      a Row Level Security e dariam acesso a tudo a quem as encontrasse.
+
+   A chave publicável é segura para expor no browser e no repositório. Quem
+   protege os dados é a Row Level Security definida em database/.
    ========================================================================= */
 
 window.LUMI_CONFIG = {
