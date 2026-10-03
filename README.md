@@ -101,8 +101,9 @@ assets/
   img/lumi-*.{png,jpg}          marca e mascote
 database/
   000_instalacao_completa.sql   projeto novo: cola-se este e está feito
-  001_contas_iniciais.sql       liga as contas de login aos perfis
-  schema.sql + 006..022         os ficheiros originais, por ordem numérica
+  900_contas_iniciais.sql       liga as contas de login aos perfis
+  schema.sql + 005..022         os ficheiros originais, por ordem numérica
+  005_tabelas_em_falta.sql      reconstrói as migrações 001-005, nunca commitadas
   021_lumi_pediatria.sql        o que torna esta base de dados pediátrica
 supabase/functions/             envio de email (Edge Functions)
 _marca/                         os JPEG originais da marca, antes de tratados

@@ -125,6 +125,14 @@ Duas delas merecem nota:
   funciona, mas grava respostas sem contexto — e uma pontuação de dor sem se
   saber se foi observada ou autorrelatada não é interpretável.
 
+- **`005_tabelas_em_falta.sql` reconstrói o que as migrações 001 a 005 faziam.**
+  Essas nunca foram commitadas — o código chama-lhes pelo nome, mas os
+  ficheiros não existem. Sem esta migração faltam quatro tabelas
+  (`historico_clinico`, `agendamentos`, `checkins_humor`,
+  `avaliacoes_recursos`), a função do contador de acessos e a coluna
+  `duvidas.contacto_telefonico`, e com elas o Histórico, os Agendamentos, o
+  check-in de humor e o "foi útil?" dos recursos.
+
 - **`022_colunas_em_falta.sql` corrige um buraco herdado da plataforma de
   adultos.** O Formulário de Alta escreve três campos em `doentes` — `email`,
   `genero` e `gestor_caso_id` — que existiam na base de dados de produção
@@ -175,7 +183,7 @@ Duas delas merecem nota:
 
 **Atalho:** depois de criar as duas contas em **Authentication → Users → Add
 user** (marcando **Auto Confirm User** nas duas, ou o login não funciona),
-cole o ficheiro **`database/001_contas_iniciais.sql`** no SQL Editor e corra.
+cole o ficheiro **`database/900_contas_iniciais.sql`** no SQL Editor e corra.
 Ele liga as contas aos perfis, cria uma criança de demonstração de 9 anos com
 alta há 3 meses — idade que cai na bateria dos 5-10, a mais interessante de
 mostrar, por já incluir o PSQ e o SCQ — e termina com uma tabela a confirmar o
