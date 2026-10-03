@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dúvidas do Doente — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link class="active">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="contagem-pendentes"></span></a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Dúvidas do doente</p>
+    <h1 style="font-size:1.9rem;">Perguntas e preocupações enviadas</h1>
+    <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+      Dúvidas enviadas por este doente através da sua área. As por responder aparecem
+      primeiro. Qualquer elemento da equipa pode responder, independentemente de quem
+      prescreveu o tratamento.
+    </p>
+
+    <div id="lista-duvidas-prof" style="max-width:760px; margin-top:24px;"></div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE = null;
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function mapearDuvida(row){
+    return {
+      id: row.id,
+      doente: row.doentes ? row.doentes.nome : "Doente",
+      categoria: row.categoria, pergunta: row.pergunta,
+      contactoTelefonico: row.contacto_telefonico,
+      data: formatarData(row.data), estado: row.estado, resposta: row.resposta,
+      respondidoPor: row.respondido_por, dataResposta: formatarData(row.data_resposta)
+    };
+  }
+
+  async function carregarDuvidasProf(){
+    const linhas = await lumiApi.listarDuvidas(DOENTE.id);
+    const mapeadas = linhas.map(mapearDuvida).sort((a, b) => {
+      if (a.estado !== b.estado) return a.estado === "pendente" ? -1 : 1;
+      return 0;
+    });
+    document.getElementById("lista-duvidas-prof").innerHTML = mapeadas.length
+      ? mapeadas.map(duvidaEditorHTML).join("")
+      : `<p class="hint">Este doente ainda não enviou nenhuma dúvida.</p>`;
+
+    const pendentes = mapeadas.filter(d => d.estado === "pendente").length;
+    const contagemEl = document.getElementById("contagem-pendentes");
+    contagemEl.textContent = pendentes > 0 ? pendentes : "";
+  }
+
+  /* substitui a versão de demonstração de main.js: liga a resposta à base de dados real */
+  async function responderDuvida(id){
+    const textoEl = document.getElementById(`resp-texto-${id}`);
+    const texto = textoEl.value;
+    if (!texto || !texto.trim()) { alert("Escreva uma resposta antes de enviar."); return; }
+    const respondidoPor = document.getElementById(`resp-por-${id}`).value;
+    await lumiApi.responderDuvida(id, texto.trim(), respondidoPor);
+    carregarDuvidasProf();
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+
+    DOENTE = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    document.getElementById("titulo-doente").textContent = "Dúvidas — " + DOENTE.nome;
+    document.getElementById("sidebar-nome-doente").textContent = DOENTE.nome;
+    document.getElementById("link-voltar").href = `doente.html?processo=${encodeURIComponent(DOENTE.processo)}`;
+    ligarSidebarAoProcesso(DOENTE.processo);
+
+    carregarDuvidasProf();
+  })();
+</script>
+</body>
+</html>

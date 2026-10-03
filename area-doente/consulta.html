@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  .bloco{ margin-bottom:26px; }
+  .bloco h2{ font-family:var(--f-body); font-size:1.05rem; font-weight:600; color:var(--blue-deep);
+             border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:14px; }
+  .par{ margin-bottom:12px; }
+  .par .rot{ font-size:.78rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.03em; }
+  .par .val{ font-size:.95rem; color:var(--ink); white-space:pre-wrap; }
+  .prom-item{ display:flex; gap:12px; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--line); }
+  .prom-item:last-child{ border-bottom:none; }
+  .prom-item .n{ font-family:var(--f-mono); font-weight:600; color:var(--blue-deep); }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html" class="active">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+    <a href="consultas.html" class="hint" style="display:inline-block; margin-bottom:14px;">← Voltar às consultas</a>
+    <div id="conteudo"><p class="hint">A carregar...</p></div>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  /* A vista do doente gera-se a partir do que ficou gravado, e não de uma
+     segunda cópia do formulário. Assim não há forma de as duas divergirem:
+     se a equipa acrescentar um campo ao registo, ele aparece aqui sozinho. */
+  const BLOCOS = [
+    ["situacao",     "Como estava na consulta"],
+    ["avaliacao",    "O que a equipa observou"],
+    ["plano",        "O plano combinado"],
+    ["medicacao",    "Medicação"],
+    ["necessidades", "Encaminhamentos e apoios"],
+    ["proximos",     "Próximos passos"]
+  ];
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  /** Um valor gravado pode ser texto, lista, ou o par resposta+detalhe. */
+  function legivel(v){
+    if (v == null || v === "") return null;
+    if (Array.isArray(v)) return v.length ? v.join(" · ") : null;
+    if (typeof v === "object") {
+      if (Array.isArray(v.selecionados)) {
+        const partes = v.selecionados.slice();
+        if (v.outras) partes.push(v.outras);
+        return partes.length ? partes.join(" · ") : null;
+      }
+      const partes = [];
+      if (v.resposta) partes.push(v.resposta);
+      if (v.detalhe && String(v.detalhe).trim()) partes.push(String(v.detalhe).trim());
+      return partes.length ? partes.join(" — ") : null;
+    }
+    return String(v).trim() || null;
+  }
+
+  function blocoHTML(titulo, conteudo){
+    const pares = Object.keys(conteudo || {}).map(function(rot){
+      const val = legivel(conteudo[rot]);
+      if (!val) return "";
+      return '<div class="par"><div class="rot">' + esc(rot) + '</div><div class="val">' + esc(val) + "</div></div>";
+    }).filter(Boolean);
+    if (!pares.length) return "";
+    return '<div class="bloco"><h2>' + esc(titulo) + "</h2>" + pares.join("") + "</div>";
+  }
+
+  function promsHTML(proms){
+    if (!proms || !proms.length) return "";
+    const linhas = proms.map(function(p){
+      const usado = p.valor_corrigido != null ? p.valor_corrigido : p.valor;
+      const nota = p.valor_corrigido != null
+        ? ' <span class="hint">(corrigido pela equipa: tinha respondido ' + p.valor + ")</span>"
+        : "";
+      const evolucao = p.variacao == null ? ""
+        : ' <span class="hint">' + (p.variacao > 0 ? "+" : "") + p.variacao + " face à vez anterior</span>";
+      return '<div class="prom-item">'
+           +   '<span class="n">' + esc(usado) + "/" + esc(p.maximo) + "</span>"
+           +   "<span>" + esc(p.nome) + nota + evolucao + "</span>"
+           + "</div>";
+    }).join("");
+    return '<div class="bloco"><h2>O que tinha respondido nos questionários</h2>'
+         + '<p class="hint" style="margin:0 0 10px;">Foram estes os valores que a equipa teve em conta nesta consulta.</p>'
+         + linhas + "</div>";
+  }
+
+  function desenhar(c){
+    const el = document.getElementById("conteudo");
+    const data = new Date(c.data_consulta).toLocaleString("pt-PT",
+      { weekday:"long", day:"2-digit", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" });
+
+    let html = '<p class="eyebrow">Registo de consulta</p>'
+      + '<h1 style="font-size:1.8rem;">' + (c.tipo === "teleconsulta" ? "Teleconsulta" : "Consulta presencial") + "</h1>"
+      + '<p style="color:var(--ink-soft);">' + esc(data) + " · " + esc(c.especialidade || "")
+      + " · " + esc(c.profissional_nome) + "</p>"
+      + '<div class="card" style="margin-top:24px;">';
+
+    html += promsHTML(c.proms_base || (c.dados && c.dados.proms));
+    BLOCOS.forEach(function(b){ html += blocoHTML(b[1], (c.dados || {})[b[0]]); });
+    html += "</div>";
+
+    html += '<div class="banner-info" style="margin-top:22px;"><div>'
+      + "Se alguma coisa aqui não estiver clara, ou se não concordar com algum ponto, "
+      + '<a href="duvidas.html">escreva à equipa</a>. Não fique com a dúvida.'
+      + "</div></div>";
+
+    el.innerHTML = html;
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    atualizarBadgeDuvidas(sessao.perfil.doente_id);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+
+    const id = new URLSearchParams(window.location.search).get("id");
+    const el = document.getElementById("conteudo");
+    if (!id) {
+      el.innerHTML = '<p class="hint">Não foi indicada nenhuma consulta. '
+        + '<a href="consultas.html">Ver a lista</a>.</p>';
+      return;
+    }
+    try {
+      const c = await lumiApi.obterConsulta(id);
+      // a base de dados só entrega ao doente as consultas concluídas: se não
+      // vier nada, ou ainda é rascunho ou não é dele
+      if (!c) {
+        el.innerHTML = '<p class="hint">Esta consulta ainda não está disponível. '
+          + "A equipa publica o registo quando o terminar.</p>";
+        return;
+      }
+      desenhar(c);
+    } catch (e) {
+      console.error("Erro ao carregar a consulta:", e);
+      el.innerHTML = '<p class="hint">Não foi possível carregar esta consulta.</p>';
+    }
+  })();
+</script>
+</body>
+</html>

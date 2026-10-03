@@ -1,0 +1,14 @@
+# Configuração local com as credenciais reais do Supabase — cada pessoa que
+# clonar o repositório cria a sua própria a partir de supabase-config.example.js
+assets/js/supabase-config.js
+
+# Ficheiros do sistema
+.DS_Store
+Thumbs.db
+
+# Ficheiros de marca originais (JPEG enviados pela equipa). Ficam fora do site
+# publicado: o que o site usa são as versões tratadas em assets/img/.
+_marca/
+
+# Configuração local do pré-visualizador
+.claude/

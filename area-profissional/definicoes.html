@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Definições — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <a href="novo-doente.html">➕ Nova Criança</a>
+    <a href="alertas.html">🔔 Alertas <span class="pill pill-alert" style="margin-left:6px;" id="badge-alertas"></span></a>
+    <a href="equipa.html">👥 Equipa</a>
+    <a class="active" href="definicoes.html">⚙️ Definições</a>
+  </aside>
+
+  <div class="main-area">
+
+    <p class="eyebrow">A sua conta</p>
+    <h1 style="font-size:1.8rem;">Definições</h1>
+
+    <div class="card" style="max-width:520px; margin-top:24px;">
+      <p class="eyebrow" style="margin-bottom:14px;">Dados da conta</p>
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="conta-nome" disabled>
+      </div>
+      <div class="field">
+        <label>Especialidade</label>
+        <input type="text" id="conta-especialidade" disabled>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Email de acesso</label>
+        <input type="text" id="conta-email" disabled>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:520px; margin-top:20px;">
+      <p class="eyebrow" style="margin-bottom:14px;">Alterar palavra-passe</p>
+      <form onsubmit="alterarPassword(event)">
+        <div class="field">
+          <label for="nova-pass">Nova palavra-passe</label>
+          <input type="password" id="nova-pass" minlength="6" required>
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+          <label for="confirmar-pass">Confirmar nova palavra-passe</label>
+          <input type="password" id="confirmar-pass" minlength="6" required>
+        </div>
+        <div id="erro-pass" class="banner-alert" style="display:none; margin-bottom:14px;"></div>
+        <button class="btn btn-primary" type="submit" id="btn-alterar-pass">Alterar palavra-passe</button>
+      </form>
+      <div id="confirm-pass" class="card" style="margin-top:14px; display:none; border-color:var(--ok); background:var(--ok-mist);">
+        <span class="pill pill-ok">Alterada</span>
+        <p style="color:var(--ink-soft); margin:10px 0 0;">A sua palavra-passe foi atualizada.</p>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:720px; margin-top:24px;">
+      <p class="eyebrow" style="margin-bottom:6px;">Avisos por email</p>
+      <p style="color:var(--ink-soft); font-size:.9rem; max-width:66ch; margin:0 0 18px;">
+        A equipa pode ser avisada por email quando um doente coloca uma dúvida ou submete
+        uma resposta a um questionário. O aviso diz apenas que há algo novo e remete para
+        a plataforma — <strong>não leva o nome do doente nem informação clínica</strong>,
+        porque o email sai para fora dos sistemas da ULS.
+      </p>
+
+      <div id="avisos-indisponivel" class="banner-info" style="display:none; margin-bottom:16px;"></div>
+
+      <div id="avisos-painel" style="display:none;">
+        <label style="display:flex; align-items:flex-start; gap:10px; font-weight:400; color:var(--ink); margin-bottom:10px; cursor:pointer;">
+          <input type="checkbox" id="avisar-duvidas" onchange="guardarAvisos()" style="width:17px; height:17px; margin-top:3px; flex:none;">
+          <span>Avisar quando um doente coloca uma <strong>dúvida</strong></span>
+        </label>
+        <label style="display:flex; align-items:flex-start; gap:10px; font-weight:400; color:var(--ink); margin-bottom:6px; cursor:pointer;">
+          <input type="checkbox" id="avisar-proms" onchange="guardarAvisos()" style="width:17px; height:17px; margin-top:3px; flex:none;">
+          <span>Avisar quando um doente submete uma <strong>resposta a questionário</strong></span>
+        </label>
+        <p class="hint" style="margin:0 0 20px;" id="avisos-estado"></p>
+
+        <hr class="divider" style="margin:20px 0;">
+
+        <p class="eyebrow" style="margin-bottom:10px;">Quem recebe</p>
+        <p class="hint" style="margin:0 0 14px;">
+          De preferência uma caixa de correio partilhada da Unidade, e não emails pessoais:
+          assim as entradas e saídas na equipa não obrigam a mexer aqui.
+        </p>
+        <div id="lista-destinatarios" style="margin-bottom:14px;"></div>
+        <form onsubmit="adicionarDestinatario(event)" style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
+          <input type="email" id="novo-destinatario" placeholder="equipa@exemplo.pt" required
+                 style="flex:1; min-width:220px; padding:10px 12px;">
+          <button class="btn btn-primary btn-sm" type="submit">Adicionar</button>
+        </form>
+        <p class="hint" style="margin:8px 0 0;" id="destinatarios-estado"></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  async function alterarPassword(ev){
+    ev.preventDefault();
+    const erroEl = document.getElementById('erro-pass');
+    erroEl.style.display = 'none';
+
+    const nova = document.getElementById('nova-pass').value;
+    const confirmar = document.getElementById('confirmar-pass').value;
+    if (nova !== confirmar) {
+      erroEl.textContent = "⚠️ As duas palavras-passe não coincidem.";
+      erroEl.style.display = 'flex';
+      return;
+    }
+
+    const btn = document.getElementById('btn-alterar-pass');
+    btn.disabled = true; btn.textContent = "A alterar...";
+    try {
+      await lumiApi.alterarPassword(nova);
+      document.getElementById('confirm-pass').style.display = 'block';
+      document.getElementById('nova-pass').value = '';
+      document.getElementById('confirmar-pass').value = '';
+    } catch (e) {
+      erroEl.textContent = "⚠️ " + (e.message || "Não foi possível alterar a palavra-passe.");
+      erroEl.style.display = 'flex';
+    } finally {
+      btn.disabled = false; btn.textContent = "Alterar palavra-passe";
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     Avisos por email. Estas tabelas só existem depois de correr a migração
+     011, por isso a secção inteira degrada com elegância: se não estiverem
+     lá, mostra o que falta em vez de rebentar a página das definições.
+     --------------------------------------------------------------------- */
+  function escaparTextoLocal(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  async function carregarAvisos(){
+    const painel = document.getElementById('avisos-painel');
+    const indisponivel = document.getElementById('avisos-indisponivel');
+    try {
+      const config = await lumiApi.obterConfigAvisos();
+      document.getElementById('avisar-duvidas').checked = config ? config.avisar_duvidas !== false : true;
+      document.getElementById('avisar-proms').checked   = config ? config.avisar_proms   !== false : true;
+      await carregarDestinatarios();
+      painel.style.display = 'block';
+      indisponivel.style.display = 'none';
+    } catch (e) {
+      console.error("Avisos por email indisponíveis:", e);
+      indisponivel.innerHTML =
+        'ℹ️ Os avisos por email ainda não estão instalados. Falta correr a migração ' +
+        '<span class="mono">011_notificacoes_email.sql</span> e publicar a Edge Function — ' +
+        'ver a secção "Avisos por email" no GUIA-BACKEND.md.';
+      indisponivel.style.display = 'flex';
+      painel.style.display = 'none';
+    }
+  }
+
+  async function carregarDestinatarios(){
+    const el = document.getElementById('lista-destinatarios');
+    const lista = await lumiApi.listarDestinatariosAviso();
+    el.innerHTML = lista.length
+      ? lista.map(d => `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;
+                      padding:9px 12px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:8px;">
+            <span style="font-size:.9rem;">${escaparTextoLocal(d.email)}</span>
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="removerDestinatario('${d.id}')">Remover</button>
+          </div>`).join('')
+      : `<p class="hint" style="margin:0;">Sem destinatários. Enquanto esta lista estiver vazia não é enviado nenhum aviso.</p>`;
+  }
+
+  async function adicionarDestinatario(ev){
+    ev.preventDefault();
+    const campo = document.getElementById('novo-destinatario');
+    const estado = document.getElementById('destinatarios-estado');
+    estado.textContent = "A guardar...";
+    try {
+      await lumiApi.adicionarDestinatarioAviso(campo.value);
+      campo.value = '';
+      estado.textContent = "";
+      await carregarDestinatarios();
+    } catch (e) {
+      console.error("Erro ao adicionar destinatário:", e);
+      estado.textContent = /duplicate|unique/i.test(e.message || "")
+        ? "Esse endereço já está na lista."
+        : "Não foi possível adicionar: " + (e.message || e);
+    }
+  }
+
+  async function removerDestinatario(id){
+    const estado = document.getElementById('destinatarios-estado');
+    try {
+      await lumiApi.removerDestinatarioAviso(id);
+      await carregarDestinatarios();
+    } catch (e) {
+      console.error("Erro ao remover destinatário:", e);
+      estado.textContent = "Não foi possível remover: " + (e.message || e);
+    }
+  }
+
+  async function guardarAvisos(){
+    const estado = document.getElementById('avisos-estado');
+    estado.textContent = "A guardar...";
+    try {
+      await lumiApi.guardarConfigAvisos({
+        avisar_duvidas: document.getElementById('avisar-duvidas').checked,
+        avisar_proms:   document.getElementById('avisar-proms').checked
+      });
+      estado.textContent = "Guardado.";
+      setTimeout(() => { estado.textContent = ""; }, 2000);
+    } catch (e) {
+      console.error("Erro ao guardar as preferências de aviso:", e);
+      estado.textContent = "Não foi possível guardar: " + (e.message || e);
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    atualizarBadgeAlertas();
+    carregarAvisos();
+    document.getElementById("conta-nome").value = sessao.perfil.nome;
+    document.getElementById("conta-especialidade").value = sessao.perfil.especialidade || "—";
+    document.getElementById("conta-email").value = sessao.user.email || "—";
+  })();
+</script>
+</body>
+</html>

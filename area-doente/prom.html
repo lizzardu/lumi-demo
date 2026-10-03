@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avaliação · Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  /* Pop-up "Como te sentes hoje?" — mostrado depois de submeter a avaliação. */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(32,42,69,.55); backdrop-filter:blur(2px);
+    display:none; align-items:center; justify-content:center; z-index:1000; padding:20px;
+  }
+  .modal-box{
+    background:#fff; border-radius:var(--radius-lg); padding:32px; max-width:460px; width:100%;
+    text-align:center; box-shadow:0 20px 60px rgba(32,42,69,.35);
+  }
+  .mood-faces{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px; }
+  .mood-face{
+    display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px 8px;
+    border:2px solid var(--line); border-radius:var(--radius-lg); background:#fff; cursor:pointer;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .mood-face:hover:not(:disabled){ transform:translateY(-2px); }
+  .mood-face .face{ font-size:1.9rem; line-height:1; }
+  .mood-face .lbl{ font-size:.76rem; color:var(--ink-soft); font-weight:600; line-height:1.25; text-align:center; }
+  .mood-face[data-tom="bom"]:hover:not(:disabled),   .mood-face[data-tom="bom"].is-picked{ border-color:var(--ok); background:var(--ok-mist); }
+  .mood-face[data-tom="medio"]:hover:not(:disabled), .mood-face[data-tom="medio"].is-picked{ border-color:#D89A1F; background:#FFF6DA; }
+  .mood-face[data-tom="baixo"]:hover:not(:disabled), .mood-face[data-tom="baixo"].is-picked{ border-color:var(--alert); background:var(--alert-mist); }
+  .mood-face:disabled{ opacity:.7; cursor:default; transform:none; }
+  @media (max-width:420px){ .mood-faces{ grid-template-columns:repeat(2,1fr); } }
+
+  /* cabeçalho de cada instrumento */
+  .inst-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .inst-fonte{ font-size:.78rem; color:var(--ink-soft); margin:10px 0 0; line-height:1.5; }
+  .inst-fonte summary{ cursor:pointer; font-weight:600; color:var(--blue); }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav><a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair sem guardar</a></nav>
+  </div>
+</header>
+
+<main class="wrap-narrow" style="padding:48px 32px 100px;">
+
+  <div id="mascote-prom" style="margin-bottom:28px;"></div>
+
+  <p class="eyebrow" id="eyebrow-momento">Avaliação</p>
+  <h1 style="font-size:1.9rem;" id="titulo-prom">Como têm corrido estes dias?</h1>
+  <p style="color:var(--ink-soft);" id="subtitulo-prom">A carregar as perguntas desta avaliação...</p>
+
+  <div id="barra-progresso" style="background:var(--line); height:6px; border-radius:6px; margin:24px 0 32px; overflow:hidden;">
+    <div id="barra-preenchida" style="width:0%; height:100%; background:var(--star); transition:width .3s ease;"></div>
+  </div>
+
+  <form id="form-prom" onsubmit="submeterProm(event)" style="display:none;">
+    <div id="instrumentos"></div>
+    <button class="btn btn-primary btn-block" type="submit" id="btn-submeter">Enviar respostas</button>
+    <p class="hint" style="text-align:center; margin-top:12px;">Se houver uma pergunta que não saiba responder, deixe em branco e siga em frente.</p>
+  </form>
+
+  <div id="confirm" style="display:none; margin-top:28px;" class="card">
+    <span class="pill pill-ok">Enviado</span>
+    <h3 style="margin-top:14px;">Obrigada — ficou tudo registado</h3>
+    <p style="color:var(--ink-soft);">A equipa que acompanha a criança é avisada se alguma resposta precisar de atenção antes da próxima consulta.</p>
+    <a class="btn btn-ghost" href="dashboard.html">Voltar ao início</a>
+  </div>
+
+  <!-- ======================= POP-UP: como te sentes hoje? ======================= -->
+  <div id="modal-humor" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-humor-titulo">
+    <div class="modal-box">
+      <p class="eyebrow" style="margin-bottom:4px; justify-content:center;">Só mais uma</p>
+      <h3 id="modal-humor-titulo" style="margin:0 0 6px;">Como te sentes hoje?</h3>
+      <p class="hint" style="margin:0 0 20px;">Escolhe a cara que mostra o teu dia.</p>
+      <div class="mood-faces">
+        <button type="button" class="mood-face" data-tom="bom" data-valor="muito-bem" onclick="responderHumor(this)">
+          <span class="face">🤩</span><span class="lbl">Muito bem</span>
+        </button>
+        <button type="button" class="mood-face" data-tom="bom" data-valor="bem" onclick="responderHumor(this)">
+          <span class="face">😉</span><span class="lbl">Bem</span>
+        </button>
+        <button type="button" class="mood-face" data-tom="medio" data-valor="razoavel" onclick="responderHumor(this)">
+          <span class="face">🙂</span><span class="lbl">Mais ou menos</span>
+        </button>
+        <button type="button" class="mood-face" data-tom="medio" data-valor="podia-estar-melhor" onclick="responderHumor(this)">
+          <span class="face">🙃</span><span class="lbl">Podia estar melhor</span>
+        </button>
+        <button type="button" class="mood-face" data-tom="baixo" data-valor="muito-em-baixo" onclick="responderHumor(this)">
+          <span class="face">😔</span><span class="lbl">Muito em baixo</span>
+        </button>
+        <button type="button" class="mood-face" data-tom="baixo" data-valor="preciso-de-ajuda" onclick="responderHumor(this)">
+          <span class="face">🥲</span><span class="lbl">Preciso de ajuda</span>
+        </button>
+      </div>
+      <div id="humor-aviso" class="banner-alert" style="display:none; margin-top:16px; text-align:left;"></div>
+      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:18px;" onclick="fecharModalHumor()">Agora não</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script src="../assets/js/proms-pediatricos.js?v=lumi-2"></script>
+<script>
+  /* ======================================================================
+     A AVALIAÇÃO É MONTADA, NÃO ESCRITA
+
+     Na versão de adultos este ficheiro tinha as perguntas escritas à mão no
+     HTML — eram sempre as mesmas, para toda a gente. Aqui não podem ser: a
+     mesma criança responde a baterias diferentes aos 4, aos 9 e aos 14 anos,
+     e em cada momento do seguimento só se pergunta o que faz sentido
+     perguntar naquele momento. As perguntas vivem em proms-pediatricos.js e
+     esta página desenha-as.
+     ====================================================================== */
+
+  let DOENTE_ID = null;
+  let DOENTE = null;
+  let IDADE = null;
+  let FAIXA = null;
+  let MOMENTO = "3m";
+  let INSTRUMENTOS = [];
+
+  function escapar(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  /* ---------------------------------------------------------------- widgets */
+
+  function widgetCaras(nome){
+    return '<div class="escala-caras">' + CARAS_DOR.map(function(c){
+      return '<label class="cara-opt" data-tom="' + c.tom + '">' +
+               '<input type="radio" name="' + nome + '" value="' + c.valor + '" aria-label="' + escapar(c.rotulo) + '">' +
+               '<div><span class="cara">' + c.cara + '</span><span class="num">' + c.valor + '</span></div>' +
+             '</label>';
+    }).join("") + '</div>' +
+    '<div class="scale-labels"><span>Sem dor</span><span>Dói imenso</span></div>';
+  }
+
+  function widgetPrurido(nome){
+    return '<div class="likert">' + NIVEIS_PRURIDO.map(function(n){
+      return '<label class="likert-opt">' +
+               '<input type="radio" name="' + nome + '" value="' + n.valor + '">' +
+               '<div>' + n.valor + ' — ' + escapar(n.rotulo) + '</div>' +
+             '</label>';
+    }).join("") + '</div>';
+  }
+
+  function widgetLikert(nome, opcoes){
+    return '<div class="likert">' + opcoes.map(function(o, i){
+      return '<label class="likert-opt">' +
+               '<input type="radio" name="' + nome + '" value="' + i + '">' +
+               '<div>' + escapar(o) + '</div>' +
+             '</label>';
+    }).join("") + '</div>';
+  }
+
+  function widgetNumerica(nome, de, ate, rotuloMin, rotuloMax){
+    let h = '<div class="scale">';
+    for (let i = de; i <= ate; i++){
+      h += '<label class="scale-opt"><input type="radio" name="' + nome + '" value="' + i + '"><span>' + i + '</span></label>';
+    }
+    h += '</div><div class="scale-labels"><span>' + escapar(rotuloMin) + '</span><span>' + escapar(rotuloMax) + '</span></div>';
+    return h;
+  }
+
+  function widgetItem(inst, item, nome){
+    const escala = item.escala || inst.escala;
+    const rot = item.rotulos || inst.rotulos;
+    if (escala === "caras-dor") return widgetCaras(nome);
+    if (escala === "prurido")   return widgetPrurido(nome);
+    if (escala === "nrs")       return widgetNumerica(nome, 1, 10, (rot && rot[0]) || "Como pele normal", (rot && rot[1]) || "O pior possível");
+    if (escala === "nrs-0-10")  return widgetNumerica(nome, 0, 10, (rot && rot[0]) || "Nada", (rot && rot[1]) || "O máximo");
+    return widgetLikert(nome, item.opcoes || LIKERT_FREQUENCIA);
+  }
+
+  /* ---------------------------------------------------------------- desenho */
+
+  function desenharInstrumentos(){
+    const alvo = document.getElementById("instrumentos");
+
+    alvo.innerHTML = INSTRUMENTOS.map(function(inst, idx){
+      const quem = inst.respondente === "crianca"
+        ? '<span class="pill pill-pending">Responde a criança</span>'
+        : '<span class="pill pill-idade">Responde quem cuida</span>';
+
+      const itens = inst.itens.map(function(item, j){
+        const nome = "i" + idx + "_" + j;
+        return '<div class="field">' +
+                 '<label for="' + nome + '">' + escapar(item.label) + '</label>' +
+                 widgetItem(inst, item, nome) +
+               '</div>';
+      }).join("");
+
+      return '<div class="card" style="margin-bottom:24px;">' +
+               '<div class="inst-head">' +
+                 '<p class="eyebrow" style="margin-bottom:0;">' + escapar(inst.nome) + '</p>' + quem +
+               '</div>' +
+               (inst.intro ? '<p style="color:var(--ink-soft); font-size:.92rem; margin:14px 0 4px;">' + escapar(inst.intro) + '</p>' : '<div style="height:14px;"></div>') +
+               (inst.aviso ? '<div class="nota-proxy"><span>ℹ️</span><span>' + escapar(inst.aviso) + '</span></div>' : '') +
+               itens +
+               '<details class="inst-fonte"><summary>De onde vem este questionário</summary>' +
+                 '<p style="margin:8px 0 0;">' + escapar(inst.fonte) +
+                 (inst.reduzido ? ' <strong>Versão reduzida</strong> — serve para acompanhar a evolução, não substitui o instrumento completo.' : '') +
+                 '</p></details>' +
+             '</div>';
+    }).join("");
+
+    alvo.addEventListener("change", atualizarProgresso);
+    atualizarProgresso();
+  }
+
+  function atualizarProgresso(){
+    const grupos = {};
+    document.querySelectorAll('#instrumentos input[type=radio]').forEach(function(el){ grupos[el.name] = grupos[el.name] || false; });
+    document.querySelectorAll('#instrumentos input[type=radio]:checked').forEach(function(el){ grupos[el.name] = true; });
+    const nomes = Object.keys(grupos);
+    const feitos = nomes.filter(function(n){ return grupos[n]; }).length;
+    const pct = nomes.length ? Math.round(feitos * 100 / nomes.length) : 0;
+    document.getElementById("barra-preenchida").style.width = pct + "%";
+  }
+
+  /* ---------------------------------------------------------------- envio */
+
+  function valorDe(nome){
+    const el = document.querySelector('#instrumentos input[name="' + nome + '"]:checked');
+    return el ? Number(el.value) : null;
+  }
+
+  /* O score é a soma dos valores escolhidos. Em escalas de índice (Likert) o
+     valor é a posição da opção; em escalas numéricas é o próprio número. Nos
+     instrumentos reduzidos isto é uma aproximação para desenhar a linha do
+     gráfico — não é a pontuação publicada do instrumento, e está dito na
+     página e no ficheiro das baterias. */
+  function recolherInstrumento(inst, idx){
+    const respostas = {};
+    let total = 0, respondidos = 0;
+    inst.itens.forEach(function(item, j){
+      const v = valorDe("i" + idx + "_" + j);
+      respostas[item.id] = v;
+      if (v != null){ total += v; respondidos++; }
+    });
+    return {
+      respostas: respostas,
+      scores: {
+        total: respondidos ? total : null,
+        maximo: inst.maximo,
+        itens_respondidos: respondidos,
+        itens_totais: inst.itens.length,
+        reduzido: !!inst.reduzido,
+        sentido: inst.sentido
+      },
+      respondidos: respondidos
+    };
+  }
+
+  async function submeterProm(ev){
+    ev.preventDefault();
+    const btn = document.getElementById("btn-submeter");
+    btn.disabled = true; btn.textContent = "A enviar...";
+
+    try {
+      for (let idx = 0; idx < INSTRUMENTOS.length; idx++){
+        const inst = INSTRUMENTOS[idx];
+        const r = recolherInstrumento(inst, idx);
+        // instrumento sem uma única resposta não se grava: uma linha de zeros
+        // seria lida como "tudo bem" e não como "não respondeu"
+        if (!r.respondidos) continue;
+        await lumiApi.submeterProm(DOENTE_ID, inst.codigo, r.respostas, r.scores, {
+          respondente: inst.respondente,
+          faixa: FAIXA.id,
+          momento: MOMENTO,
+          idade: IDADE
+        });
+      }
+
+      document.getElementById("confirm").style.display = "block";
+      document.getElementById("form-prom").style.display = "none";
+      window.scrollTo(0, 0);
+      abrirModalHumor();
+    } catch (e) {
+      alert("Não foi possível enviar as respostas: " + (e.message || e));
+      btn.disabled = false; btn.textContent = "Enviar respostas";
+    }
+  }
+
+  /* ---------------------------------------------------------------- humor */
+
+  function abrirModalHumor(){ document.getElementById("modal-humor").style.display = "flex"; }
+  function fecharModalHumor(){ document.getElementById("modal-humor").style.display = "none"; }
+
+  async function responderHumor(botao){
+    const aviso = document.getElementById("humor-aviso");
+    aviso.style.display = "none";
+    document.querySelectorAll(".mood-face").forEach(function(b){ b.disabled = true; b.classList.remove("is-picked"); });
+    botao.classList.add("is-picked");
+    try {
+      await lumiApi.registarCheckinHumor(DOENTE_ID, botao.dataset.valor);
+      setTimeout(fecharModalHumor, 500);
+    } catch (e) {
+      console.error("Não foi possível registar o check-in de humor:", e);
+      aviso.textContent = "Não foi possível registar a resposta. Tente outra vez — se continuar a falhar, avise a equipa.";
+      aviso.style.display = "block";
+      botao.classList.remove("is-picked");
+      document.querySelectorAll(".mood-face").forEach(function(b){ b.disabled = false; });
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(function(){ window.location.href = "../index.html#acesso"; });
+  }
+
+  /* ---------------------------------------------------------------- arranque */
+
+  function diasDesde(dataISO){
+    if (!dataISO) return null;
+    const d = new Date(String(dataISO).slice(0,10) + "T00:00:00");
+    if (isNaN(d)) return null;
+    return Math.round((Date.now() - d.getTime()) / 86400000);
+  }
+
+  /* PRÉ-VISUALIZAÇÃO SEM SESSÃO
+     ?demo=9&momento=12m desenha a bateria daquela idade e daquele momento
+     sem precisar de conta. Existe porque a equipa precisa de ver o que cada
+     faixa etária recebe antes de decidir se concorda com as perguntas — e
+     porque não é razoável pedir-lhes que criem três contas falsas com datas
+     de nascimento diferentes para o conseguirem. Nesta modalidade não se
+     grava nada: o botão de envio fica desativado. */
+  function modoDemo(){
+    const p = new URLSearchParams(location.search);
+    if (!p.has("demo")) return null;
+    const idade = parseInt(p.get("demo"), 10);
+    return { idade: isNaN(idade) ? 9 : idade, momento: p.get("momento") || "12m" };
+  }
+
+  (async function iniciar(){
+    const demo = modoDemo();
+
+    if (demo) {
+      // sem nome, para a pré-visualização não parecer dirigida a ninguém
+      DOENTE  = { nome: "", data_nascimento: null, data_alta: null };
+      IDADE   = demo.idade;
+      MOMENTO = demo.momento;
+    } else {
+      const sessao = await lumiApi.utilizadorAtual();
+      if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+        window.location.href = "../index.html#acesso";
+        return;
+      }
+      DOENTE_ID = sessao.perfil.doente_id;
+      atualizarBadgeDuvidas(DOENTE_ID);
+
+      DOENTE  = await lumiApi.obterDoente(DOENTE_ID);
+      IDADE   = idadeEmAnos(DOENTE.data_nascimento);
+      MOMENTO = momentoPorDiasDesdeAlta(diasDesde(DOENTE.data_alta));
+    }
+
+    const selecao = instrumentosPara(IDADE, MOMENTO);
+    FAIXA = selecao.faixa;
+    INSTRUMENTOS = selecao.instrumentos;
+
+    const momento = MOMENTOS_PROM.filter(function(m){ return m.id === MOMENTO; })[0] || MOMENTOS_PROM[2];
+    const nome = primeiroNome(DOENTE.nome);
+    const perguntas = contarItens(INSTRUMENTOS);
+    const minutos = Math.max(3, Math.round(perguntas / 4));
+
+    document.getElementById("eyebrow-momento").textContent = "Avaliação — " + momento.rotulo;
+    document.getElementById("titulo-prom").textContent =
+      FAIXA.respondente === "cuidador" ? "Como tem corrido em casa?" : "Olá" + (nome ? ", " + nome : "") + "! Como têm corrido estes dias?";
+    document.getElementById("subtitulo-prom").innerHTML =
+      "São <strong>" + perguntas + " perguntas</strong>, cerca de " + minutos + " minutos. Não há respostas certas nem erradas — responda a pensar nos últimos 7 dias. " +
+      escapar(FAIXA.nota);
+
+    renderMascote("mascote-prom", IDADE,
+      FAIXA.respondente === "cuidador"
+        ? "<strong>Sou a Lumi.</strong> Estas perguntas são para quem cuida " + (nome ? "d" + (nome.match(/a$/i) ? "a " : "o ") + escapar(nome) : "da criança") +
+          " — é quem melhor repara nas coisas nesta idade."
+        : "<strong>Sou a Lumi!</strong> Estas perguntas são sobre ti. Se houver alguma difícil, pede ajuda a quem está contigo.",
+      { prefixo: "../" });
+
+    document.getElementById("form-prom").style.display = "block";
+    desenharInstrumentos();
+
+    if (demo) {
+      const btn = document.getElementById("btn-submeter");
+      btn.disabled = true;
+      btn.textContent = "Pré-visualização — nada é gravado";
+      document.getElementById("subtitulo-prom").innerHTML =
+        '<span class="pill pill-idade">Pré-visualização</span> Bateria de uma criança de ' + IDADE +
+        (IDADE === 1 ? ' ano' : ' anos') + ', na avaliação "' + escapar(momento.rotulo) + '". São ' +
+        perguntas + ' perguntas. ' + escapar(FAIXA.nota);
+    }
+  })();
+</script>
+</body>
+</html>

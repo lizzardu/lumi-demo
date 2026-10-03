@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alertas — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <a href="novo-doente.html">➕ Nova Criança</a>
+    <a class="active" href="alertas.html">🔔 Alertas <span class="pill pill-alert" style="margin-left:6px;" id="badge-alertas"></span></a>
+    <a href="equipa.html">👥 Equipa</a>
+    <a href="definicoes.html">⚙️ Definições</a>
+  </aside>
+
+  <div class="main-area">
+
+    <p class="eyebrow">Unidade de Queimados Pediátricos</p>
+    <h1 style="font-size:1.8rem;">Alertas</h1>
+    <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+      Sinais que podem precisar da sua atenção: check-ins de humor em que o doente
+      se disse muito em baixo ou pediu ajuda, dúvidas ainda por responder, e
+      resultados PROM fora dos limiares. Calculado a partir da última resposta de
+      cada doente — não substitui o julgamento clínico.
+    </p>
+
+    <div id="lista-alertas" style="max-width:820px; margin-top:24px;">
+      <p class="hint">A analisar os doentes...</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  /* Os limiares e a recolha vivem em main.js (LIMIARES_ALERTA e
+     recolherAlertas), partilhados com o contador da barra lateral, para a
+     página e o contador não poderem mostrar números diferentes. */
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO.slice(0, 10) + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function alertaCardHTML(doenteNome, processo, tipo, texto, data, destino, rodape){
+    destino = destino || { href: `doente.html?processo=${encodeURIComponent(processo)}`, label: "Ver ficha" };
+    return `
+      <div class="card milestone-card is-active" style="margin-bottom:14px;">
+        <div class="milestone-head">
+          <div>
+            <div class="milestone-meta"><span class="milestone-tag origem-doente">${tipo}</span></div>
+            <h3 class="milestone-title" style="font-size:1rem;">${doenteNome}</h3>
+            <p style="margin:2px 0 0; color:var(--ink);">${texto}</p>
+            ${data ? `<p class="hint" style="margin:4px 0 0;">${data}</p>` : ""}
+          </div>
+          <a class="btn btn-ghost btn-sm" href="${destino.href}">${destino.label}</a>
+        </div>
+        ${rodape || ""}
+      </div>`;
+  }
+
+  /** Regista que a equipa já agiu sobre este alerta. O cartão desaparece da
+   *  lista, mas o registo — quem, quando e o que fez — fica guardado. Se o
+   *  doente fizer um novo check-in em baixo, surge um alerta novo. */
+  async function marcarTratado(checkinId, doenteId){
+    const botao = document.getElementById(`btn-tratar-${checkinId}`);
+    const estado = document.getElementById(`estado-${checkinId}`);
+    const nota = document.getElementById(`nota-${checkinId}`).value.trim();
+    botao.disabled = true;
+    estado.textContent = "A guardar...";
+    try {
+      await lumiApi.marcarAlertaTratado(doenteId, "humor", checkinId, nota);
+      await carregarAlertas();
+      atualizarBadgeAlertas();
+    } catch (e) {
+      console.error("Não foi possível marcar o alerta como tratado:", e);
+      estado.textContent = "Não foi possível guardar: " + (e.message || e);
+      botao.disabled = false;
+    }
+  }
+
+  async function carregarAlertas(){
+    const el = document.getElementById('lista-alertas');
+    let alertas;
+    try {
+      alertas = await recolherAlertas();
+    } catch (e) {
+      console.error("Erro ao carregar os alertas:", e);
+      el.innerHTML = `<div class="banner-alert">⚠️ Não foi possível carregar os alertas: ${e.message || e}</div>`;
+      return;
+    }
+
+    const cartoes = [];
+
+    // 1) check-in de humor — primeiro, por ser o sinal mais direto de que
+    //    o doente não está bem. Só estes têm botão de "tratado": o alerta
+    //    de uma dúvida resolve-se ao responder, e o de um PROM ao doente
+    //    responder de novo.
+    alertas.humor.forEach(h => {
+      cartoes.push(alertaCardHTML(
+        h.doente.nome, h.doente.processo, h.rotulo, h.texto,
+        formatarDataHoraCurta(h.checkin.criado_em),
+        null,
+        `<div class="tratar-bloco" id="tratar-${h.checkin.id}">
+           <input type="text" id="nota-${h.checkin.id}" placeholder="O que foi feito? (opcional)">
+           <button type="button" class="btn btn-star btn-sm" id="btn-tratar-${h.checkin.id}"
+                   onclick="marcarTratado('${h.checkin.id}', '${h.doente.id}')">Marcar como tratado</button>
+           <span class="hint" id="estado-${h.checkin.id}"></span>
+         </div>`
+      ));
+    });
+
+    // 2) dúvidas por responder
+    alertas.duvidas.forEach(d => {
+      const processo = d.doentes ? d.doentes.processo : "";
+      cartoes.push(alertaCardHTML(
+        d.doentes ? d.doentes.nome : "Doente",
+        processo,
+        d.contacto_telefonico ? "Dúvida — 📞 pediu contacto telefónico" : "Dúvida por responder",
+        d.pergunta,
+        formatarData(d.data),
+        { href: `duvidas.html?processo=${encodeURIComponent(processo)}`, label: "Ver dúvida" }
+      ));
+    });
+
+    // 3) últimas respostas PROM fora dos limiares
+    alertas.proms.forEach(a => {
+      cartoes.push(alertaCardHTML(
+        a.doente.nome, a.doente.processo, a.instrumento,
+        LIMIARES_ALERTA[a.instrumento].texto(a.valor, a.maximo),
+        formatarData(a.resposta.data_resposta)
+      ));
+    });
+
+    el.innerHTML = cartoes.length
+      ? cartoes.join('')
+      : `<div class="banner-info">✅ Sem alertas ativos neste momento.</div>`;
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    atualizarBadgeAlertas();
+    carregarAlertas();
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Histórico e Agendamentos — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link class="active">🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Histórico e agendamentos</p>
+    <h1 style="font-size:1.9rem;">O que o doente registou na sua área</h1>
+    <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+      Episódios de saúde relatados (urgências, consultas externas, internamentos) e
+      consultas futuras que o próprio doente marcou. Esta vista é apenas de leitura —
+      os registos são geridos pelo doente na sua área.
+    </p>
+
+    <!-- ======================= HISTÓRICO CLÍNICO ======================= -->
+    <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:28px;">
+      <p class="eyebrow" style="margin:0;">Histórico clínico relatado pelo doente</p>
+      <span class="pill pill-star" id="contagem-historico">—</span>
+    </div>
+
+    <div class="card card-flush" style="margin-top:14px;">
+      <table>
+        <thead><tr><th>Data</th><th>Tipo de evento</th><th>Detalhe</th><th>Notas</th></tr></thead>
+        <tbody id="linhas-historico-prof">
+          <tr><td colspan="4" class="hint" style="padding:16px;">A carregar histórico...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ======================= AGENDAMENTOS ======================= -->
+    <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:32px;">
+      <p class="eyebrow" style="margin:0;">Agendamentos registados pelo doente</p>
+      <span class="pill pill-pending" id="contagem-agendamentos">—</span>
+    </div>
+
+    <div class="card card-flush" style="margin-top:14px;">
+      <table>
+        <thead><tr><th>Data e hora</th><th>Especialidade</th><th>Local</th><th>Estado</th><th>Notas</th></tr></thead>
+        <tbody id="linhas-agendamentos-prof">
+          <tr><td colspan="5" class="hint" style="padding:16px;">A carregar agendamentos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  const ROTULOS_TIPO_EVENTO = {
+    urgencia: "Serviço de Urgência",
+    consulta: "Consulta Externa",
+    internamento: "Internamento"
+  };
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO.slice(0, 10) + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function formatarDataHora(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO);
+    return d.toLocaleString("pt-PT", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function pillEstadoAgendamento(estado){
+    if (estado === 'cancelado') return `<span class="pill pill-alert">Cancelado</span>`;
+    if (estado === 'concluido') return `<span class="pill pill-ok">Concluído</span>`;
+    return `<span class="pill pill-pending">Agendado</span>`;
+  }
+
+  function descreverEventoHistorico(r){
+    if (r.tipo_evento === 'internamento') {
+      return `${formatarData(r.data_inicio)} — ${formatarData(r.data_fim)}`;
+    }
+    return r.especialidade || "—";
+  }
+
+  async function carregarHistoricoProfissional(doenteId){
+    const tbody = document.getElementById('linhas-historico-prof');
+    try {
+      const linhas = await lumiApi.listarHistoricoClinico(doenteId);
+      document.getElementById('contagem-historico').textContent =
+        linhas.length === 1 ? "1 episódio registado" : `${linhas.length} episódios registados`;
+
+      if (!linhas.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="hint" style="padding:16px;">O doente ainda não registou nenhum episódio.</td></tr>`;
+        return;
+      }
+      const ordenadas = linhas.slice().sort((a, b) => {
+        const dataA = a.data_inicio || a.data_evento || "";
+        const dataB = b.data_inicio || b.data_evento || "";
+        return dataB.localeCompare(dataA);
+      });
+      tbody.innerHTML = ordenadas.map(r => `
+        <tr>
+          <td class="mono">${r.tipo_evento === 'internamento' ? formatarData(r.data_inicio) : formatarData(r.data_evento)}</td>
+          <td><span class="pill pill-star">${ROTULOS_TIPO_EVENTO[r.tipo_evento] || r.tipo_evento}</span></td>
+          <td>${descreverEventoHistorico(r)}</td>
+          <td>${r.notas || "—"}</td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="4" class="hint" style="padding:16px;">Não foi possível carregar o histórico.</td></tr>`;
+    }
+  }
+
+  async function carregarAgendamentosProfissional(doenteId){
+    const tbody = document.getElementById('linhas-agendamentos-prof');
+    try {
+      const linhas = await lumiApi.listarAgendamentos(doenteId);
+      document.getElementById('contagem-agendamentos').textContent =
+        linhas.length === 1 ? "1 agendamento" : `${linhas.length} agendamentos`;
+
+      if (!linhas.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="hint" style="padding:16px;">O doente ainda não registou nenhum agendamento.</td></tr>`;
+        return;
+      }
+      const ordenadas = linhas.slice().sort((a, b) => a.data_hora.localeCompare(b.data_hora));
+      tbody.innerHTML = ordenadas.map(r => `
+        <tr>
+          <td class="mono">${formatarDataHora(r.data_hora)}</td>
+          <td>${r.especialidade}</td>
+          <td>${r.local}</td>
+          <td>${pillEstadoAgendamento(r.estado)}</td>
+          <td>${r.notas || "—"}</td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="5" class="hint" style="padding:16px;">Não foi possível carregar os agendamentos.</td></tr>`;
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+
+    const doente = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    document.getElementById("titulo-doente").textContent = "Histórico e agendamentos — " + doente.nome;
+    document.getElementById("sidebar-nome-doente").textContent = doente.nome;
+    document.getElementById("link-voltar").href = `doente.html?processo=${encodeURIComponent(doente.processo)}`;
+    ligarSidebarAoProcesso(doente.processo);
+
+    carregarHistoricoProfissional(doente.id);
+    carregarAgendamentosProfissional(doente.id);
+  })();
+</script>
+</body>
+</html>

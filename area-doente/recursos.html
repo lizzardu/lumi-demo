@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursos — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  /* Avaliação (👍/👎) de cada recurso — não existe em styles.css, por isso
+     reutilizam-se aqui as mesmas variáveis de cor do resto do site. */
+  .rating-row{ display:flex; align-items:center; gap:8px; margin-top:10px; }
+  .rating-btn{
+    border:1px solid var(--line); background:#fff; border-radius:20px;
+    padding:4px 11px; font-size:.95rem; line-height:1.4; cursor:pointer;
+    transition:transform .12s ease, background .15s ease, border-color .15s ease;
+  }
+  .rating-btn:hover{ border-color:var(--blue); transform:translateY(-1px); }
+  .rating-btn.is-active[data-valor="up"]{ background:var(--ok-mist); border-color:var(--ok); }
+  .rating-btn.is-active[data-valor="down"]{ background:var(--alert-mist); border-color:var(--alert); }
+  .rating-btn:disabled{ opacity:.6; cursor:default; transform:none; }
+  .resource-item .rating-row{ margin-top:6px; }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html" class="active">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+  <p class="eyebrow">Materiais de apoio</p>
+  <h1 style="font-size:2rem;">Recursos para a recuperação</h1>
+  <p style="color:var(--ink-soft); max-width:64ch;">
+    Vídeos, folhetos e respostas às dúvidas mais frequentes, preparados pela equipa
+    da Unidade de Queimados Pediátricos para ajudar em casa, entre consultas. Há materiais
+    para quem cuida e materiais para ver com a criança ao lado — estão assinalados.
+    Diga-nos se um recurso foi útil: ajuda a equipa a saber o que melhorar.
+  </p>
+
+  <div id="mascote-recursos" style="margin-top:26px;"></div>
+
+  <!-- ======================= VÍDEOS ======================= -->
+  <div style="display:flex; align-items:baseline; justify-content:space-between; margin-top:44px;">
+    <p class="eyebrow" style="margin:0;">Vídeos</p>
+    <a href="#" class="hint">Ver todos</a>
+  </div>
+  <div class="grid g-3" style="margin-top:16px;">
+
+    <!-- Vídeo real, alojado no próprio site. preload="metadata" para não
+         descarregar o vídeo só por abrir a página — num telemóvel com dados
+         móveis isso seria gastar-lhe o tarifário sem ele ter pedido nada.
+         playsinline para o iPhone não o abrir em ecrã inteiro à força. -->
+    <div class="video-card">
+      <div class="video-real">
+        <video controls preload="metadata" playsinline
+               src="../assets/videos/massagem-cicatriz.mp4?v=2"
+               aria-label="Vídeo: massagem da cicatriz"
+               onloadedmetadata="mostrarDuracao(this)">
+          O seu navegador não consegue reproduzir este vídeo.
+          <a href="../assets/videos/massagem-cicatriz.mp4?v=2">Abrir o vídeo</a>.
+        </video>
+      </div>
+      <div class="body">
+        <span class="pill pill-star" style="margin-bottom:8px;">Cuidados com a pele</span>
+        <h3>Massagem da cicatriz</h3>
+        <p class="hint" style="margin:0;">Unidade de Queimados Pediátricos<span class="duracao-video"></span></p>
+        <div class="rating-row" data-recurso-id="video-massagem-cicatriz" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">4:12</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-star" style="margin-bottom:8px;">Cuidados com a pele</span>
+        <h3>Como hidratar e proteger a cicatriz</h3>
+        <p class="hint" style="margin:0;">Fisioterapia · Unidade de Queimados Pediátricos</p>
+        <div class="rating-row" data-recurso-id="video-hidratar-cicatriz" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">6:35</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-pending" style="margin-bottom:8px;">Mobilidade</span>
+        <h3>Exercícios de amplitude de movimento</h3>
+        <p class="hint" style="margin:0;">Terapia Ocupacional</p>
+        <div class="rating-row" data-recurso-id="video-amplitude-movimento" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">3:48</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-ok" style="margin-bottom:8px;">Bem-estar</span>
+        <h3>Gerir o prurido e a comichão</h3>
+        <p class="hint" style="margin:0;">Enfermagem</p>
+        <div class="rating-row" data-recurso-id="video-gerir-prurido" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">5:02</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-star" style="margin-bottom:8px;">Proteção solar</span>
+        <h3>Exposição solar após uma queimadura</h3>
+        <p class="hint" style="margin:0;">Cirurgia Plástica</p>
+        <div class="rating-row" data-recurso-id="video-exposicao-solar" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">7:20</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-pending" style="margin-bottom:8px;">Emocional</span>
+        <h3>Quando perguntam pela cicatriz na escola</h3>
+        <p class="hint" style="margin:0;">Psicologia</p>
+        <div class="rating-row" data-recurso-id="video-imagem-corporal" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">2:55</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-ok" style="margin-bottom:8px;">A plataforma</span>
+        <h3>Como responder aos questionários</h3>
+        <p class="hint" style="margin:0;">Equipa clínica</p>
+        <div class="rating-row" data-recurso-id="video-como-responder-questionarios" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">5:10</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-star" style="margin-bottom:8px;">Ver com a criança</span>
+        <h3>O penso não tem de ser uma luta</h3>
+        <p class="hint" style="margin:0;">Enfermagem · distração, escolha e preparação</p>
+        <div class="rating-row" data-recurso-id="video-penso-sem-luta" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">6:05</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-pending" style="margin-bottom:8px;">Escola</span>
+        <h3>Preparar o regresso à escola</h3>
+        <p class="hint" style="margin:0;">Psicologia · falar com o professor e com a turma</p>
+        <div class="rating-row" data-recurso-id="video-regresso-escola" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-card">
+      <div class="video-thumb">
+        <div class="play"><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="4,2 16,9 4,16" fill="#1B7FA8"/></svg></div>
+        <span class="dur">4:40</span>
+      </div>
+      <div class="body">
+        <span class="pill pill-star" style="margin-bottom:8px;">Ver com a criança</span>
+        <h3>A malha de pressão: porquê e como</h3>
+        <p class="hint" style="margin:0;">Terapia Ocupacional · vestir, lavar e aguentar o calor</p>
+        <div class="rating-row" data-recurso-id="video-malha-pressao" data-recurso-tipo="video">
+          <span class="hint">Foi útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================= FOLHETOS ======================= -->
+  <p class="eyebrow" style="margin-top:48px;">Folhetos e guias para descarregar</p>
+  <div class="card card-flush" style="margin-top:16px;">
+
+    <div class="resource-item">
+      <div class="resource-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 2h7l3 3v13H5V2Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3h3" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="resource-info">
+        <strong>Conviver com a queimadura</strong>
+        <span>PDF · 382 KB · escrito para adultos — a versão para famílias está em preparação</span>
+        <div class="rating-row" data-recurso-id="folheto-conviver-com-a-queimadura" data-recurso-tipo="folheto">
+          <span class="hint">Útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="../assets/docs/conviver-com-a-queimadura.pdf" target="_blank" rel="noopener">Descarregar</a>
+    </div>
+
+    <div class="resource-item">
+      <div class="resource-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 2h7l3 3v13H5V2Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3h3" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="resource-info">
+        <strong>Guia de cuidados após a alta</strong>
+        <span>PDF · 1.2 MB · atualizado em Jul 2026</span>
+        <div class="rating-row" data-recurso-id="folheto-guia-cuidados-alta" data-recurso-tipo="folheto">
+          <span class="hint">Útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="#">Descarregar</a>
+    </div>
+
+    <div class="resource-item">
+      <div class="resource-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 2h7l3 3v13H5V2Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3h3" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="resource-info">
+        <strong>Cicatrização e massagem de cicatriz</strong>
+        <span>PDF · 860 KB</span>
+        <div class="rating-row" data-recurso-id="folheto-cicatrizacao-massagem" data-recurso-tipo="folheto">
+          <span class="hint">Útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="#">Descarregar</a>
+    </div>
+
+    <div class="resource-item">
+      <div class="resource-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 2h7l3 3v13H5V2Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3h3" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="resource-info">
+        <strong>Alimentação e cicatrização</strong>
+        <span>PDF · 640 KB</span>
+        <div class="rating-row" data-recurso-id="folheto-alimentacao-cicatrizacao" data-recurso-tipo="folheto">
+          <span class="hint">Útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="#">Descarregar</a>
+    </div>
+
+    <div class="resource-item">
+      <div class="resource-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 2h7l3 3v13H5V2Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3h3" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="resource-info">
+        <strong>Quando contactar a Unidade de Queimados Pediátricos</strong>
+        <span>PDF · 420 KB · sinais de alarme</span>
+        <div class="rating-row" data-recurso-id="folheto-quando-contactar" data-recurso-tipo="folheto">
+          <span class="hint">Útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="#">Descarregar</a>
+    </div>
+
+    <div class="resource-item">
+      <div class="resource-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 2h7l3 3v13H5V2Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3h3" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="resource-info">
+        <strong>Guia para a família e cuidadores</strong>
+        <span>PDF · 980 KB</span>
+        <div class="rating-row" data-recurso-id="folheto-guia-familia" data-recurso-tipo="folheto">
+          <span class="hint">Útil?</span>
+          <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+          <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+        </div>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="#">Descarregar</a>
+    </div>
+
+  </div>
+
+  <!-- ======================= FAQ ======================= -->
+  <p class="eyebrow" style="margin-top:48px;">Perguntas frequentes</p>
+  <div class="card" style="margin-top:16px;">
+
+    <details class="faq-item" open>
+      <summary>Com que frequência vou ter de responder aos questionários (PROMs)?</summary>
+      <div class="faq-a">Nos marcos definidos pela sua equipa: normalmente às 2 semanas, 3, 6 e 12 meses após a alta. Receberá sempre um lembrete antes de cada avaliação, e cada uma demora poucos minutos.</div>
+      <div class="rating-row" data-recurso-id="faq-frequencia-proms" data-recurso-tipo="faq">
+        <span class="hint">Esta resposta ajudou?</span>
+        <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+        <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Quem vê as respostas que dou nos questionários?</summary>
+      <div class="faq-a">Apenas a equipa clínica que o acompanha na Unidade de Queimados Pediátricos. As suas respostas ajudam-nos a perceber como está a evolução e a antecipar necessidades antes da próxima consulta.</div>
+      <div class="rating-row" data-recurso-id="faq-quem-ve-respostas" data-recurso-tipo="faq">
+        <span class="hint">Esta resposta ajudou?</span>
+        <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+        <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>É normal sentir comichão meses depois da alta?</summary>
+      <div class="faq-a">Sim, o prurido é muito comum durante a cicatrização e pode persistir vários meses. Se for intenso ou perturbar o sono, avalie isso no questionário ou contacte a equipa — existem tratamentos que podem ajudar.</div>
+      <div class="rating-row" data-recurso-id="faq-comichao-normal" data-recurso-tipo="faq">
+        <span class="hint">Esta resposta ajudou?</span>
+        <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+        <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Posso expor a cicatriz ao sol?</summary>
+      <div class="faq-a">A pele recém-cicatrizada é muito mais sensível ao sol e pode escurecer de forma permanente. Recomendamos proteção solar elevada e, sempre que possível, evitar exposição direta prolongada — veja o vídeo e o folheto sobre este tema.</div>
+      <div class="rating-row" data-recurso-id="faq-exposicao-sol" data-recurso-tipo="faq">
+        <span class="hint">Esta resposta ajudou?</span>
+        <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+        <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>O que faço se a minha conta não funcionar ou eu esquecer a palavra-passe?</summary>
+      <div class="faq-a">Contacte a Unidade de Queimados Pediátricos diretamente — como a sua conta foi criada pela equipa clínica, também é a equipa que pode gerar um novo código de ativação em segurança.</div>
+      <div class="rating-row" data-recurso-id="faq-conta-nao-funciona" data-recurso-tipo="faq">
+        <span class="hint">Esta resposta ajudou?</span>
+        <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+        <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Em que situações devo procurar ajuda urgente, em vez de esperar pela consulta?</summary>
+      <div class="faq-a">Febre, sinais de infeção (vermelhidão crescente, pus, cheiro), dor súbita e intensa, ou qualquer alteração que o preocupe. Consulte o folheto "Quando contactar a Unidade de Queimados Pediátricos" para os sinais de alarme completos, e não espere pela próxima avaliação PROM nestas situações.</div>
+      <div class="rating-row" data-recurso-id="faq-ajuda-urgente" data-recurso-tipo="faq">
+        <span class="hint">Esta resposta ajudou?</span>
+        <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+        <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+      </div>
+    </details>
+
+  </div>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+  let AVALIACOES = {}; // recurso_id -> true (👍) | false (👎)
+
+  /* Aplica ao DOM o estado atual de AVALIACOES, destacando o botão certo
+     em cada .rating-row (👍 ou 👎), consoante o que o doente já escolheu. */
+  function aplicarAvaliacoesNoDOM(){
+    document.querySelectorAll('.rating-row').forEach(row => {
+      const id = row.dataset.recursoId;
+      const valor = AVALIACOES[id]; // true | false | undefined
+      row.querySelectorAll('.rating-btn').forEach(btn => {
+        const ehBotaoUp = btn.dataset.valor === 'up';
+        btn.classList.toggle('is-active', valor !== undefined && valor === ehBotaoUp);
+      });
+    });
+  }
+
+  /* Clicar num botão já ativo remove a avaliação (toggle); clicar no outro
+     substitui-a. Persiste sempre de imediato — sem botão "guardar" à parte. */
+  async function avaliarRecurso(botao){
+    const row = botao.closest('.rating-row');
+    const recursoId = row.dataset.recursoId;
+    const recursoTipo = row.dataset.recursoTipo;
+    const novoValor = botao.dataset.valor === 'up';
+    const valorAtual = AVALIACOES[recursoId];
+    const remover = (valorAtual === novoValor);
+
+    const botoes = row.querySelectorAll('.rating-btn');
+    botoes.forEach(b => b.disabled = true);
+
+    try {
+      if (remover) {
+        await lumiApi.removerAvaliacaoRecurso(DOENTE_ID, recursoId);
+        delete AVALIACOES[recursoId];
+      } else {
+        await lumiApi.avaliarRecurso(DOENTE_ID, recursoId, recursoTipo, novoValor);
+        AVALIACOES[recursoId] = novoValor;
+      }
+      aplicarAvaliacoesNoDOM();
+    } catch (e) {
+      alert("Não foi possível guardar a sua avaliação: " + (e.message || e));
+    } finally {
+      botoes.forEach(b => b.disabled = false);
+    }
+  }
+
+  async function carregarAvaliacoes(){
+    try {
+      const linhas = await lumiApi.listarAvaliacoesRecursos(DOENTE_ID);
+      AVALIACOES = {};
+      linhas.forEach(r => { AVALIACOES[r.recurso_id] = r.util; });
+      aplicarAvaliacoesNoDOM();
+    } catch (e) {
+      console.error("Não foi possível carregar as avaliações de recursos:", e);
+    }
+  }
+
+  /* A duração lê-se do próprio ficheiro, em vez de ficar escrita à mão:
+     se o vídeo for substituído por uma versão mais curta, o número acompanha. */
+  function mostrarDuracao(video){
+    const s = Math.round(video.duration);
+    if (!isFinite(s) || s <= 0) return;
+    const alvo = video.closest(".video-card").querySelector(".duracao-video");
+    if (alvo) alvo.textContent = " · " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarAvaliacoes();
+
+    try {
+      const doente = await lumiApi.obterDoente(DOENTE_ID);
+      renderMascote("mascote-recursos", idadeEmAnos(doente.data_nascimento),
+        "<strong>Há coisas aqui para veres comigo.</strong> Procura a etiqueta " +
+        "<em>Ver com a criança</em> — esses vídeos foram feitos para serem vistos a dois.",
+        { prefixo: "../" });
+    } catch (e) {
+      // sem a mascote a página serve na mesma: não vale a pena falhar por causa dela
+      console.error("Não foi possível mostrar a Lumi:", e);
+    }
+  })();
+</script>
+</body>
+</html>

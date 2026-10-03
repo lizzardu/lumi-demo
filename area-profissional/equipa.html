@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equipa — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <a href="novo-doente.html">➕ Nova Criança</a>
+    <a href="alertas.html">🔔 Alertas <span class="pill pill-alert" style="margin-left:6px;" id="badge-alertas"></span></a>
+    <a class="active" href="equipa.html">👥 Equipa</a>
+    <a href="definicoes.html">⚙️ Definições</a>
+  </aside>
+
+  <div class="main-area">
+
+    <p class="eyebrow">Unidade de Queimados Pediátricos</p>
+    <h1 style="font-size:1.8rem;">Equipa</h1>
+    <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+      Profissionais com acesso à plataforma Lumi Novas contas são criadas
+      diretamente no Supabase (Authentication) pela administração do sistema.
+    </p>
+
+    <div class="grid g-3" style="margin-top:24px;" id="lista-equipa">
+      <p class="hint">A carregar equipa...</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  const ICONES_ESPECIALIDADE = {
+    "Cirurgia Plástica": "🩺", "Enfermagem": "🩹", "Fisioterapia": "🧑‍⚕️",
+    "Terapia Ocupacional": "🖐️", "Psicologia": "💬", "Nutrição": "🥗"
+  };
+
+  async function carregarEquipa(){
+    const equipa = await lumiApi.listarEquipaProfissionais();
+    const el = document.getElementById('lista-equipa');
+    if (!equipa.length) {
+      el.innerHTML = `<p class="hint">Ainda não há profissionais registados.</p>`;
+      return;
+    }
+    el.innerHTML = equipa.map(p => `
+      <div class="card">
+        <div style="width:44px; height:44px; border-radius:50%; background:var(--paper-tint); display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:12px;">
+          ${ICONES_ESPECIALIDADE[p.especialidade] || "👤"}
+        </div>
+        <h3 style="font-size:1.05rem; margin-bottom:2px;">${p.nome}</h3>
+        <p class="hint" style="margin:0;">${p.especialidade || "Especialidade não definida"}</p>
+      </div>`).join('');
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    atualizarBadgeAlertas();
+    carregarEquipa();
+  })();
+</script>
+</body>
+</html>

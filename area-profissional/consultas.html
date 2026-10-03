@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultas — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  .linha-marcacao{ display:flex; gap:14px; align-items:flex-start; padding:16px 0; border-bottom:1px solid var(--line); }
+  .linha-marcacao:last-child{ border-bottom:none; }
+  .linha-marcacao .quando{ min-width:112px; font-family:var(--f-mono); font-size:.8rem; color:var(--blue-deep); font-weight:600; }
+  .prom-fichas{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; }
+  .prom-ficha{ border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; }
+  .prom-ficha .valor{ font-family:var(--f-mono); font-size:1.5rem; font-weight:600; color:var(--blue-deep); }
+  .prom-ficha .delta{ font-size:.78rem; font-weight:600; }
+  .delta.melhor{ color:var(--ok); }
+  .delta.pior{ color:var(--alert); }
+  .delta.igual{ color:var(--ink-soft); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link class="active">🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+    <div class="print-cabecalho" id="print-cabecalho"></div>
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Consultas de seguimento</p>
+    <h1 style="font-size:1.9rem;">Consultas</h1>
+    <p style="color:var(--ink-soft); max-width:72ch; margin-top:6px;">
+      Agende aqui as consultas presenciais e as teleconsultas. A marcação aparece
+      de imediato na área do doente, com a data, o tipo, quem atende e o que ele
+      precisa de preparar. No dia, abre-se o registo clínico a partir da própria
+      marcação.
+    </p>
+
+    <div id="erro-geral" class="banner-alert" style="margin:20px 0; display:none;"></div>
+
+    <!-- ---------- agendar ---------- -->
+    <div class="card" style="margin:24px 0 28px;">
+      <p class="eyebrow" style="margin-bottom:14px;">Nova marcação</p>
+      <div class="form-row">
+        <div class="field">
+          <label for="ag-data">Data e hora</label>
+          <input type="datetime-local" id="ag-data">
+        </div>
+        <div class="field">
+          <label for="ag-tipo">Tipo de consulta</label>
+          <select id="ag-tipo" onchange="alternarCamposTipo()">
+            <option value="presencial">Presencial</option>
+            <option value="teleconsulta">Teleconsulta</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="ag-especialidade">Especialidade</label>
+          <select id="ag-especialidade">
+            <option>Cirurgia Plástica</option>
+            <option>Enfermagem</option>
+            <option>Fisioterapia</option>
+            <option>Terapia Ocupacional</option>
+            <option>Psicologia</option>
+            <option>Nutrição</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ag-profissional">Profissional responsável</label>
+          <input type="text" id="ag-profissional" placeholder="Nome de quem atende">
+        </div>
+      </div>
+      <div class="field" id="campo-local">
+        <label for="ag-local">Local</label>
+        <input type="text" id="ag-local" placeholder="ex.: Consulta Externa, Piso 2, Sala 4">
+      </div>
+      <div class="field" id="campo-ligacao" style="display:none;">
+        <label for="ag-ligacao">Ligação da teleconsulta</label>
+        <input type="text" id="ag-ligacao" placeholder="Endereço que o doente vai abrir">
+      </div>
+      <div class="field">
+        <label for="ag-instrucoes">Instruções para o doente</label>
+        <textarea id="ag-instrucoes" rows="2" placeholder="ex.: trazer o material de penso; não aplicar creme nas 4 horas antes"></textarea>
+        <p class="scale-note">Aparece na área do doente, junto à marcação.</p>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button type="button" class="btn btn-star" onclick="agendar()" id="btn-agendar">Agendar consulta</button>
+        <span class="hint" style="margin:0;" id="estado-agendar"></span>
+      </div>
+    </div>
+
+    <!-- ---------- marcações ---------- -->
+    <p class="eyebrow">Marcações</p>
+    <div class="card" style="margin:14px 0 30px;">
+      <div id="lista-marcacoes"><p class="hint" style="margin:0;">A carregar...</p></div>
+    </div>
+
+    <!-- ---------- registos de consulta ---------- -->
+    <p class="eyebrow">Registos de consulta</p>
+    <div class="card" style="margin:14px 0 30px;">
+      <div id="lista-consultas"><p class="hint" style="margin:0;">A carregar...</p></div>
+    </div>
+
+    <!-- ---------- histórico longitudinal ---------- -->
+    <p class="eyebrow">Onde o doente está</p>
+    <div class="card" style="margin:14px 0 40px;">
+      <p class="hint" style="margin:0 0 16px;">
+        O essencial antes de entrar na consulta: o que o doente reportou, o que
+        ficou definido, e o que está em curso.
+      </p>
+
+      <p class="eyebrow" style="margin-bottom:10px;">Últimos resultados reportados</p>
+      <div class="prom-fichas" id="fichas-prom"><p class="hint" style="margin:0;">A carregar...</p></div>
+
+      <hr class="divider" style="margin:24px 0 18px;">
+      <div class="form-row" style="align-items:start;">
+        <div>
+          <p class="eyebrow" style="margin-bottom:10px;">Metas em curso</p>
+          <div id="resumo-metas"><p class="hint" style="margin:0;">A carregar...</p></div>
+        </div>
+        <div>
+          <p class="eyebrow" style="margin-bottom:10px;">Plano de tratamento</p>
+          <div id="resumo-plano"><p class="hint" style="margin:0;">A carregar...</p></div>
+        </div>
+      </div>
+
+      <hr class="divider" style="margin:24px 0 18px;">
+      <p class="eyebrow" style="margin-bottom:10px;">Documentos do percurso</p>
+      <div id="resumo-documentos"><p class="hint" style="margin:0;">A carregar...</p></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE = null;
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function dataHoraLegivel(iso){
+    return new Date(iso).toLocaleString("pt-PT", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  }
+  function mostrarErro(e, contexto){
+    console.error(contexto, e);
+    const el = document.getElementById("erro-geral");
+    el.innerHTML = "⚠️ " + esc(contexto) + ": " + esc(e.message || e);
+    el.style.display = "flex";
+  }
+
+  function alternarCamposTipo(){
+    const tele = document.getElementById("ag-tipo").value === "teleconsulta";
+    document.getElementById("campo-local").style.display = tele ? "none" : "";
+    document.getElementById("campo-ligacao").style.display = tele ? "" : "none";
+  }
+
+  async function agendar(){
+    const estado = document.getElementById("estado-agendar");
+    const btn = document.getElementById("btn-agendar");
+    const quando = document.getElementById("ag-data").value;
+    if (!quando) { estado.textContent = "Indique a data e a hora."; return; }
+
+    btn.disabled = true; estado.textContent = "A agendar...";
+    try {
+      const tipo = document.getElementById("ag-tipo").value;
+      const sessao = await lumiApi.utilizadorAtual();
+      await lumiApi.registarAgendamento(DOENTE.id, {
+        data_hora: new Date(quando).toISOString(),
+        tipo: tipo,
+        especialidade: document.getElementById("ag-especialidade").value,
+        profissional_id: sessao.user.id,
+        profissional_nome: document.getElementById("ag-profissional").value.trim() || sessao.perfil.nome,
+        local: tipo === "teleconsulta" ? "Teleconsulta" : document.getElementById("ag-local").value.trim(),
+        ligacao: tipo === "teleconsulta" ? document.getElementById("ag-ligacao").value.trim() : null,
+        instrucoes: document.getElementById("ag-instrucoes").value.trim() || null,
+        notas: null
+      });
+      estado.textContent = "Agendada. Já aparece na área do doente.";
+      document.getElementById("ag-instrucoes").value = "";
+      await carregarMarcacoes();
+    } catch (e) {
+      estado.textContent = "";
+      mostrarErro(e, "Não foi possível agendar");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function cancelar(id){
+    if (!confirm("Cancelar esta marcação? O doente deixa de a ver como agendada.")) return;
+    try {
+      await lumiApi.cancelarAgendamento(id);
+      await carregarMarcacoes();
+    } catch (e) { mostrarErro(e, "Não foi possível cancelar"); }
+  }
+
+  function marcacaoHTML(m){
+    const selos = {
+      agendado:  '<span class="pill pill-pending">Agendada</span>',
+      concluido: '<span class="pill pill-ok">Realizada</span>',
+      cancelado: '<span class="pill pill-star">Cancelada</span>'
+    };
+    const tipo = m.tipo === "teleconsulta" ? "💻 Teleconsulta" : "🏥 Presencial";
+    const passou = new Date(m.data_hora) <= new Date();
+    const detalhes = [];
+    if (m.especialidade) detalhes.push(esc(m.especialidade));
+    if (m.profissional_nome) detalhes.push(esc(m.profissional_nome));
+    if (m.local) detalhes.push(esc(m.local));
+
+    let acoes = '<button type="button" class="btn btn-ghost btn-sm" onclick="alternarAnexos(\'' + m.id + '\')">📎 Documentos</button>';
+    if (m.estado === "agendado") {
+      const abrir = "consulta.html?processo=" + encodeURIComponent(DOENTE.processo) + "&agendamento=" + m.id;
+      acoes = '<a class="btn ' + (passou ? "btn-star" : "btn-ghost") + ' btn-sm" href="' + abrir + '">'
+            + (passou ? "Registar consulta" : "Abrir registo") + "</a>"
+            + '<button type="button" class="btn btn-ghost btn-sm" onclick="cancelar(\'' + m.id + '\')">Cancelar</button>';
+    }
+
+    return '<div class="linha-marcacao">'
+         +   '<div class="quando">' + esc(dataHoraLegivel(m.data_hora)) + "</div>"
+         +   '<div style="flex:1; min-width:0;">'
+         +     '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:4px;">'
+         +       (selos[m.estado] || "") + '<strong style="font-size:.92rem;">' + tipo + "</strong>"
+         +     "</div>"
+         +     '<p class="hint" style="margin:0;">' + (detalhes.join(" · ") || "Sem detalhes") + "</p>"
+         +     (m.instrucoes ? '<p class="hint" style="margin:6px 0 0;">📋 ' + esc(m.instrucoes) + "</p>" : "")
+         +   "</div>"
+         +   '<div style="display:flex; gap:8px; flex-wrap:wrap;">' + acoes + "</div>"
+         + "</div>"
+         + '<div id="anexos-' + m.id + '" hidden style="padding:0 0 16px 126px; border-bottom:1px solid var(--line);"></div>';
+  }
+
+  /* ---------- documentos associados a uma marcação ---------- */
+  async function alternarAnexos(id){
+    const zona = document.getElementById("anexos-" + id);
+    if (!zona.hidden) { zona.hidden = true; return; }
+    zona.hidden = false;
+    zona.innerHTML = '<p class="hint" style="margin:0;">A carregar...</p>';
+    await desenharAnexos(id);
+  }
+
+  async function desenharAnexos(id){
+    const zona = document.getElementById("anexos-" + id);
+    if (!zona || zona.hidden) return;
+    let lista = [];
+    try {
+      lista = await lumiApi.listarAnexos(DOENTE.id, id);
+    } catch (e) {
+      zona.innerHTML = '<p class="hint" style="margin:0;">Não foi possível carregar os documentos. '
+        + "Se a migração 019 ainda não foi executada, é normal.</p>";
+      console.error(e);
+      return;
+    }
+
+    const itens = lista.length
+      ? lista.map(function(a){
+          const kb = a.tamanho ? Math.round(a.tamanho / 1024) + " KB" : "";
+          return '<div style="display:flex; gap:10px; align-items:center; padding:6px 0;">'
+               +   '<a href="#" onclick="abrirAnexo(event, \'' + esc(a.caminho) + '\')">📄 ' + esc(a.nome) + "</a>"
+               +   '<span class="hint" style="margin:0;">' + esc(a.descricao || "") + " " + kb + "</span>"
+               +   '<button type="button" class="btn btn-ghost btn-sm" onclick="apagarAnexo(\'' + a.id + "','" + id + '\')">Remover</button>'
+               + "</div>";
+        }).join("")
+      : '<p class="hint" style="margin:0 0 10px;">Sem documentos associados a esta marcação.</p>';
+
+    zona.innerHTML = itens
+      + '<div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-top:10px;">'
+      +   '<div class="field" style="margin:0;"><label for="fich-' + id + '">Novo documento</label>'
+      +     '<input type="file" id="fich-' + id + '"></div>'
+      +   '<div class="field" style="margin:0;"><label for="desc-' + id + '">Para que serve</label>'
+      +     '<input type="text" id="desc-' + id + '" placeholder="ex.: preparação para o exame"></div>'
+      +   '<button type="button" class="btn btn-star btn-sm" onclick="enviarAnexo(\'' + id + '\')">Anexar</button>'
+      +   '<span class="hint" style="margin:0;" id="estado-anexo-' + id + '"></span>'
+      + "</div>"
+      + '<p class="scale-note" style="margin:8px 0 0;">O doente vê estes documentos junto à marcação, na área dele.</p>';
+    // guarda a lista para o apagar não ter de voltar a consultar
+    zona.dataset.anexos = JSON.stringify(lista);
+  }
+
+  async function abrirAnexo(ev, caminho){
+    ev.preventDefault();
+    try {
+      const url = await lumiApi.enderecoAnexo(caminho);
+      window.open(url, "_blank", "noopener");
+    } catch (e) { mostrarErro(e, "Não foi possível abrir o documento"); }
+  }
+
+  async function enviarAnexo(id){
+    const campo = document.getElementById("fich-" + id);
+    const estado = document.getElementById("estado-anexo-" + id);
+    if (!campo.files || !campo.files.length) { estado.textContent = "Escolha um ficheiro."; return; }
+    const ficheiro = campo.files[0];
+    if (ficheiro.size > 10 * 1024 * 1024) { estado.textContent = "Ficheiro demasiado grande (máximo 10 MB)."; return; }
+
+    estado.textContent = "A enviar...";
+    try {
+      await lumiApi.carregarAnexo(DOENTE.id, id, ficheiro, document.getElementById("desc-" + id).value.trim());
+      await desenharAnexos(id);
+    } catch (e) {
+      estado.textContent = "";
+      mostrarErro(e, "Não foi possível anexar");
+    }
+  }
+
+  async function apagarAnexo(anexoId, marcacaoId){
+    const zona = document.getElementById("anexos-" + marcacaoId);
+    const lista = JSON.parse(zona.dataset.anexos || "[]");
+    const anexo = lista.find(function(a){ return a.id === anexoId; });
+    if (!anexo) return;
+    if (!confirm('Remover "' + anexo.nome + '"? O doente deixa de o ver.')) return;
+    try {
+      await lumiApi.removerAnexo(anexo);
+      await desenharAnexos(marcacaoId);
+    } catch (e) { mostrarErro(e, "Não foi possível remover"); }
+  }
+
+  async function carregarMarcacoes(){
+    const el = document.getElementById("lista-marcacoes");
+    try {
+      const linhas = await lumiApi.listarAgendamentos(DOENTE.id);
+      const ordenadas = linhas.slice().sort(function(a,b){ return String(b.data_hora).localeCompare(String(a.data_hora)); });
+      el.innerHTML = ordenadas.length
+        ? ordenadas.map(marcacaoHTML).join("")
+        : '<p class="hint" style="margin:0;">Ainda não há marcações para este doente.</p>';
+    } catch (e) {
+      el.innerHTML = '<p class="hint" style="margin:0;">Não foi possível carregar as marcações.</p>';
+      console.error(e);
+    }
+  }
+
+  async function carregarConsultas(){
+    const el = document.getElementById("lista-consultas");
+    try {
+      const linhas = await lumiApi.listarConsultas(DOENTE.id);
+      if (!linhas.length) {
+        el.innerHTML = '<p class="hint" style="margin:0;">Ainda não há registos de consulta.</p>';
+        return;
+      }
+      el.innerHTML = linhas.map(function(c){
+        const selo = c.estado === "concluida"
+          ? '<span class="pill pill-ok">Concluída · visível ao doente</span>'
+          : '<span class="pill pill-pending">Rascunho · só a equipa vê</span>';
+        const abrir = "consulta.html?processo=" + encodeURIComponent(DOENTE.processo) + "&consulta=" + c.id;
+        return '<div class="linha-marcacao">'
+             +   '<div class="quando">' + esc(dataHoraLegivel(c.data_consulta)) + "</div>"
+             +   '<div style="flex:1; min-width:0;">'
+             +     '<div style="margin-bottom:4px;">' + selo + "</div>"
+             +     '<p class="hint" style="margin:0;">'
+             +       (c.tipo === "teleconsulta" ? "Teleconsulta" : "Presencial")
+             +       " · " + esc(c.especialidade || "—") + " · " + esc(c.profissional_nome) + "</p>"
+             +   "</div>"
+             +   '<a class="btn btn-ghost btn-sm" href="' + abrir + '">'
+             +     (c.estado === "concluida" ? "Ver" : "Continuar") + "</a>"
+             + "</div>";
+      }).join("");
+    } catch (e) {
+      el.innerHTML = '<p class="hint" style="margin:0;">Não foi possível carregar os registos. '
+        + "Se a migração 018 ainda não foi executada, é normal.</p>";
+      console.error(e);
+    }
+  }
+
+  async function carregarLongitudinal(){
+    // PROMs
+    const fichas = document.getElementById("fichas-prom");
+    const resumo = await resumoPromsParaConsulta(DOENTE.id);
+    const comValor = resumo.filter(function(p){ return p.valor != null; });
+    fichas.innerHTML = comValor.length
+      ? comValor.map(function(p){
+          const delta = p.variacao == null ? '<span class="delta igual">primeira resposta</span>'
+            : '<span class="delta ' + p.sentido + '">'
+              + (p.variacao > 0 ? "▲ +" : p.variacao < 0 ? "▼ " : "— ") + p.variacao
+              + (p.sentido === "melhor" ? " · melhor" : p.sentido === "pior" ? " · pior" : " · igual") + "</span>";
+          return '<div class="prom-ficha">'
+               +   '<p class="hint" style="margin:0 0 2px; font-size:.74rem;">' + esc(p.nome) + "</p>"
+               +   '<div class="valor">' + p.valor + '<span style="font-size:.8rem; color:var(--ink-soft);">/' + p.maximo + "</span></div>"
+               +   delta
+               +   '<p class="hint" style="margin:6px 0 0; font-size:.72rem;">' + esc(dataCurta(p.data)) + "</p>"
+               + "</div>";
+        }).join("")
+      : '<p class="hint" style="margin:0;">O doente ainda não respondeu a nenhum questionário.</p>';
+
+    // metas
+    const elMetas = document.getElementById("resumo-metas");
+    try {
+      const metas = await lumiApi.listarMetas(DOENTE.id);
+      const porFazer = metas.filter(function(m){ return m.estado !== "done"; });
+      elMetas.innerHTML = porFazer.length
+        ? '<ul style="margin:0 0 0 18px; padding:0; font-size:.88rem;">'
+          + porFazer.slice(0,5).map(function(m){ return "<li>" + esc(m.label) + "</li>"; }).join("")
+          + "</ul>"
+          + (porFazer.length > 5 ? '<p class="hint" style="margin:8px 0 0;">e mais ' + (porFazer.length-5) + ".</p>" : "")
+        : '<p class="hint" style="margin:0;">Sem metas por atingir.</p>';
+    } catch (e) { elMetas.innerHTML = '<p class="hint" style="margin:0;">Indisponível.</p>'; }
+
+    // plano
+    const elPlano = document.getElementById("resumo-plano");
+    try {
+      const exercicios = await lumiApi.listarExercicios(DOENTE.id);
+      const ativos = exercicios.filter(function(x){ return x.estado !== "suspenso"; });
+      elPlano.innerHTML = ativos.length
+        ? '<ul style="margin:0 0 0 18px; padding:0; font-size:.88rem;">'
+          + ativos.slice(0,5).map(function(x){
+              return "<li>" + esc(x.nome) + (x.prescricao ? ' <span class="hint">— ' + esc(x.prescricao) + "</span>" : "") + "</li>";
+            }).join("")
+          + "</ul>"
+        : '<p class="hint" style="margin:0;">Sem prescrições ativas.</p>';
+    } catch (e) { elPlano.innerHTML = '<p class="hint" style="margin:0;">Indisponível.</p>'; }
+
+    // documentos do percurso
+    const elDoc = document.getElementById("resumo-documentos");
+    const partes = [];
+    try {
+      const alta = await lumiApi.obterUltimoFormularioAlta(DOENTE.id);
+      partes.push(alta
+        ? '<li>Formulário de Alta Hospitalar de ' + esc(dataCurta(alta.data_alta || alta.criado_em))
+          + ' — <a href="formulario-alta.html?processo=' + encodeURIComponent(DOENTE.processo) + '">abrir</a></li>'
+        : "<li>Ainda não há Formulário de Alta Hospitalar.</li>");
+    } catch (e) { partes.push("<li>Formulário de Alta Hospitalar indisponível.</li>"); }
+    try {
+      const c72 = await lumiApi.obterUltimaConsulta72h(DOENTE.id);
+      partes.push(c72
+        ? '<li>1.º Contacto de ' + esc(dataCurta(c72.data_contacto)) + " por " + esc(c72.realizado_por_nome) + "</li>"
+        : "<li>1.º Contacto ainda por registar.</li>");
+    } catch (e) { partes.push("<li>1.º Contacto indisponível.</li>"); }
+    elDoc.innerHTML = '<ul style="margin:0 0 0 18px; padding:0; font-size:.88rem;">' + partes.join("") + "</ul>";
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent =
+      sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    document.getElementById("ag-profissional").value = sessao.perfil.nome;
+    if (sessao.perfil.especialidade) {
+      const sel = document.getElementById("ag-especialidade");
+      Array.from(sel.options).forEach(function(o){ if (o.value === sessao.perfil.especialidade) sel.value = o.value; });
+    }
+    atualizarBadgeAlertas();
+
+    DOENTE = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    document.getElementById("titulo-doente").textContent = "Consultas — " + DOENTE.nome;
+    document.getElementById("sidebar-nome-doente").textContent = DOENTE.nome;
+    ligarSidebarAoProcesso(DOENTE.processo);
+    montarCabecalhoImpressao("Consultas de seguimento", DOENTE);
+    document.getElementById("link-voltar").href = "doente.html?processo=" + encodeURIComponent(DOENTE.processo);
+
+    carregarMarcacoes();
+    carregarConsultas();
+    carregarLongitudinal();
+  })();
+</script>
+</body>
+</html>

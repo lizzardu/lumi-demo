@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulário de Alta Hospitalar — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  /* Vista só de leitura: pares campo/valor, sem controlos de formulário.
+     As regras antigas — que reativavam a opacidade de campos desativados —
+     desapareceram com o formulário duplicado que aqui existia. */
+  .linha-leitura{
+    display:grid; grid-template-columns:minmax(180px,42%) 1fr; gap:10px 18px;
+    padding:9px 0; border-bottom:1px solid var(--line);
+  }
+  .linha-leitura:last-child{ border-bottom:none; }
+  .linha-leitura .rot{ color:var(--ink-soft); font-size:.86rem; line-height:1.4; }
+  .linha-leitura .val{ font-weight:600; color:var(--ink); font-size:.92rem; line-height:1.4; overflow-wrap:anywhere; }
+  .sub-leitura{
+    font-family:var(--f-body); font-size:.8rem; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--star-deep); margin:22px 0 6px; padding-top:14px; border-top:1px solid var(--line);
+  }
+  .lista-leitura{ margin:0 0 6px; padding-left:20px; font-size:.92rem; }
+  .lista-leitura li{ margin-bottom:5px; }
+  @media (max-width:700px){
+    /* em ecrã estreito, rótulo por cima do valor em vez de duas colunas
+       apertadas que partiriam as duas em várias linhas */
+    .linha-leitura{ grid-template-columns:1fr; gap:2px; }
+    #layout-formulario{ grid-template-columns:1fr !important; }
+    .form-toc{ position:static; }
+  }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html" class="active">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+  <p class="eyebrow">Avaliação clínica</p>
+  <h1 style="font-size:1.9rem;">Formulário de Alta Hospitalar</h1>
+  <p style="color:var(--ink-soft); max-width:70ch;">
+    Esta é a avaliação que a sua equipa preencheu antes da alta — regista como estava
+    a sua queimadura e cicatriz, a dor, o prurido, o movimento e a funcionalidade nessa
+    altura. Serve de ponto de partida para comparar com a sua evolução. É apenas para
+    consulta; não pode ser editada aqui.
+  </p>
+
+  <div id="sem-formulario" class="banner-info" style="margin:20px 0; display:none;">
+    ℹ️ A sua equipa ainda não preencheu o formulário de alta hospitalar. Assim que o fizer, fica visível aqui.
+  </div>
+
+  <div id="bloco-formulario" style="display:none;">
+
+    <div class="grid" style="grid-template-columns:220px 1fr; gap:28px; align-items:start; margin-top:24px;" id="layout-formulario">
+
+      <!-- índice, gerado a partir dos quadros que o formulário tiver -->
+      <nav class="form-toc" id="toc-formulario"></nav>
+
+      <!-- quadros, gerados a partir do que ficou gravado -->
+      <div id="quadros-formulario"></div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  /* =====================================================================
+     Vista só de leitura do Formulário de Alta Hospitalar.
+
+     Antes, esta página tinha uma CÓPIA do formulário da área profissional
+     — as mesmas nove secções escritas outra vez — e limitava-se a
+     preenchê-la. Com duas cópias do mesmo formulário, cada campo novo
+     tinha de ser copiado à mão para aqui, e isso falhou em silêncio: o
+     quadro 9 inteiro e doze campos dos quadros 1 e 8 nunca chegaram a ser
+     copiados, e ninguém deu por isso.
+
+     Agora a página desenha-se a partir do que ficou gravado. Não há
+     formulário nenhum escrito aqui: lê-se "dados" e mostra-se o que lá
+     estiver. Um campo acrescentado amanhã ao formulário aparece aqui
+     sozinho, sem ninguém se lembrar de nada.
+
+     O que NÃO se mostra à família: os sinais contados na revisão de
+     sistemas e a prioridade de seguimento. São decisões de gestão do
+     serviço, não respostas dela — ver um rótulo de prioridade sem alguém
+     ao lado a explicá-lo não ajuda ninguém, e assusta. As RESPOSTAS que
+     deu ao quadro 9 aparecem todas.
+     ===================================================================== */
+
+  /* Títulos dos quadros. As chaves são os ids das secções do formulário,
+     que é como "dados" vem estruturado. Um quadro que apareça em "dados"
+     sem estar nesta lista é na mesma mostrado, com o id por título — mais
+     vale um título feio do que informação escondida. */
+  const QUADROS = [
+    ["queimadura",       "1", "Características da Queimadura"],
+    ["cicatriz",         "2", "Características da Cicatriz"],
+    ["dor",              "3", "Dor"],
+    ["prurido",          "4", "Prurido"],
+    ["amplitude",        "5", "Amplitude articular"],
+    ["funcionalidade",   "6", "Funcionalidade"],
+    ["autocuidado",      "7", "Informação para Autocuidado"],
+    ["mapa",             "8", "Outcomes Centrados no Doente"],
+    ["revisao-sistemas", "9", "Revisão de Sistemas à data da alta"]
+  ];
+
+  /* Blocos que não são pares campo/valor e têm apresentação própria. */
+  const BLOCOS_ESPECIAIS = {
+    amplitude_tabela:  { quadro: "amplitude",  titulo: "Amplitude por articulação (ativa / passiva)" },
+    autocuidado_tabela:{ quadro: "autocuidado", titulo: "Ensino realizado" },
+    objetivos_gas:     { quadro: "mapa",        titulo: "Os seus objetivos" }
+  };
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  /** Um valor gravado pode ser texto, lista, {selecionados, outras} ou
+   *  {resposta, detalhe}. Devolve texto legível, ou null se estiver vazio. */
+  function valorLegivel(v){
+    if (v == null) return null;
+    if (Array.isArray(v)) return v.length ? v.join(" · ") : null;
+    if (typeof v === "object") {
+      if (Array.isArray(v.selecionados)) {
+        const partes = v.selecionados.slice();
+        if (v.outras) partes.push(v.outras);
+        return partes.length ? partes.join(" · ") : null;
+      }
+      if ("resposta" in v) {
+        const det = Array.isArray(v.detalhe) ? v.detalhe.filter(Boolean).join(" · ") : v.detalhe;
+        if (!v.resposta && !det) return null;
+        return [v.resposta, det].filter(Boolean).join(" — ");
+      }
+      return null;
+    }
+    const t = String(v).trim();
+    return t === "" ? null : t;
+  }
+
+  function linha(rotulo, valor){
+    return '<div class="linha-leitura">'
+         +   '<span class="rot">' + esc(rotulo) + '</span>'
+         +   '<span class="val">' + esc(valor) + '</span>'
+         + '</div>';
+  }
+
+  function tabelaLegivel(obj, titulo){
+    const linhas = Object.keys(obj || {}).map(function (k) {
+      const v = obj[k];
+      let texto = null;
+      if (v && typeof v === "object" && ("ativo" in v || "passivo" in v)) {
+        const p = [v.ativo, v.passivo].filter(function (x) { return x != null && String(x).trim() !== ""; });
+        texto = p.length ? p.join(" / ") : null;
+      } else {
+        texto = valorLegivel(v);
+      }
+      return texto ? linha(k, texto) : "";
+    }).join("");
+    if (!linhas) return "";
+    return '<h3 class="sub-leitura">' + esc(titulo) + '</h3>' + linhas;
+  }
+
+  function listaLegivel(lista, titulo){
+    const itens = (lista || []).map(function (o) {
+      return typeof o === "string" ? o : (o && o.descricao) || "";
+    }).filter(Boolean);
+    if (!itens.length) return "";
+    return '<h3 class="sub-leitura">' + esc(titulo) + '</h3>'
+         + '<ul class="lista-leitura">' + itens.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>';
+  }
+
+  function desenharFormulario(registo){
+    const dados = registo.dados || {};
+    const toc = document.getElementById("toc-formulario");
+    const alvo = document.getElementById("quadros-formulario");
+
+    // quadros conhecidos primeiro, depois quaisquer outros que existam nos
+    // dados e não estejam previstos — para nada ficar escondido
+    const previstos = QUADROS.map(function (q) { return q[0]; });
+    const extra = Object.keys(dados).filter(function (k) {
+      return previstos.indexOf(k) < 0 && !BLOCOS_ESPECIAIS[k]
+          && dados[k] && typeof dados[k] === "object" && !Array.isArray(dados[k]);
+    }).map(function (k, i) { return [k, String(QUADROS.length + i + 1), k]; });
+
+    const html = [], links = [];
+    QUADROS.concat(extra).forEach(function (q) {
+      const id = q[0], num = q[1], titulo = q[2];
+      const seccao = dados[id];
+      let corpo = "";
+
+      if (seccao && typeof seccao === "object") {
+        Object.keys(seccao).forEach(function (rotulo) {
+          const t = valorLegivel(seccao[rotulo]);
+          if (t) corpo += linha(rotulo, t);
+        });
+      }
+      // blocos com apresentação própria, colados ao quadro a que pertencem
+      Object.keys(BLOCOS_ESPECIAIS).forEach(function (chave) {
+        const b = BLOCOS_ESPECIAIS[chave];
+        if (b.quadro !== id || !dados[chave]) return;
+        corpo += (chave === "objetivos_gas")
+          ? listaLegivel(dados[chave], b.titulo)
+          : tabelaLegivel(dados[chave], b.titulo);
+      });
+
+      if (!corpo) return;   // quadro sem nada respondido não se mostra
+      links.push('<a href="#q-' + id + '"><span class="n">' + num + '</span> ' + esc(titulo) + '</a>');
+      html.push(
+        '<section class="card" id="q-' + id + '" style="margin-bottom:22px; scroll-margin-top:110px;">'
+      +   '<div class="section-head"><span class="section-num">' + num + '</span><h2>' + esc(titulo) + '</h2></div>'
+      +   corpo
+      + '</section>');
+    });
+
+    toc.innerHTML = links.join("");
+    alvo.innerHTML = html.length
+      ? html.join("")
+      : '<div class="banner-info">O formulário foi gravado mas não tem campos preenchidos.</div>';
+
+    document.getElementById("bloco-formulario").style.display = "block";
+  }
+
+  async function carregarFormulario(){
+    let registo;
+    try {
+      registo = await lumiApi.obterUltimoFormularioAlta(DOENTE_ID);
+    } catch (e) {
+      console.error("Erro ao carregar o formulário de alta hospitalar:", e);
+      const aviso = document.getElementById("sem-formulario");
+      aviso.innerHTML = "⚠️ Não foi possível carregar o formulário: " + esc(e.message || e);
+      aviso.style.display = "flex";
+      return;
+    }
+    if (!registo) { document.getElementById("sem-formulario").style.display = "flex"; return; }
+    desenharFormulario(registo);
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarFormulario();
+  })();
+</script>
+</body>
+</html>

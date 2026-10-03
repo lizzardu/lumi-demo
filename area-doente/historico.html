@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Histórico e Agendamentos — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  /* styles.css só estiliza input[type=text|email|password|tel] e textarea;
+     esta página usa também select, date e datetime-local — reutilizam-se
+     aqui as mesmas variáveis e regras, para ficarem visualmente idênticos. */
+  select,
+  input[type="date"],
+  input[type="datetime-local"]{
+    width:100%; padding:12px 14px; border:1px solid var(--line);
+    border-radius:var(--radius); font-family:var(--f-body); font-size:.95rem;
+    background:#fff; color:var(--ink);
+  }
+  select:focus,
+  input[type="date"]:focus,
+  input[type="datetime-local"]:focus{
+    outline:2px solid var(--blue); outline-offset:2px;
+  }
+  /* Estas regras vêm depois de styles.css e ganham-lhe, incluindo à regra
+     de telemóvel que impede o iOS de aproximar a página ao tocar num campo.
+     Por isso a exceção tem de ser repetida aqui: abaixo de 16px, o Safari
+     aproxima sozinho e o doente fica com o ecrã desalinhado. */
+  @media (max-width:1024px), (pointer:coarse){
+    select,
+    input[type="date"],
+    input[type="datetime-local"]{ font-size:16px; }
+  }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html" class="active">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+  <p class="eyebrow">O seu percurso clínico</p>
+  <h1 style="font-size:2rem;">Histórico e Agendamentos</h1>
+  <p style="color:var(--ink-soft); max-width:64ch;">
+    Registe aqui episódios de saúde relevantes da criança (urgências, consultas
+    externas ou internamentos) e marque futuras consultas ou exames. Esta informação
+    fica visível à equipa, e ajuda a preparar a consulta seguinte.
+  </p>
+
+  <!-- ======================= SECÇÃO A: HISTÓRICO CLÍNICO ======================= -->
+  <p class="eyebrow" style="margin-top:40px;">Secção A · Histórico clínico</p>
+
+  <div class="card" style="max-width:720px; margin-top:14px;">
+    <p class="eyebrow" style="margin-bottom:14px;">Adicionar evento ao histórico</p>
+    <div id="erro-historico" class="banner-alert" style="display:none; margin-bottom:16px;"></div>
+
+    <form id="form-historico" onsubmit="submeterHistorico(event)">
+
+      <div class="field">
+        <label for="hist-tipo">Tipo de evento</label>
+        <select id="hist-tipo" onchange="alternarCamposHistorico()" required>
+          <option value="" disabled selected>Selecione uma opção...</option>
+          <option value="urgencia">Serviço de Urgência</option>
+          <option value="consulta">Consulta Externa</option>
+          <option value="internamento">Internamento</option>
+        </select>
+      </div>
+
+      <!-- Especialidade: só visível/obrigatória para "Consulta Externa" -->
+      <div class="field" id="campo-hist-especialidade" style="display:none;">
+        <label for="hist-especialidade">Especialidade</label>
+        <input type="text" id="hist-especialidade" list="lista-especialidades" placeholder="ex.: Cirurgia Plástica">
+      </div>
+
+      <!-- Data única: para Urgência ou Consulta Externa -->
+      <div class="field" id="campo-hist-data-unica" style="display:none;">
+        <label for="hist-data-evento">Data do evento</label>
+        <input type="date" id="hist-data-evento">
+      </div>
+
+      <!-- Intervalo de datas: para Internamento -->
+      <div class="grid g-2" id="campo-hist-data-intervalo" style="display:none; gap:16px;">
+        <div class="field">
+          <label for="hist-data-inicio">Data de início</label>
+          <input type="date" id="hist-data-inicio">
+        </div>
+        <div class="field">
+          <label for="hist-data-fim">Data de fim</label>
+          <input type="date" id="hist-data-fim">
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:20px;">
+        <label for="hist-notas">Notas / observações (opcional)</label>
+        <textarea id="hist-notas" rows="3" placeholder="Algo que ache importante a equipa saber sobre este episódio..."></textarea>
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="btn-hist-submeter">Adicionar ao histórico</button>
+    </form>
+  </div>
+
+  <div class="card card-flush" style="max-width:720px; margin-top:20px;">
+    <table>
+      <thead><tr><th>Data</th><th>Tipo</th><th>Detalhe</th></tr></thead>
+      <tbody id="linhas-historico">
+        <tr><td colspan="3" class="hint" style="padding:16px;">A carregar histórico...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ======================= SECÇÃO B: FUTUROS AGENDAMENTOS ======================= -->
+  <p class="eyebrow" style="margin-top:8px;">Secção B · Futuros agendamentos</p>
+
+  <div class="card" style="max-width:720px; margin-top:14px;">
+    <p class="eyebrow" style="margin-bottom:14px;">Registar um agendamento</p>
+    <div id="erro-agendamento" class="banner-alert" style="display:none; margin-bottom:16px;"></div>
+
+    <form id="form-agendamento" onsubmit="submeterAgendamento(event)">
+
+      <div class="field">
+        <label for="ag-data-hora">Data e hora da consulta</label>
+        <input type="datetime-local" id="ag-data-hora" required>
+      </div>
+
+      <div class="field">
+        <label for="ag-especialidade">Especialidade</label>
+        <input type="text" id="ag-especialidade" list="lista-especialidades" placeholder="ex.: Fisioterapia" required>
+      </div>
+
+      <div class="field">
+        <label for="ag-local">Local / Hospital</label>
+        <input type="text" id="ag-local" placeholder="ex.: ULS São José — Consulta Externa" required>
+      </div>
+
+      <div class="field" style="margin-bottom:20px;">
+        <label for="ag-notas">Notas / lembretes (opcional)</label>
+        <textarea id="ag-notas" rows="2" placeholder="ex.: Levar exames anteriores"></textarea>
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="btn-ag-submeter">Registar agendamento</button>
+    </form>
+  </div>
+
+  <div class="card card-flush" style="max-width:720px; margin-top:20px;">
+    <table>
+      <thead><tr><th>Data e hora</th><th>Especialidade</th><th>Local</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="linhas-agendamentos">
+        <tr><td colspan="5" class="hint" style="padding:16px;">A carregar agendamentos...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Lista de especialidades comuns, partilhada pelos dois formulários -->
+  <datalist id="lista-especialidades">
+    <option value="Cirurgia Plástica">
+    <option value="Enfermagem">
+    <option value="Fisioterapia">
+    <option value="Terapia Ocupacional">
+    <option value="Psicologia">
+    <option value="Nutrição">
+    <option value="Medicina Geral e Familiar">
+    <option value="Ortopedia">
+    <option value="Outra">
+  </datalist>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  /* =========================================================================
+     ESTRUTURA DE DADOS ESPERADA PELA BASE DE DADOS (Supabase / FHIR-friendly)
+     -------------------------------------------------------------------------
+     Tabela "historico_clinico" (uma linha por evento):
+       {
+         id: uuid,                                  // gerado pela BD
+         doente_id: uuid,                            // FK -> doentes.id
+         tipo_evento: "urgencia" | "consulta" | "internamento",
+         especialidade: string | null,               // obrigatório se "consulta"
+         data_evento: "YYYY-MM-DD" | null,            // usado em urgencia/consulta
+         data_inicio: "YYYY-MM-DD" | null,            // usado em internamento
+         data_fim: "YYYY-MM-DD" | null,               // usado em internamento
+         notas: string | null,
+         criado_em: timestamptz                      // default now(), gerado pela BD
+       }
+
+     Tabela "agendamentos" (uma linha por marcação futura):
+       {
+         id: uuid,
+         doente_id: uuid,
+         data_hora: timestamptz,                      // ISO 8601 (input datetime-local)
+         especialidade: string,
+         local: string,
+         notas: string | null,
+         estado: "agendado" | "concluido" | "cancelado", // default "agendado"
+         criado_em: timestamptz
+       }
+
+     Métodos esperados em lumiApi (a acrescentar em supabase-client.js, seguindo
+     o mesmo padrão de lumiApi.listarMetas / lumiApi.adicionarMeta já existentes):
+       lumiApi.listarHistoricoClinico(doenteId)          -> Promise<linha[]>
+       lumiApi.adicionarHistoricoClinico(doenteId, dados) -> Promise<linha>
+       lumiApi.removerHistoricoClinico(id)                -> Promise<void>
+       lumiApi.listarAgendamentos(doenteId)               -> Promise<linha[]>
+       lumiApi.registarAgendamento(doenteId, dados)       -> Promise<linha>
+       lumiApi.cancelarAgendamento(id)                    -> Promise<void>
+  ========================================================================= */
+
+  const ROTULOS_TIPO_EVENTO = {
+    urgencia: "Serviço de Urgência",
+    consulta: "Consulta Externa",
+    internamento: "Internamento"
+  };
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO.slice(0, 10) + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function formatarDataHora(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO);
+    return d.toLocaleString("pt-PT", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function mostrarErro(campoId, mensagem){
+    const el = document.getElementById(campoId);
+    el.textContent = "⚠️ " + mensagem;
+    el.style.display = "flex";
+  }
+  function esconderErro(campoId){
+    document.getElementById(campoId).style.display = "none";
+  }
+
+  /* ------------------------- SECÇÃO A: HISTÓRICO ------------------------- */
+
+  // Mostra/esconde os campos de data e de especialidade consoante o tipo de evento escolhido
+  function alternarCamposHistorico(){
+    const tipo = document.getElementById('hist-tipo').value;
+
+    document.getElementById('campo-hist-especialidade').style.display = (tipo === 'consulta') ? '' : 'none';
+    document.getElementById('campo-hist-data-unica').style.display = (tipo === 'urgencia' || tipo === 'consulta') ? '' : 'none';
+    document.getElementById('campo-hist-data-intervalo').style.display = (tipo === 'internamento') ? '' : 'none';
+  }
+
+  // Valida os campos consoante o tipo de evento; devolve o payload pronto ou null se inválido
+  function validarEConstruirHistorico(){
+    const tipo = document.getElementById('hist-tipo').value;
+    const especialidade = document.getElementById('hist-especialidade').value.trim();
+    const dataEvento = document.getElementById('hist-data-evento').value;
+    const dataInicio = document.getElementById('hist-data-inicio').value;
+    const dataFim = document.getElementById('hist-data-fim').value;
+    const notas = document.getElementById('hist-notas').value.trim();
+
+    if (!tipo) {
+      mostrarErro('erro-historico', "Escolha o tipo de evento.");
+      return null;
+    }
+    if (tipo === 'consulta' && !especialidade) {
+      mostrarErro('erro-historico', "Indique a especialidade da consulta.");
+      return null;
+    }
+    if ((tipo === 'urgencia' || tipo === 'consulta') && !dataEvento) {
+      mostrarErro('erro-historico', "Indique a data do evento.");
+      return null;
+    }
+    if (tipo === 'internamento') {
+      if (!dataInicio || !dataFim) {
+        mostrarErro('erro-historico', "Indique a data de início e a data de fim do internamento.");
+        return null;
+      }
+      if (dataFim < dataInicio) {
+        mostrarErro('erro-historico', "A data de fim não pode ser anterior à data de início.");
+        return null;
+      }
+    }
+
+    esconderErro('erro-historico');
+
+    // JSON limpo, pronto a enviar para a base de dados
+    // (doente_id não vai aqui — lumiApi.adicionarHistoricoClinico(doenteId, evento) acrescenta-o)
+    return {
+      tipo_evento: tipo,
+      especialidade: tipo === 'consulta' ? especialidade : null,
+      data_evento: (tipo === 'urgencia' || tipo === 'consulta') ? dataEvento : null,
+      data_inicio: tipo === 'internamento' ? dataInicio : null,
+      data_fim: tipo === 'internamento' ? dataFim : null,
+      notas: notas || null
+    };
+  }
+
+  async function submeterHistorico(ev){
+    ev.preventDefault();
+    const payload = validarEConstruirHistorico();
+    if (!payload) return;
+
+    const btn = document.getElementById('btn-hist-submeter');
+    btn.disabled = true; btn.textContent = "A guardar...";
+
+    try {
+      await lumiApi.adicionarHistoricoClinico(DOENTE_ID, payload);
+      document.getElementById('form-historico').reset();
+      alternarCamposHistorico();
+      await carregarHistorico();
+    } catch (e) {
+      mostrarErro('erro-historico', "Não foi possível guardar: " + (e.message || e));
+    } finally {
+      btn.disabled = false; btn.textContent = "Adicionar ao histórico";
+    }
+  }
+
+  function descreverEventoHistorico(r){
+    if (r.tipo_evento === 'internamento') {
+      return `${formatarData(r.data_inicio)} — ${formatarData(r.data_fim)}`;
+    }
+    return r.especialidade ? r.especialidade : (r.notas || "—");
+  }
+
+  async function removerEventoHistorico(id){
+    if (!confirm("Remover este evento do histórico?")) return;
+    try {
+      await lumiApi.removerHistoricoClinico(id);
+      await carregarHistorico();
+    } catch (e) {
+      alert("Não foi possível remover: " + (e.message || e));
+    }
+  }
+
+  async function carregarHistorico(){
+    const tbody = document.getElementById('linhas-historico');
+    try {
+      const linhas = await lumiApi.listarHistoricoClinico(DOENTE_ID);
+      if (!linhas.length) {
+        tbody.innerHTML = `<tr><td colspan="3" class="hint" style="padding:16px;">Ainda não adicionou nenhum evento ao histórico.</td></tr>`;
+        return;
+      }
+      const ordenadas = linhas.slice().sort((a, b) => {
+        const dataA = a.data_inicio || a.data_evento || "";
+        const dataB = b.data_inicio || b.data_evento || "";
+        return dataB.localeCompare(dataA);
+      });
+      tbody.innerHTML = ordenadas.map(r => `
+        <tr>
+          <td class="mono">${r.tipo_evento === 'internamento' ? formatarData(r.data_inicio) : formatarData(r.data_evento)}</td>
+          <td><span class="pill pill-star">${ROTULOS_TIPO_EVENTO[r.tipo_evento] || r.tipo_evento}</span></td>
+          <td>${descreverEventoHistorico(r)}
+            <a href="#" class="hint" style="margin-left:10px;" onclick="event.preventDefault(); removerEventoHistorico('${r.id}')">remover</a>
+          </td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="3" class="hint" style="padding:16px;">Não foi possível carregar o histórico.</td></tr>`;
+    }
+  }
+
+  /* ---------------------- SECÇÃO B: AGENDAMENTOS -------------------------- */
+
+  function validarEConstruirAgendamento(){
+    const dataHora = document.getElementById('ag-data-hora').value;
+    const especialidade = document.getElementById('ag-especialidade').value.trim();
+    const local = document.getElementById('ag-local').value.trim();
+    const notas = document.getElementById('ag-notas').value.trim();
+
+    if (!dataHora) {
+      mostrarErro('erro-agendamento', "Indique a data e hora da consulta.");
+      return null;
+    }
+    if (!especialidade) {
+      mostrarErro('erro-agendamento', "Indique a especialidade.");
+      return null;
+    }
+    if (!local) {
+      mostrarErro('erro-agendamento', "Indique o local ou hospital.");
+      return null;
+    }
+
+    esconderErro('erro-agendamento');
+
+    // JSON limpo, pronto a enviar para a base de dados
+    // (doente_id não vai aqui — lumiApi.registarAgendamento(doenteId, agendamento) acrescenta-o)
+    return {
+      data_hora: new Date(dataHora).toISOString(),
+      especialidade,
+      local,
+      notas: notas || null,
+      estado: "agendado"
+    };
+  }
+
+  async function submeterAgendamento(ev){
+    ev.preventDefault();
+    const payload = validarEConstruirAgendamento();
+    if (!payload) return;
+
+    const btn = document.getElementById('btn-ag-submeter');
+    btn.disabled = true; btn.textContent = "A guardar...";
+
+    try {
+      await lumiApi.registarAgendamento(DOENTE_ID, payload);
+      document.getElementById('form-agendamento').reset();
+      await carregarAgendamentos();
+    } catch (e) {
+      mostrarErro('erro-agendamento', "Não foi possível guardar: " + (e.message || e));
+    } finally {
+      btn.disabled = false; btn.textContent = "Registar agendamento";
+    }
+  }
+
+  function pillEstadoAgendamento(estado){
+    if (estado === 'cancelado') return `<span class="pill pill-alert">Cancelado</span>`;
+    if (estado === 'concluido') return `<span class="pill pill-ok">Concluído</span>`;
+    return `<span class="pill pill-pending">Agendado</span>`;
+  }
+
+  async function cancelarAgendamento(id){
+    if (!confirm("Cancelar este agendamento?")) return;
+    try {
+      await lumiApi.cancelarAgendamento(id);
+      await carregarAgendamentos();
+    } catch (e) {
+      alert("Não foi possível cancelar: " + (e.message || e));
+    }
+  }
+
+  async function carregarAgendamentos(){
+    const tbody = document.getElementById('linhas-agendamentos');
+    try {
+      const linhas = await lumiApi.listarAgendamentos(DOENTE_ID);
+      if (!linhas.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="hint" style="padding:16px;">Ainda não tem agendamentos registados.</td></tr>`;
+        return;
+      }
+      const ordenadas = linhas.slice().sort((a, b) => a.data_hora.localeCompare(b.data_hora));
+      tbody.innerHTML = ordenadas.map(r => `
+        <tr>
+          <td class="mono">${formatarDataHora(r.data_hora)}</td>
+          <td>${r.especialidade}</td>
+          <td>${r.local}</td>
+          <td>${pillEstadoAgendamento(r.estado)}</td>
+          <td>${r.estado === 'agendado' ? `<a href="#" class="hint" onclick="event.preventDefault(); cancelarAgendamento('${r.id}')">cancelar</a>` : ''}</td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="5" class="hint" style="padding:16px;">Não foi possível carregar os agendamentos.</td></tr>`;
+    }
+  }
+
+  /* ------------------------------- SESSÃO -------------------------------- */
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarHistorico();
+    carregarAgendamentos();
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A vossa opinião — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  /* Sem barra de navegação, como no questionário: quem está a meio de
+     responder não deve ter um menu a convidá-lo a sair. */
+  .pergunta{ border-bottom:1px solid var(--line); padding:22px 0; }
+  .pergunta:last-of-type{ border-bottom:none; }
+  .pergunta .num{ font-family:var(--f-mono); font-size:.72rem; color:var(--star-deep); }
+  .pergunta h3{ font-family:var(--f-body); font-size:1rem; font-weight:600; margin:4px 0 14px; line-height:1.4; }
+  .pergunta .chip-group{ margin:0; }
+  .escala-0-10{ display:flex; flex-wrap:wrap; gap:6px; }
+  .em-falta{ border-left:3px solid var(--alert); padding-left:14px; margin-left:-17px; }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="dashboard.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="dashboard.html">Sair sem responder</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap-narrow" style="padding:44px 32px 90px;">
+
+  <div id="estado-carregamento">
+    <p class="hint">A carregar...</p>
+  </div>
+
+  <div id="conteudo" style="display:none;">
+    <p class="eyebrow" id="etiqueta">A sua opinião</p>
+    <h1 style="font-size:1.9rem;" id="titulo">Como correu a sua consulta?</h1>
+    <p style="color:var(--ink-soft);" id="introducao"></p>
+
+    <div class="banner-info" style="margin:22px 0;">
+      <div>
+        Responder é <strong>voluntário</strong> e as respostas não afetam em nada o
+        seu acompanhamento. Servem para a equipa perceber o que está a resultar e
+        o que precisa de mudar.
+      </div>
+    </div>
+
+    <div id="erro" class="banner-alert" style="display:none; margin:20px 0;"></div>
+
+    <form id="form-satisfacao" onsubmit="enviar(event)">
+      <div class="card" id="perguntas" style="padding:8px 26px;"></div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:26px;">
+        <button type="submit" class="btn btn-primary" id="btn-enviar">Enviar as minhas respostas</button>
+        <button type="button" class="btn btn-ghost" onclick="recusar()">Não quero responder</button>
+      </div>
+      <p class="hint" style="margin-top:12px;">
+        Se preferir não responder, carregue em "Não quero responder" — não voltamos
+        a perguntar sobre esta consulta.
+      </p>
+    </form>
+  </div>
+
+  <div id="fim" class="card" style="display:none; margin-top:10px;">
+    <h2 id="fim-titulo" style="font-size:1.4rem;">Obrigado</h2>
+    <p id="fim-texto" style="color:var(--ink-soft);"></p>
+    <a href="dashboard.html" class="btn btn-primary">Voltar ao início</a>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let PEDIDO = null;
+
+  /* Os dois questionários do documento da equipa. Ficam aqui como dados e
+     não como HTML: as perguntas vão mudar com a experiência de uso, e assim
+     muda-se uma linha em vez de mexer na estrutura da página.
+     "global" marca a pergunta 0-10 que também fica em coluna própria, por
+     ser a que se acompanha ao longo do tempo. */
+  const QUESTIONARIOS = {
+    breve: {
+      etiqueta: "Depois da consulta",
+      titulo: "Como correu a sua consulta?",
+      introducao: "São sete perguntas e demora cerca de um minuto.",
+      perguntas: [
+        { id:"facilidade",  texto:"Foi fácil participar nesta teleconsulta?", opcoes:["Muito fácil","Fácil","Difícil","Muito difícil"] },
+        { id:"ouvido",      texto:"Sentiu que foi ouvido(a) pela equipa?", opcoes:["Sempre","Na maioria das vezes","Poucas vezes","Nunca"] },
+        { id:"clareza",     texto:"A explicação foi clara e compreensível?", opcoes:["Muito clara","Clara","Pouco clara","Nada clara"] },
+        { id:"capacidade",  texto:"Após esta consulta, sente-se mais capaz de cuidar da sua situação?", opcoes:["Sim","Em parte","Não"] },
+        { id:"seguranca",   texto:"Após esta consulta, sente-se mais seguro(a)?", opcoes:["Sim","Um pouco","Não"] },
+        { id:"global",      texto:"Satisfação global com esta consulta", tipo:"escala", global:true,
+                            ajuda:"0 é muito insatisfeito, 10 é muito satisfeito." },
+        { id:"sugestao",    texto:"Quer deixar alguma sugestão sobre esta consulta?", tipo:"texto", opcional:true,
+                            marcador:"Escreva aqui, se quiser" }
+      ]
+    },
+    final: {
+      etiqueta: "Fim do acompanhamento",
+      titulo: "A sua opinião sobre o acompanhamento",
+      introducao: "Terminou o seu seguimento em telessaúde. Demora cerca de três minutos.",
+      perguntas: [
+        { id:"global-acompanhamento", texto:"Como avalia globalmente o acompanhamento que lhe foi prestado em telessaúde?", opcoes:["Muito bom","Bom","Razoável","Fraco"] },
+        { id:"acompanhado",   texto:"Sentiu-se acompanhado(a) ao longo do seguimento?", opcoes:["Sempre","Na maioria das vezes","Poucas vezes","Nunca"] },
+        { id:"recomendaria",  texto:"Recomendaria este acompanhamento a outra pessoa com situação semelhante?", opcoes:["Sim","Não"] },
+        { id:"evolucao",      texto:"Considera que a sua situação, no geral, ao longo do acompanhamento:", opcoes:["Melhorou muito","Melhorou","Manteve-se igual","Piorou"] },
+        { id:"orient-dor",    texto:"Como avalia as orientações recebidas para o controlo da dor?", opcoes:["Muito boas","Boas","Razoáveis","Fracas"] },
+        { id:"orient-prurido",texto:"Como avalia as orientações recebidas para o controlo do prurido (comichão)?", opcoes:["Muito boas","Boas","Razoáveis","Fracas"] },
+        { id:"orient-mov",    texto:"Como avalia as orientações recebidas para melhorar os movimentos e a funcionalidade?", opcoes:["Muito boas","Boas","Razoáveis","Fracas"] },
+        { id:"adesao",        texto:"Ao longo do acompanhamento, conseguiu seguir o plano de tratamento?", opcoes:["Sempre","Na maioria das vezes","Poucas vezes"] },
+        { id:"deslocacoes",   texto:"Este acompanhamento evitou deslocações desnecessárias?", opcoes:["Sim","Em parte","Não"] },
+        { id:"vida-diaria",   texto:"Este acompanhamento facilitou a sua vida diária?", opcoes:["Muito","Um pouco","Não"],
+                              extra:"Dê-nos um exemplo, se quiser" },
+        { id:"global",        texto:"Satisfação global com o acompanhamento em telessaúde", tipo:"escala", global:true,
+                              ajuda:"0 é muito insatisfeito, 10 é muito satisfeito." },
+        { id:"ajudou",        texto:"O que mais o ajudou neste acompanhamento?", tipo:"texto", opcional:true, marcador:"Escreva aqui, se quiser" },
+        { id:"sugestao",      texto:"Tem alguma sugestão para melhorar este acompanhamento?", tipo:"texto", opcional:true, marcador:"Escreva aqui, se quiser" }
+      ]
+    }
+  };
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function desenhar(questionario){
+    document.getElementById("etiqueta").textContent = questionario.etiqueta;
+    document.getElementById("titulo").textContent = questionario.titulo;
+    document.getElementById("introducao").textContent = questionario.introducao;
+
+    document.getElementById("perguntas").innerHTML = questionario.perguntas.map(function(p, i){
+      let corpo = "";
+      if (p.tipo === "escala") {
+        let escala = "";
+        for (let n = 0; n <= 10; n++) {
+          escala += '<label class="scale-opt"><input type="radio" name="' + p.id + '" value="' + n + '"><span>' + n + "</span></label>";
+        }
+        corpo = '<div class="escala-0-10">' + escala + "</div>";
+      } else if (p.tipo === "texto") {
+        corpo = '<textarea id="txt-' + p.id + '" rows="3" placeholder="' + esc(p.marcador || "") + '"></textarea>';
+      } else {
+        corpo = '<div class="chip-group">' + p.opcoes.map(function(o){
+          return '<label class="chip"><input type="radio" name="' + p.id + '" value="' + esc(o) + '"><span>' + esc(o) + "</span></label>";
+        }).join("") + "</div>";
+        if (p.extra) {
+          corpo += '<textarea id="txt-' + p.id + '" rows="2" style="margin-top:10px;" placeholder="' + esc(p.extra) + '"></textarea>';
+        }
+      }
+      const ajuda = p.ajuda ? '<p class="scale-note" style="margin:0 0 10px;">' + esc(p.ajuda) + "</p>" : "";
+      const opcional = p.opcional ? ' <span class="hint" style="font-weight:400;">(opcional)</span>' : "";
+      return '<div class="pergunta" id="p-' + p.id + '">'
+           +   '<span class="num">' + (i + 1) + " de " + questionario.perguntas.length + "</span>"
+           +   "<h3>" + esc(p.texto) + opcional + "</h3>"
+           +   ajuda + corpo
+           + "</div>";
+    }).join("");
+  }
+
+  function recolher(questionario){
+    const respostas = {};
+    const faltam = [];
+    questionario.perguntas.forEach(function(p){
+      document.getElementById("p-" + p.id).classList.remove("em-falta");
+      if (p.tipo === "texto") {
+        const v = document.getElementById("txt-" + p.id).value.trim();
+        if (v) respostas[p.id] = { pergunta: p.texto, resposta: v };
+        return;
+      }
+      const marcado = document.querySelector('input[name="' + p.id + '"]:checked');
+      const extra = document.getElementById("txt-" + p.id);
+      if (!marcado) {
+        if (!p.opcional) faltam.push(p);
+        return;
+      }
+      respostas[p.id] = { pergunta: p.texto, resposta: marcado.value };
+      if (extra && extra.value.trim()) respostas[p.id].detalhe = extra.value.trim();
+    });
+    return { respostas: respostas, faltam: faltam };
+  }
+
+  async function enviar(ev){
+    ev.preventDefault();
+    const q = QUESTIONARIOS[PEDIDO.tipo];
+    const erro = document.getElementById("erro");
+    const btn = document.getElementById("btn-enviar");
+    erro.style.display = "none";
+
+    const lido = recolher(q);
+    if (lido.faltam.length) {
+      lido.faltam.forEach(function(p){ document.getElementById("p-" + p.id).classList.add("em-falta"); });
+      erro.innerHTML = "⚠️ Falta responder a " + lido.faltam.length
+        + (lido.faltam.length === 1 ? " pergunta" : " perguntas") + ", assinaladas a vermelho.";
+      erro.style.display = "flex";
+      document.getElementById("p-" + lido.faltam[0].id).scrollIntoView({ behavior:"smooth", block:"center" });
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = "A enviar...";
+    try {
+      const global = lido.respostas.global ? lido.respostas.global.resposta : null;
+      await lumiApi.responderSatisfacao(PEDIDO.id, lido.respostas, global);
+      terminar("Obrigado pela sua resposta.",
+        "A equipa vai ter em conta o que escreveu. Não precisa de fazer mais nada.");
+    } catch (e) {
+      console.error("Erro ao enviar a avaliação:", e);
+      erro.innerHTML = "⚠️ Não foi possível enviar: " + esc(e.message || e)
+        + ". As suas respostas continuam aqui — pode tentar outra vez.";
+      erro.style.display = "flex";
+      btn.disabled = false; btn.textContent = "Enviar as minhas respostas";
+    }
+  }
+
+  async function recusar(){
+    if (!confirm("Não voltamos a perguntar sobre esta consulta. Confirma?")) return;
+    try {
+      await lumiApi.recusarSatisfacao(PEDIDO.id);
+      terminar("Sem problema.",
+        "Não voltamos a perguntar sobre esta consulta. O seu acompanhamento continua exatamente igual.");
+    } catch (e) {
+      console.error("Erro ao recusar:", e);
+      const erro = document.getElementById("erro");
+      erro.innerHTML = "⚠️ Não foi possível registar: " + esc(e.message || e);
+      erro.style.display = "flex";
+    }
+  }
+
+  function terminar(titulo, texto){
+    document.getElementById("conteudo").style.display = "none";
+    document.getElementById("fim-titulo").textContent = titulo;
+    document.getElementById("fim-texto").textContent = texto;
+    document.getElementById("fim").style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function mostrarAviso(titulo, texto){
+    document.getElementById("estado-carregamento").style.display = "none";
+    document.getElementById("fim-titulo").textContent = titulo;
+    document.getElementById("fim-texto").textContent = texto;
+    document.getElementById("fim").style.display = "block";
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      // guarda o destino para voltar aqui depois de iniciar sessão
+      sessionStorage.setItem("lumi-destino", window.location.href);
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("pedido");
+
+    try {
+      PEDIDO = id
+        ? await lumiApi.obterPedidoSatisfacao(id)
+        : await lumiApi.pedidoSatisfacaoPendente(sessao.perfil.doente_id);
+    } catch (e) {
+      console.error("Erro ao carregar o pedido:", e);
+    }
+
+    if (!PEDIDO) {
+      mostrarAviso("Não há nenhum questionário à sua espera",
+        "Quando a equipa lhe pedir uma avaliação, ela aparece-lhe aqui e por email.");
+      return;
+    }
+    if (PEDIDO.estado === "respondida") {
+      mostrarAviso("Já respondeu a este questionário", "Obrigado. Não precisa de responder outra vez.");
+      return;
+    }
+    if (PEDIDO.estado === "recusada") {
+      mostrarAviso("Este questionário foi dispensado",
+        "Escolheu não responder a este. Não voltamos a perguntar sobre esta consulta.");
+      return;
+    }
+
+    desenhar(QUESTIONARIOS[PEDIDO.tipo] || QUESTIONARIOS.breve);
+    document.getElementById("estado-carregamento").style.display = "none";
+    document.getElementById("conteudo").style.display = "block";
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metas — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html" class="active">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+  <p class="eyebrow">A sua jornada de recuperação</p>
+  <h1 style="font-size:2rem;">As metas</h1>
+  <p style="color:var(--ink-soft); max-width:64ch;">
+    Estas metas foram definidas com a equipa no momento da alta — mas a jornada é da criança.
+    Podem marcar uma meta como alcançada a qualquer momento, juntar uma foto para guardar a
+    memória, ou acrescentar uma meta que só para ela faz sentido: voltar à bola, ao mar, à
+    bicicleta, à festa de anos.
+  </p>
+
+  <div id="mascote-metas" style="margin:24px 0 8px;"></div>
+
+  <div class="banner-info" style="margin:20px 0 8px;">
+    ℹ️ Sempre que atinge uma meta, ganha um crachá (badge) na secção "As minhas conquistas", mais abaixo. As metas assinaladas com ★ foram marcadas como importantes para si.
+  </div>
+
+  <div class="banner-info" style="margin:0 0 8px; display:none;" id="aviso-atualizacoes"></div>
+
+  <!-- ======================= LISTA DE METAS ======================= -->
+  <div id="lista-metas" style="margin-top:28px; max-width:720px;"></div>
+
+  <!-- ======================= ADICIONAR META PESSOAL ======================= -->
+  <div class="card" style="max-width:720px; margin-top:8px; border-style:dashed;">
+    <p class="eyebrow" style="margin-bottom:14px;">Adicionar uma meta minha</p>
+    <form onsubmit="submeterNovaMeta(event)">
+      <div class="field">
+        <label for="nova-meta">O que gostaria de voltar a conseguir fazer?</label>
+        <input type="text" id="nova-meta" placeholder="ex.: Voltar a jogar à bola com os meus filhos" required>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label class="star-toggle">
+          <input type="checkbox" id="nova-meta-importante" checked>
+          <span>★ Isto é importante para mim</span>
+        </label>
+      </div>
+      <button class="btn btn-primary" type="submit">Adicionar meta</button>
+    </form>
+  </div>
+
+  <!-- ======================= BADGES ======================= -->
+  <hr class="divider" style="max-width:720px; margin-left:0;">
+  <p class="eyebrow">As minhas conquistas</p>
+  <p style="color:var(--ink-soft); max-width:64ch; margin-top:-6px;">Cada crachá representa um tipo de meta atingida ao longo da recuperação.</p>
+  <div id="badge-shelf" class="badge-shelf" style="max-width:900px;"></div>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios. As fotos submetidas ficam apenas nesta sessão do browser.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+  const arquivosReais = {}; // guarda o File real (não a pré-visualização) por meta.id, até ser gravado
+
+  /** Vai buscar as metas reais à base de dados e "empresta" o array a
+   *  DEMO_PATIENT.milestones, para reaproveitar sem alterações as funções
+   *  de desenho já existentes em main.js (renderMilestonesDoente, renderBadgeShelf). */
+  async function carregarJornada(){
+    const linhas = await lumiApi.listarMetas(DOENTE_ID);
+    DEMO_PATIENT.milestones = linhas.map(r => ({
+      id: r.id, label: r.label, tipo: r.tipo, categoria: r.categoria,
+      origem: r.origem, importante: r.importante, estado: r.estado,
+      data: r.data_alvo, foto: r.foto_url
+    }));
+    renderMilestonesDoente('lista-metas');
+    renderBadgeShelf('badge-shelf');
+    await carregarAtualizacoes();
+  }
+
+  /** Desenha, dentro de cada cartão de meta, o fio de atualizações e a
+   *  caixa para o doente escrever como está a correr. */
+  async function carregarAtualizacoes(){
+    const aviso = document.getElementById('aviso-atualizacoes');
+    let porMeta;
+    try {
+      porMeta = agruparAtualizacoesPorMeta(await lumiApi.listarAtualizacoesMetas(DOENTE_ID));
+      aviso.style.display = 'none';
+    } catch (e) {
+      console.error("Erro ao carregar as atualizações das metas:", e);
+      aviso.textContent = "⚠️ Não foi possível carregar as atualizações das metas: " + (e.message || e);
+      aviso.style.display = 'flex';
+      return;
+    }
+    DEMO_PATIENT.milestones.forEach(m => {
+      renderAtualizacoesMeta(m.id, porMeta[m.id], {
+        titulo: "Como está a correr",
+        vazio: "Ainda não escreveu nada sobre esta meta. Conte-nos como vai — a equipa vê o que escrever aqui.",
+        placeholder: "ex.: Esta semana já consegui vestir-me sozinha, mas ainda custa levantar o braço.",
+        botao: "Publicar",
+        aoEnviar: "enviarAtualizacaoDoente"
+      });
+    });
+  }
+
+  /** Grava a atualização escrita pelo doente numa meta e recarrega o fio. */
+  async function enviarAtualizacaoDoente(metaId){
+    const campo = document.getElementById(`update-texto-${metaId}`);
+    const estado = document.getElementById(`update-estado-${metaId}`);
+    const botao = document.getElementById(`update-btn-${metaId}`);
+    const texto = campo.value.trim();
+    if (!texto) { estado.textContent = "Escreva alguma coisa antes de publicar."; campo.focus(); return; }
+
+    botao.disabled = true;
+    estado.textContent = "A publicar...";
+    try {
+      await lumiApi.registarAtualizacaoMeta(metaId, DOENTE_ID, texto);
+      await carregarAtualizacoes();
+    } catch (e) {
+      console.error("Erro ao publicar a atualização:", e);
+      estado.textContent = "Não foi possível publicar: " + (e.message || e);
+      botao.disabled = false;
+    }
+  }
+
+  /* substitui a versão de demonstração (main.js): guarda o ficheiro real
+     para upload, mantendo a mesma pré-visualização imediata */
+  function prepararFoto(id, input){
+    const file = input.files && input.files[0];
+    if (!file) return;
+    arquivosReais[id] = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const prev = document.getElementById(`foto-preview-${id}`);
+      if (prev) prev.innerHTML = `<div class="milestone-photo"><img src="${e.target.result}" alt="Pré-visualização da foto"></div>`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* substitui a versão de demonstração: grava a sério na base de dados,
+     incluindo o envio da foto para o Storage, se houver uma */
+  async function marcarConquistada(id){
+    const botao = document.querySelector(`#milestone-${id} button`);
+    if (botao) { botao.disabled = true; botao.textContent = "A guardar..."; }
+    try {
+      await lumiApi.marcarMetaConquistada(id, arquivosReais[id] || null);
+      delete arquivosReais[id];
+      await carregarJornada();
+    } catch (e) {
+      alert("Não foi possível guardar: " + (e.message || e));
+      if (botao) { botao.disabled = false; botao.textContent = "Marcar como atingida"; }
+    }
+  }
+
+  /* substitui a versão de demonstração: cria a meta a sério */
+  async function adicionarMetaPessoal(titulo, importante){
+    if (!titulo || !titulo.trim()) return;
+    await lumiApi.adicionarMeta(DOENTE_ID, {
+      label: titulo.trim(), tipo: "Pessoal", categoria: "pessoal",
+      origem: "doente", importante: !!importante, estado: "pending", data_alvo: "meta pessoal"
+    });
+    await carregarJornada();
+  }
+
+  function submeterNovaMeta(ev){
+    ev.preventDefault();
+    const input = document.getElementById('nova-meta');
+    const importante = document.getElementById('nova-meta-importante').checked;
+    adicionarMetaPessoal(input.value, importante).then(() => { input.value = ''; });
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarJornada();
+
+    try {
+      const doente = await lumiApi.obterDoente(DOENTE_ID);
+      renderMascote("mascote-metas", idadeEmAnos(doente.data_nascimento),
+        "<strong>Cada estrela é uma coisa que conseguiste.</strong> Quando chegares a uma, " +
+        "marca-a aqui — e tira uma fotografia, se quiseres guardar o momento.",
+        { prefixo: "../" });
+    } catch (e) {
+      console.error("Não foi possível mostrar a Lumi:", e);
+    }
+  })();
+</script>
+</body>
+</html>

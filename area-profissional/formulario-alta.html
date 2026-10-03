@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulário de Alta Hospitalar — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link class="active">📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+    <div class="print-cabecalho" id="print-cabecalho"></div>
+
+    <a href="dashboard.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à lista de crianças</a>
+
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <p class="eyebrow">Avaliação clínica</p>
+        <h1 style="font-size:1.9rem;" id="titulo-formulario">Formulário de Alta Hospitalar — Avaliação Inicial Pré-Alta</h1>
+        <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+          Preenchido pela equipa antes da alta hospitalar. Regista a avaliação clínica e
+          funcional inicial do doente e serve de base de comparação para as avaliações
+          seguintes (PROMs) ao longo do seguimento pós-alta.
+        </p>
+      </div>
+    </div>
+
+    <div class="banner-info" style="margin:20px 0 8px;">
+      ℹ️ Esta avaliação deve ser preenchida antes da alta hospitalar por um profissional da equipa. Ao guardar, os dados desta secção 1 (características da queimadura) dão origem automaticamente ao contexto clínico e ao plano de seguimento (CarePlan) do doente na plataforma.
+    </div>
+
+    <div class="grid" style="grid-template-columns:220px 1fr; gap:28px; align-items:start; margin-top:24px;">
+
+      <!-- ---------- índice fixo ---------- -->
+      <nav class="form-toc">
+        <a href="#queimadura"><span class="n">1</span> Queimadura</a>
+        <a href="#cicatriz"><span class="n">2</span> Cicatriz</a>
+        <a href="#dor"><span class="n">3</span> Dor</a>
+        <a href="#prurido"><span class="n">4</span> Prurido</a>
+        <a href="#amplitude"><span class="n">5</span> Amplitude articular</a>
+        <a href="#funcionalidade"><span class="n">6</span> Funcionalidade</a>
+        <a href="#autocuidado"><span class="n">7</span> Informação para Autocuidado</a>
+        <a href="#mapa"><span class="n">8</span> Outcomes Centrados no Doente</a>
+      </nav>
+
+      <!-- ---------- formulário ---------- -->
+      <form id="form-alta" onsubmit="submeterFormulario(event)">
+
+        <div class="card field" style="margin-bottom:24px;">
+          <div class="form-row">
+            <div>
+              <label for="data-alta">Data de Alta</label>
+              <input type="text" id="data-alta" placeholder="dd/mm/aaaa">
+            </div>
+            <div>
+              <label for="contacto">Contacto direto</label>
+              <input type="text" id="contacto" placeholder="Nome e telefone de contacto">
+              <div class="chip-group" style="margin-top:8px;">
+                <label class="chip"><input type="radio" name="contacto-tipo" checked><span>Próprio</span></label>
+                <label class="chip"><input type="radio" name="contacto-tipo"><span>Familiar</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:16px;">
+            <div>
+              <label for="doente-email">Email</label>
+              <input type="email" id="doente-email" placeholder="nome@exemplo.pt">
+            </div>
+            <div>
+              <label>Género</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="genero"><span>Feminino</span></label>
+                <label class="chip"><input type="radio" name="genero"><span>Masculino</span></label>
+                <label class="chip"><input type="radio" name="genero"><span>Outro</span></label>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px;">
+            <label for="gestor-caso">Gestor de caso</label>
+            <select id="gestor-caso">
+              <option value="">A carregar profissionais...</option>
+            </select>
+            <p class="hint" style="margin:6px 0 0;">Profissional responsável por acompanhar este doente ao longo do seguimento.</p>
+          </div>
+        </div>
+
+        <!-- ======================= 1. QUEIMADURA ======================= -->
+        <div class="form-indice">
+          <div class="linha">
+            <span class="rotulo">Quadros</span>
+            <span id="indice-quadros" style="display:contents;"></span>
+            <span class="atual" id="indice-atual"></span>
+            <span class="acoes">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="abrirTodos()">Abrir todos</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="fecharTodos()">Fechar todos</button>
+            </span>
+          </div>
+        </div>
+
+        <section id="queimadura" class="form-section card">
+          <div class="section-head"><span class="section-num">1</span><h2>Características da Queimadura</h2></div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label for="q-data">Data da Queimadura</label>
+              <input type="text" id="q-data" placeholder="dd/mm/aaaa">
+            </div>
+            <div class="subfield">
+              <label for="q-scq">% Superfície corporal queimada (%SCQ)</label>
+              <input type="text" id="q-scq" placeholder="ex.: 12%">
+              <p class="scale-note">Calculada por <strong>Lund-Browder</strong>, não pela regra dos nove: numa criança a cabeça vale quase o dobro e os membros inferiores bastante menos, e a proporção muda a cada ano de idade.</p>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label>Etiologia</label>
+            <div class="chip-group">
+              <label class="chip"><input type="checkbox"><span>Fogo</span></label>
+              <label class="chip"><input type="checkbox"><span>Água</span></label>
+              <label class="chip"><input type="checkbox"><span>Elétrica</span></label>
+              <label class="chip"><input type="checkbox"><span>Química</span></label>
+              <label class="chip"><input type="checkbox"><span>Contacto</span></label>
+              <label class="chip"><input type="checkbox"><span>Outra</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label>Profundidade</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="profundidade"><span>2.º grau superficial</span></label>
+              <label class="chip"><input type="radio" name="profundidade"><span>2.º grau profundo</span></label>
+              <label class="chip"><input type="radio" name="profundidade"><span>3.º grau</span></label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label>Configuração</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="configuracao"><span>Circular</span></label>
+                <label class="chip"><input type="radio" name="configuracao"><span>Não circular</span></label>
+              </div>
+            </div>
+            <div class="subfield">
+              <label>Necessidade de escarotomia</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="escarotomia"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="escarotomia" checked><span>Não</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="subfield" style="max-width:260px;">
+            <label>Necessidade de fasciotomia</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="fasciotomia"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="fasciotomia" checked><span>Não</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label>Localização anatómica — Cabeça e Pescoço</label>
+            <div class="chip-group">
+              <label class="chip"><input type="checkbox"><span>Couro cabeludo</span></label>
+              <label class="chip"><input type="checkbox"><span>Face</span></label>
+              <label class="chip"><input type="checkbox"><span>Orelha esquerda</span></label>
+              <label class="chip"><input type="checkbox"><span>Orelha direita</span></label>
+              <label class="chip"><input type="checkbox"><span>Pescoço</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label>Localização anatómica — Tronco</label>
+            <div class="chip-group">
+              <label class="chip"><input type="checkbox"><span>Tórax anterior</span></label>
+              <label class="chip"><input type="checkbox"><span>Tórax posterior</span></label>
+              <label class="chip"><input type="checkbox"><span>Abdómen</span></label>
+              <label class="chip"><input type="checkbox"><span>Dorso / lombar</span></label>
+              <label class="chip"><input type="checkbox"><span>Nádegas</span></label>
+              <label class="chip"><input type="checkbox"><span>Genitais / períneo</span></label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label>Localização anatómica — Membro Superior Esquerdo</label>
+              <div class="chip-group">
+                <label class="chip"><input type="checkbox"><span>Ombro</span></label>
+                <label class="chip"><input type="checkbox"><span>Braço</span></label>
+                <label class="chip"><input type="checkbox"><span>Cotovelo</span></label>
+                <label class="chip"><input type="checkbox"><span>Antebraço</span></label>
+                <label class="chip"><input type="checkbox"><span>Punho</span></label>
+                <label class="chip"><input type="checkbox"><span>Mão</span></label>
+              </div>
+            </div>
+            <div class="subfield">
+              <label>Localização anatómica — Membro Superior Direito</label>
+              <div class="chip-group">
+                <label class="chip"><input type="checkbox"><span>Ombro</span></label>
+                <label class="chip"><input type="checkbox"><span>Braço</span></label>
+                <label class="chip"><input type="checkbox"><span>Cotovelo</span></label>
+                <label class="chip"><input type="checkbox"><span>Antebraço</span></label>
+                <label class="chip"><input type="checkbox"><span>Punho</span></label>
+                <label class="chip"><input type="checkbox"><span>Mão</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label>Localização anatómica — Membro Inferior Esquerdo</label>
+              <div class="chip-group">
+                <label class="chip"><input type="checkbox"><span>Anca</span></label>
+                <label class="chip"><input type="checkbox"><span>Coxa</span></label>
+                <label class="chip"><input type="checkbox"><span>Joelho</span></label>
+                <label class="chip"><input type="checkbox"><span>Perna</span></label>
+                <label class="chip"><input type="checkbox"><span>Tornozelo</span></label>
+                <label class="chip"><input type="checkbox"><span>Pé</span></label>
+              </div>
+            </div>
+            <div class="subfield">
+              <label>Localização anatómica — Membro Inferior Direito</label>
+              <div class="chip-group">
+                <label class="chip"><input type="checkbox"><span>Anca</span></label>
+                <label class="chip"><input type="checkbox"><span>Coxa</span></label>
+                <label class="chip"><input type="checkbox"><span>Joelho</span></label>
+                <label class="chip"><input type="checkbox"><span>Perna</span></label>
+                <label class="chip"><input type="checkbox"><span>Tornozelo</span></label>
+                <label class="chip"><input type="checkbox"><span>Pé</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label for="zona-outra">Outra localização (não listada acima)</label>
+            <input type="text" id="zona-outra" placeholder="Descreva, se aplicável">
+          </div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label>Enxertos</label>
+              <div class="chip-group" style="margin-bottom:10px;">
+                <label class="chip"><input type="radio" name="enxertos"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="enxertos" checked><span>Não</span></label>
+              </div>
+              <input type="text" placeholder="Tipo" style="margin-bottom:8px;">
+              <input type="text" placeholder="Localização">
+            </div>
+            <div class="subfield">
+              <label>Zona dadora</label>
+              <div class="chip-group" style="margin-bottom:10px;">
+                <label class="chip"><input type="radio" name="dadora"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="dadora" checked><span>Não</span></label>
+              </div>
+              <input type="text" placeholder="Localização">
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label>Amputação</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="amputacao" onclick="alternarAmputacao()"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="amputacao" checked onclick="alternarAmputacao()"><span>Não</span></label>
+            </div>
+          </div>
+          <div id="campo-amputacao" style="display:none;">
+            <div class="subfield" style="margin-bottom:0;">
+              <label for="amputacao-detalhe">Amputação — nível, localização e data</label>
+              <textarea id="amputacao-detalhe" rows="2" placeholder="ex.: amputação transmetacárpica do 3.º dedo da mão direita, a 12/07/2026"></textarea>
+            </div>
+          </div>
+
+          <hr class="divider" style="margin:22px 0;">
+          <p class="scale-note" style="margin-bottom:14px;">
+            Dados do internamento. São os fatores que a literatura associa a maior necessidade
+            de reabilitação após a alta, e entram no cálculo da prioridade de seguimento.
+          </p>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label>Lesão inalatória</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="inalatoria"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="inalatoria" checked><span>Não</span></label>
+              </div>
+            </div>
+            <div class="subfield">
+              <label for="dias-internamento">Dias de internamento</label>
+              <input type="text" id="dias-internamento" placeholder="ex.: 24">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label for="n-cirurgias">Número de intervenções cirúrgicas</label>
+              <input type="text" id="n-cirurgias" placeholder="ex.: 3">
+            </div>
+            <div class="subfield">
+              <label for="dias-ventilacao">Dias de ventilação mecânica</label>
+              <input type="text" id="dias-ventilacao" placeholder="0 se não houve">
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label for="perda-peso">Perda de peso durante o internamento (%)</label>
+            <input type="text" id="perda-peso" placeholder="ex.: 8">
+            <p class="scale-note">Percentagem do peso à admissão. Deixe em branco se não foi medido.</p>
+          </div>
+        </section>
+
+        <!-- ======================= 2. CICATRIZ ======================= -->
+        <section id="cicatriz" class="form-section card">
+          <div class="section-head"><span class="section-num">2</span><h2>Características da Cicatriz</h2></div>
+          <p class="scale-note">Escala POSAS (Patient and Observer Scar Assessment Scale) — preenchida nas duas partes: pela equipa (Observador) e pelo doente.</p>
+
+          <!-- POSAS Observador -->
+          <div id="escala-posas-obs" class="escala-painel">
+            <p class="hint" style="font-weight:600; color:var(--blue-deep); margin:18px 0 6px;">POSAS — Observador</p>
+            <p class="scale-note">Cada item pontuado de 1 (pele normal) a 10 (pior cicatriz imaginável). Total dos 6 itens: 6–60; a opinião global não entra na soma.</p>
+            <div class="form-row">
+              <div class="subfield"><label>Vascularidade (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasobs-vasc"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Pigmentação (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasobs-pig"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Espessura (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasobs-esp"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Relevo/Irregularidade (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasobs-rel"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Flexibilidade (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasobs-flex"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Área de superfície (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasobs-area"><span>${i}</span></label>`);}</script>
+              </div></div>
+            </div>
+            <div class="subfield"><label>Opinião global (1–10)</label><div class="scale mini-scale">
+              <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasobs-global"><span>${i}</span></label>`);}</script>
+            </div></div>
+            <div class="subfield" style="max-width:180px; margin-bottom:0;">
+              <label for="posasobs-total">Total dos 6 itens (/60)</label>
+              <input type="text" id="posasobs-total" placeholder="calculado automaticamente" readonly>
+            </div>
+          </div>
+
+          <!-- POSAS Doente -->
+          <div id="escala-posas-doente" class="escala-painel" style="margin-top:26px; padding-top:22px; border-top:1px solid var(--line);">
+            <p class="hint" style="font-weight:600; color:var(--blue-deep); margin:0 0 6px;">POSAS — Doente</p>
+            <p class="scale-note">Cada item pontuado de 1 (igual à pele normal / sem sintoma) a 10 (muito diferente / sintoma extremo).</p>
+            <div class="form-row">
+              <div class="subfield"><label>Dor (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasdo-dor"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Prurido (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasdo-prur"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Cor (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasdo-cor"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Rigidez (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasdo-rig"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Espessura (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasdo-esp"><span>${i}</span></label>`);}</script>
+              </div></div>
+              <div class="subfield"><label>Irregularidade (1–10)</label><div class="scale mini-scale">
+                <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasdo-irr"><span>${i}</span></label>`);}</script>
+              </div></div>
+            </div>
+            <div class="subfield"><label>Opinião global (1–10)</label><div class="scale mini-scale">
+              <script>for(let i=1;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="posasdo-global"><span>${i}</span></label>`);}</script>
+            </div></div>
+            <div class="subfield" style="max-width:180px; margin-bottom:0;">
+              <label for="posasdo-total">Total dos 6 itens (/60)</label>
+              <input type="text" id="posasdo-total" placeholder="calculado automaticamente" readonly>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top:22px;">
+            <div class="subfield">
+              <label>Sequelas previsíveis</label>
+              <div class="chip-group" style="margin-bottom:10px;">
+                <label class="chip"><input type="radio" name="sequelas"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="sequelas" checked><span>Não</span></label>
+              </div>
+              <input type="text" placeholder="Localização">
+            </div>
+            <div class="subfield">
+              <label>Bridas</label>
+              <div class="chip-group" style="margin-bottom:10px;">
+                <label class="chip"><input type="radio" name="bridas"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="bridas" checked><span>Não</span></label>
+              </div>
+              <input type="text" placeholder="Localização">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label>Necessidade de fato de compressão</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="fato-compressao"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="fato-compressao" checked><span>Não</span></label>
+              </div>
+            </div>
+            <div class="subfield">
+              <label>Necessidade de Produtos de Apoio</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="produtos-apoio" onclick="alternarProdutosApoio()"><span>Sim</span></label>
+                <label class="chip"><input type="radio" name="produtos-apoio" checked onclick="alternarProdutosApoio()"><span>Não</span></label>
+              </div>
+            </div>
+          </div>
+          <div id="campo-produtos-apoio" style="display:none;">
+            <div class="subfield">
+              <label>Produtos de apoio necessários</label>
+              <div class="chip-group">
+                <label class="chip"><input type="checkbox"><span>Ortótese</span></label>
+                <label class="chip"><input type="checkbox"><span>Silicone</span></label>
+                <label class="chip"><input type="checkbox"><span>Outros</span></label>
+              </div>
+            </div>
+            <div class="subfield" style="margin-bottom:0;">
+              <label>Outros — especificar</label>
+              <input type="text" placeholder="ex.: talas noturnas, luvas de compressão...">
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================= 3. DOR ======================= -->
+        <section id="dor" class="form-section card">
+          <div class="section-head"><span class="section-num">3</span><h2>Dor</h2></div>
+          <p class="scale-note">END 0–10 · 0 = sem dor; 10 = pior dor imaginável.</p>
+
+          <div class="subfield">
+            <label>Dor em repouso</label>
+            <div class="scale">
+              <script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="dor-repouso"><span>${i}</span></label>`);}</script>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Dor durante o movimento</label>
+            <div class="scale">
+              <script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="dor-mov"><span>${i}</span></label>`);}</script>
+            </div>
+          </div>
+          <div class="subfield" style="margin-bottom:0;">
+            <label>Dor durante a mobilização cicatricial</label>
+            <div class="scale">
+              <script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="dor-mobiliz"><span>${i}</span></label>`);}</script>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================= 4. PRURIDO ======================= -->
+        <section id="prurido" class="form-section card">
+          <div class="section-head"><span class="section-num">4</span><h2>Prurido</h2></div>
+          <p class="scale-note">NRS 0–10 · 0 = sem prurido; 10 = pior prurido imaginável.</p>
+
+          <div class="subfield">
+            <label>Intensidade do prurido</label>
+            <div class="scale">
+              <script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="prurido-int"><span>${i}</span></label>`);}</script>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="subfield">
+              <label>Impacto no sono</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="prurido-sono"><span>0 Nenhum</span></label>
+                <label class="chip"><input type="radio" name="prurido-sono"><span>1 Ligeiro</span></label>
+                <label class="chip"><input type="radio" name="prurido-sono"><span>2 Moderado</span></label>
+                <label class="chip"><input type="radio" name="prurido-sono"><span>3 Grave</span></label>
+                <label class="chip"><input type="radio" name="prurido-sono"><span>4 Muito grave</span></label>
+              </div>
+            </div>
+            <div class="subfield">
+              <label>Impacto nas atividades</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="prurido-ativ"><span>0 Nenhum</span></label>
+                <label class="chip"><input type="radio" name="prurido-ativ"><span>1 Ligeiro</span></label>
+                <label class="chip"><input type="radio" name="prurido-ativ"><span>2 Moderado</span></label>
+                <label class="chip"><input type="radio" name="prurido-ativ"><span>3 Grave</span></label>
+                <label class="chip"><input type="radio" name="prurido-ativ"><span>4 Muito grave</span></label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================= 5. AMPLITUDE ARTICULAR ======================= -->
+        <section id="amplitude" class="form-section card">
+          <div class="section-head"><span class="section-num">5</span><h2>Amplitude articular observada / funcional</h2></div>
+          <p class="scale-note">Área queimada · registar graus (ativo / passivo)</p>
+
+          <table class="rom-table">
+            <tbody>
+              <tr><td>Ombro direito</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Ombro esquerdo</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Cotovelo direito</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Cotovelo esquerdo</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Punho direito</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Punho esquerdo</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Mão direita</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Mão esquerda</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Anca direita</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Anca esquerda</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Joelho direito</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Joelho esquerdo</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Maléolo direito</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Maléolo esquerdo</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+              <tr><td>Outra articulação</td><td><div class="rom-inputs"><input type="text" style="width:70px;"><span>/</span><input type="text" style="width:70px;"></div></td></tr>
+            </tbody>
+          </table>
+
+          <div class="subfield" style="margin-top:22px;">
+            <label>Classificação global</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="rom-global"><span>0 Sem limitação</span></label>
+              <label class="chip"><input type="radio" name="rom-global"><span>1 Ligeira</span></label>
+              <label class="chip"><input type="radio" name="rom-global"><span>2 Moderada</span></label>
+              <label class="chip"><input type="radio" name="rom-global"><span>3 Grave</span></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================= 6. FUNCIONALIDADE ======================= -->
+        <section id="funcionalidade" class="form-section card">
+          <div class="section-head"><span class="section-num">6</span><h2>Funcionalidade</h2></div>
+          <p class="scale-note">PSFS · 0 = incapaz de realizar a atividade; 10 = consegue realizar ao nível habitual/pré-lesão.</p>
+
+          <div class="subfield">
+            <label for="psfs-1">Atividade 1</label>
+            <input type="text" id="psfs-1" placeholder="Descreva a atividade" style="margin-bottom:10px;">
+            <div class="scale mini-scale"><script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="psfs1"><span>${i}</span></label>`);}</script></div>
+          </div>
+          <div class="subfield">
+            <label for="psfs-2">Atividade 2</label>
+            <input type="text" id="psfs-2" placeholder="Descreva a atividade" style="margin-bottom:10px;">
+            <div class="scale mini-scale"><script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="psfs2"><span>${i}</span></label>`);}</script></div>
+          </div>
+          <div class="subfield">
+            <label for="psfs-3">Atividade 3</label>
+            <input type="text" id="psfs-3" placeholder="Descreva a atividade" style="margin-bottom:10px;">
+            <div class="scale mini-scale"><script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="psfs3"><span>${i}</span></label>`);}</script></div>
+          </div>
+          <div class="subfield" style="max-width:180px; margin-bottom:0;">
+            <label for="psfs-media">Média PSFS (/10)</label>
+            <input type="text" id="psfs-media" placeholder="calculado automaticamente" readonly>
+          </div>
+        </section>
+
+        <!-- ======================= 7. INFORMAÇÃO PARA AUTOCUIDADO ======================= -->
+        <section id="autocuidado" class="form-section card">
+          <div class="section-head"><span class="section-num">7</span><h2>Informação para Autocuidado</h2></div>
+
+          <table class="adesao-table">
+            <thead><tr><th>Cuidado</th><th>Resposta</th></tr></thead>
+            <tbody id="tbody-autocuidado"></tbody>
+          </table>
+
+          <div class="subfield" style="margin-top:22px; margin-bottom:0;">
+            <label for="dificuldades">Principais dificuldades identificadas</label>
+            <textarea id="dificuldades" rows="3"></textarea>
+          </div>
+        </section>
+
+        <!-- ======================= 8. OUTCOMES CENTRADOS NO DOENTE ======================= -->
+        <section id="mapa" class="form-section card">
+          <div class="section-head"><span class="section-num">8</span><h2>Outcomes Centrados no Doente</h2></div>
+
+          <div class="subfield">
+            <label>O que a criança mais receia não voltar a conseguir fazer</label>
+            <p class="scale-note">Perguntado à criança, com as palavras dela. Em idades pré-verbais, o que quem cuida identifica como perda.</p>
+            <div class="chip-group" style="margin-bottom:10px;">
+              <label class="chip"><input type="checkbox"><span>Brincar como antes</span></label>
+              <label class="chip"><input type="checkbox"><span>Correr e saltar</span></label>
+              <label class="chip"><input type="checkbox"><span>Desporto ou ginástica</span></label>
+              <label class="chip"><input type="checkbox"><span>Vestir-se sozinho(a)</span></label>
+              <label class="chip"><input type="checkbox"><span>Comer sozinho(a)</span></label>
+              <label class="chip"><input type="checkbox"><span>Tomar banho sem ajuda</span></label>
+              <label class="chip"><input type="checkbox"><span>Escrever ou desenhar</span></label>
+              <label class="chip"><input type="checkbox"><span>Voltar à escola ou à creche</span></label>
+              <label class="chip"><input type="checkbox"><span>Estar com os amigos</span></label>
+              <label class="chip"><input type="checkbox"><span>Ir à praia ou à piscina</span></label>
+              <label class="chip"><input type="checkbox"><span>Usar a roupa de que gosta</span></label>
+            </div>
+            <input type="text" placeholder="Outras">
+          </div>
+
+          <div class="subfield">
+            <label>O que mais o incomoda</label>
+            <div class="chip-group" style="margin-bottom:10px;">
+              <label class="chip"><input type="checkbox"><span>Dor</span></label>
+              <label class="chip"><input type="checkbox"><span>Prurido</span></label>
+              <label class="chip"><input type="checkbox"><span>Rigidez</span></label>
+              <label class="chip"><input type="checkbox"><span>Cicatriz</span></label>
+              <label class="chip"><input type="checkbox"><span>Sono</span></label>
+              <label class="chip"><input type="checkbox"><span>Os pensos e os tratamentos</span></label>
+              <label class="chip"><input type="checkbox"><span>A malha de pressão</span></label>
+              <label class="chip"><input type="checkbox"><span>O que os outros dizem</span></label>
+              <label class="chip"><input type="checkbox"><span>Outra</span></label>
+            </div>
+            <input type="text" placeholder="Outras">
+          </div>
+
+          <hr class="divider" style="margin:22px 0;">
+          <p class="eyebrow" style="margin-bottom:6px;">Grau de importância</p>
+          <p class="scale-note" style="margin-bottom:14px;">Que peso o doente dá a cada um destes sintomas. Não é a intensidade com que os sente — é a importância que lhes atribui. Dois doentes com a mesma dor podem querer coisas diferentes do seguimento.</p>
+
+          <div class="matriz-escala">
+            <div class="matriz-cabecalho" aria-hidden="true">
+              <span></span><span>Nada<br>importante</span><span>Pouco<br>importante</span><span>Moderadamente<br>importante</span><span>Importante</span><span>Muito<br>importante</span>
+            </div>
+
+            <div class="subfield">
+              <label><span class="so-leitor">Importância: </span>Dor</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="imp-dor"><span>Nada importante</span></label>
+                <label class="chip"><input type="radio" name="imp-dor"><span>Pouco importante</span></label>
+                <label class="chip"><input type="radio" name="imp-dor"><span>Moderadamente importante</span></label>
+                <label class="chip"><input type="radio" name="imp-dor"><span>Importante</span></label>
+                <label class="chip"><input type="radio" name="imp-dor"><span>Muito importante</span></label>
+              </div>
+            </div>
+
+            <div class="subfield">
+              <label><span class="so-leitor">Importância: </span>Sono</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="imp-sono"><span>Nada importante</span></label>
+                <label class="chip"><input type="radio" name="imp-sono"><span>Pouco importante</span></label>
+                <label class="chip"><input type="radio" name="imp-sono"><span>Moderadamente importante</span></label>
+                <label class="chip"><input type="radio" name="imp-sono"><span>Importante</span></label>
+                <label class="chip"><input type="radio" name="imp-sono"><span>Muito importante</span></label>
+              </div>
+            </div>
+
+            <div class="subfield">
+              <label><span class="so-leitor">Importância: </span>Prurido</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="imp-prurido"><span>Nada importante</span></label>
+                <label class="chip"><input type="radio" name="imp-prurido"><span>Pouco importante</span></label>
+                <label class="chip"><input type="radio" name="imp-prurido"><span>Moderadamente importante</span></label>
+                <label class="chip"><input type="radio" name="imp-prurido"><span>Importante</span></label>
+                <label class="chip"><input type="radio" name="imp-prurido"><span>Muito importante</span></label>
+              </div>
+            </div>
+
+            <div class="subfield">
+              <label><span class="so-leitor">Importância: </span>Ansiedade</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="imp-ansiedade"><span>Nada importante</span></label>
+                <label class="chip"><input type="radio" name="imp-ansiedade"><span>Pouco importante</span></label>
+                <label class="chip"><input type="radio" name="imp-ansiedade"><span>Moderadamente importante</span></label>
+                <label class="chip"><input type="radio" name="imp-ansiedade"><span>Importante</span></label>
+                <label class="chip"><input type="radio" name="imp-ansiedade"><span>Muito importante</span></label>
+              </div>
+            </div>
+
+            <div class="subfield">
+              <label><span class="so-leitor">Importância: </span>Imagem corporal</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="imp-imagem"><span>Nada importante</span></label>
+                <label class="chip"><input type="radio" name="imp-imagem"><span>Pouco importante</span></label>
+                <label class="chip"><input type="radio" name="imp-imagem"><span>Moderadamente importante</span></label>
+                <label class="chip"><input type="radio" name="imp-imagem"><span>Importante</span></label>
+                <label class="chip"><input type="radio" name="imp-imagem"><span>Muito importante</span></label>
+              </div>
+            </div>
+
+            <div class="subfield">
+              <label><span class="so-leitor">Importância: </span>Bem-estar emocional</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="imp-emocional"><span>Nada importante</span></label>
+                <label class="chip"><input type="radio" name="imp-emocional"><span>Pouco importante</span></label>
+                <label class="chip"><input type="radio" name="imp-emocional"><span>Moderadamente importante</span></label>
+                <label class="chip"><input type="radio" name="imp-emocional"><span>Importante</span></label>
+                <label class="chip"><input type="radio" name="imp-emocional"><span>Muito importante</span></label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider" style="margin:22px 0;">
+
+          <div class="subfield">
+            <label>Confiança para cuidar da cicatriz</label>
+            <p class="scale-note">De quem vai fazer os cuidados em casa. 0 = nada confiante · 10 = totalmente confiante</p>
+            <div class="scale">
+              <script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="confianca"><span>${i}</span></label>`);}</script>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label for="alivia-dor">O que acalma a criança e alivia a dor</label>
+            <textarea id="alivia-dor" rows="2"></textarea>
+          </div>
+
+          <hr class="divider" style="margin:22px 0;">
+
+          <hr class="divider" style="margin:22px 0;">
+          <p class="scale-note" style="margin-bottom:14px;">
+            Contexto emocional e social à data da alta. Em pediatria o que melhor prediz o ajustamento
+            da criança a um e dois anos não é a gravidade da queimadura — é o sofrimento de quem cuida
+            dela e o contexto para onde regressa. Nada disto se recolhia na versão de adultos.
+          </p>
+
+          <div class="subfield">
+            <label>Angústia do cuidador (0-10)</label>
+            <p class="scale-note">Pergunta direta a quem vai cuidar em casa: <em>&ldquo;numa escala de 0 a 10, quão angustiado se sente com a recuperação da criança?&rdquo;</em> Não é diagnóstico — sinaliza quem beneficia de apoio da Psicologia, para a criança e para si.</p>
+            <div class="scale">
+              <script>for(let i=0;i<=10;i++){document.write(`<label class="scale-opt"><input type="radio" name="aflicao-cuidador"><span>${i}</span></label>`);}</script>
+            </div>
+            <div class="scale-labels"><span>Tranquilo</span><span>Muito angustiado</span></div>
+          </div>
+
+          <div class="subfield">
+            <label>Acompanhamento prévio da criança em saúde mental ou desenvolvimento</label>
+            <p class="scale-note">Pedopsiquiatria, psicologia, terapia da fala, intervenção precoce ou necessidades educativas especiais.</p>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="saude-mental-previa"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="saude-mental-previa" checked><span>Não</span></label>
+              <label class="chip"><input type="radio" name="saude-mental-previa"><span>Desconhecido</span></label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="subfield">
+              <label>Adultos responsáveis pelos cuidados em casa</label>
+              <p class="scale-note">Quantos adultos conseguem, de facto, fazer os pensos, a massagem e levar às consultas.</p>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="adultos-cuidados"><span>Dois ou mais</span></label>
+                <label class="chip"><input type="radio" name="adultos-cuidados"><span>Um só adulto</span></label>
+                <label class="chip"><input type="radio" name="adultos-cuidados"><span>Nenhum em condições</span></label>
+                <label class="chip"><input type="radio" name="adultos-cuidados"><span>Acolhimento institucional</span></label>
+              </div>
+            </div>
+            <div class="subfield">
+              <label>Regresso previsto à escola, creche ou ama</label>
+              <p class="scale-note">É o resultado que em pediatria ocupa o lugar do regresso ao trabalho.</p>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="regresso-escola"><span>Não aplicável</span></label>
+                <label class="chip"><input type="radio" name="regresso-escola"><span>Regresso previsto</span></label>
+                <label class="chip"><input type="radio" name="regresso-escola"><span>Regresso incerto</span></label>
+                <label class="chip"><input type="radio" name="regresso-escola"><span>Sem perspetiva de regresso</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label>Sinalização a CPCJ ou a núcleo de apoio a crianças e jovens em risco</label>
+            <p class="scale-note">Registado porque muda o seguimento, não porque julga a família: uma criança sinalizada precisa de contactos mais próximos e de articulação com o serviço social.</p>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="sinalizacao-risco"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="sinalizacao-risco" checked><span>Não</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label>Articulação prevista com a escola</label>
+            <div class="chip-group" style="margin-bottom:10px;">
+              <label class="chip"><input type="checkbox"><span>Contacto com o professor titular</span></label>
+              <label class="chip"><input type="checkbox"><span>Dispensa de educação física</span></label>
+              <label class="chip"><input type="checkbox"><span>Adaptação do recreio ou da exposição solar</span></label>
+              <label class="chip"><input type="checkbox"><span>Apoio para usar a malha de pressão na escola</span></label>
+              <label class="chip"><input type="checkbox"><span>Preparação da turma para o regresso</span></label>
+              <label class="chip"><input type="checkbox"><span>Articulação com saúde escolar</span></label>
+            </div>
+            <input type="text" placeholder="Outras">
+          </div>
+
+          <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px;">
+            <label style="margin:0;">Objetivos da criança e da família</label>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="adicionarObjetivoDoente()">+ Adicionar objetivo</button>
+          </div>
+          <p class="scale-note">Ao guardar, cada objetivo escrito aqui passa a ser uma meta na jornada da criança, marcada como <strong>definida pela equipa</strong>. A família vê-a na sua área e pode ir escrevendo atualizações sobre como está a correr — que a equipa lê e responde em Jornada e Metas.</p>
+          <div id="lista-objetivos-gas"></div>
+        </section>
+
+        <!-- ======================= 9. REVISÃO DE SISTEMAS PEDIÁTRICA ======================= -->
+        <section id="revisao-sistemas" class="form-section card">
+          <div class="section-head"><span class="section-num">9</span><h2>Revisão de Sistemas à data da alta</h2></div>
+          <p class="scale-note" style="margin-bottom:4px;">
+            Perguntas de resposta rápida, Sim ou Não, feitas a quem cuida da criança — e à própria
+            criança, quando tiver idade para responder. Organizadas pelas sequelas que o seguimento
+            pediátrico a longo prazo procura: a cicatriz que repuxa com o crescimento, o sono, o
+            comportamento e o regresso à escola.
+          </p>
+          <p class="scale-note" style="margin-bottom:18px;">
+            <strong>Não tem pontuação, e isso é de propósito.</strong> A versão de adultos desta
+            plataforma usa aqui o BURN-OP (Bhattacharya et al., <i>Burns</i> 2024), que pergunta por
+            varizes, cancro da pele, álcool e gravidez — e cujo limiar de 46 pontos foi calibrado numa
+            coorte de adultos. Numa criança, metade dos itens não pode ser positivo e o limiar deixa de
+            significar o que significava. O que fica é a lista de sinais positivos, que é o que de facto
+            orienta a consulta. A estratificação continua a ser feita pela matriz de dois eixos.
+          </p>
+
+          <div id="itens-burn-op"></div>
+
+          <div class="card" style="background:var(--paper-tint); margin-top:20px;">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+              <p class="eyebrow" style="margin:0;">Sinais positivos</p>
+              <span class="hint" style="margin:0;" id="revisao-progresso"></span>
+            </div>
+            <div id="revisao-resultado" style="margin-top:10px;"></div>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" onclick="guardarEmPDF()">🖨️ Guardar em PDF</button>
+          <button type="button" class="btn btn-ghost">Guardar rascunho</button>
+          <button type="submit" class="btn btn-primary" id="btn-submeter-alta">Guardar e ativar plano de seguimento</button>
+        </div>
+
+        <div id="confirm-alta" class="card" style="margin-top:20px; display:none;">
+          <span class="pill pill-ok">Guardado</span>
+          <h3 style="margin-top:14px;">Avaliação registada</h3>
+          <p style="color:var(--ink-soft); margin:0 0 12px;">O contexto clínico foi atualizado e o plano de seguimento (CarePlan) com os checkpoints de PROMs foi agendado automaticamente.</p>
+          <div id="resumo-prioridade" style="margin-bottom:14px;"></div>
+          <div id="resumo-metas"></div>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+  let DOENTE_PROCESSO = null;
+  let DOENTE_REGISTO = null;   // registo completo: a idade entra no cálculo da prioridade
+
+  function alternarProdutosApoio(){
+    const marcado = document.querySelector('input[name="produtos-apoio"]:checked');
+    const sim = marcado && marcado.nextElementSibling.textContent.trim() === 'Sim';
+    document.getElementById('campo-produtos-apoio').style.display = sim ? 'block' : 'none';
+  }
+
+  function alternarAmputacao(){
+    const marcado = document.querySelector('input[name="amputacao"]:checked');
+    const sim = marcado && marcado.nextElementSibling.textContent.trim() === 'Sim';
+    document.getElementById('campo-amputacao').style.display = sim ? 'block' : 'none';
+  }
+
+  /* --- Navegação do formulário: quadros recolhíveis e índice de progresso.
+
+     São 9 quadros e cerca de 90 campos, e nenhum profissional preenche os
+     nove — cada área preenche o seu. Manter tudo aberto obrigava a
+     percorrer o formulário inteiro para chegar a três campos.
+
+     A transformação é feita aqui, e não no HTML dos quadros, para as
+     secções continuarem a ser HTML simples: cada uma é lida, o que vem a
+     seguir ao cabeçalho é embrulhado num corpo recolhível, e o cabeçalho
+     passa a botão. Assim, acrescentar um quadro novo no futuro não exige
+     lembrar-se de nada disto.
+     ===================================================================== */
+  const SECOES_FORM = [];
+
+  function prepararSecoes(){
+    const indice = document.getElementById('indice-quadros');
+    document.querySelectorAll('.form-section').forEach(function (sec, i) {
+      const cabecalho = sec.querySelector('.section-head');
+      if (!cabecalho) return;
+
+      // embrulhar tudo o que vem depois do cabeçalho
+      const corpo = document.createElement('div');
+      corpo.className = 'secao-corpo';
+      corpo.id = 'corpo-' + sec.id;
+      let n = cabecalho.nextSibling;
+      while (n) { const seg = n.nextSibling; corpo.appendChild(n); n = seg; }
+      sec.appendChild(corpo);
+
+      // cabeçalho passa a botão
+      const num = cabecalho.querySelector('.section-num').textContent.trim();
+      const titulo = cabecalho.querySelector('h2').textContent.trim();
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'secao-toggle';
+      botao.setAttribute('aria-expanded', 'false');
+      botao.setAttribute('aria-controls', corpo.id);
+      while (cabecalho.firstChild) botao.appendChild(cabecalho.firstChild);
+
+      const progresso = document.createElement('span');
+      progresso.className = 'secao-progresso';
+      progresso.id = 'progresso-' + sec.id;
+      botao.appendChild(progresso);
+
+      const seta = document.createElement('span');
+      seta.className = 'seta';
+      seta.textContent = '▶';
+      seta.setAttribute('aria-hidden', 'true');
+      botao.appendChild(seta);
+
+      cabecalho.appendChild(botao);
+      corpo.hidden = true;
+      botao.addEventListener('click', function () { alternarSecao(sec.id); });
+
+      // entrada no índice
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'indice-item';
+      item.id = 'indice-' + sec.id;
+      item.innerHTML = '<span class="n">' + num + '</span><span class="titulo">' + titulo + '</span>';
+      item.title = num + '. ' + titulo;
+      item.setAttribute('aria-label', 'Quadro ' + num + ': ' + titulo);
+      item.addEventListener('click', function () { abrirSecao(sec.id, true); });
+      indice.appendChild(item);
+
+      SECOES_FORM.push({ id: sec.id, num: num, titulo: titulo });
+    });
+
+    // o primeiro quadro começa aberto: começa-se por ali
+    if (SECOES_FORM.length) abrirSecao(SECOES_FORM[0].id, false);
+
+    // qualquer resposta atualiza o progresso do respetivo quadro
+    document.querySelectorAll('.form-section').forEach(function (sec) {
+      sec.addEventListener('change', function () { atualizarProgresso(sec.id); });
+      sec.addEventListener('input', function () { atualizarProgresso(sec.id); });
+    });
+    atualizarTodosOsProgressos();
+  }
+
+  function alternarSecao(id){
+    const corpo = document.getElementById('corpo-' + id);
+    if (corpo.hidden) abrirSecao(id, false); else fecharSecao(id);
+  }
+
+  function fecharSecao(id){
+    document.getElementById('corpo-' + id).hidden = true;
+    document.querySelector('#' + id + ' .secao-toggle').setAttribute('aria-expanded', 'false');
+    const it = document.getElementById('indice-' + id);
+    if (it) it.classList.remove('aberto');
+  }
+
+  /** Abre um quadro. Fecha os outros: com nove quadros abertos ao mesmo
+   *  tempo voltava-se ao problema de origem. */
+  function abrirSecao(id, deslocar){
+    SECOES_FORM.forEach(function (s) { if (s.id !== id) fecharSecao(s.id); });
+    document.getElementById('corpo-' + id).hidden = false;
+    document.querySelector('#' + id + ' .secao-toggle').setAttribute('aria-expanded', 'true');
+    const it = document.getElementById('indice-' + id);
+    if (it) it.classList.add('aberto');
+    const rotuloAtual = document.getElementById('indice-atual');
+    if (rotuloAtual) {
+      const s = SECOES_FORM.find(function (x) { return x.id === id; });
+      rotuloAtual.textContent = s ? s.num + '. ' + s.titulo : '';
+    }
+    if (deslocar) document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function abrirTodos(){
+    SECOES_FORM.forEach(function (s) {
+      document.getElementById('corpo-' + s.id).hidden = false;
+      document.querySelector('#' + s.id + ' .secao-toggle').setAttribute('aria-expanded', 'true');
+    });
+  }
+
+  function fecharTodos(){
+    SECOES_FORM.forEach(function (s) { fecharSecao(s.id); });
+  }
+
+  /** Conta campos respondidos. É um indicador de progresso, não uma
+   *  validação: nem todos os campos se aplicam a todos os doentes, e
+   *  nenhum quadro é obrigatório. */
+  function contarRespostas(sec){
+    let total = 0, respondidos = 0;
+    sec.querySelectorAll('.subfield').forEach(function (campo) {
+      if (!campo.querySelector('label')) return;
+      total++;
+      const v = valorDoCampo(campo);
+      const temResposta = Array.isArray(v) ? v.length > 0
+        : (v && typeof v === 'object') ? !!(v.resposta || v.outras || (v.selecionados || []).length)
+        : (v != null && String(v).trim() !== '');
+      if (temResposta) respondidos++;
+    });
+    // o quadro 9 é feito de itens próprios, fora do padrão .subfield
+    const itensRevisao = sec.querySelectorAll('.revisao-item');
+    if (itensRevisao.length) {
+      total += itensRevisao.length;
+      itensRevisao.forEach(function (i) { if (i.querySelector('input:checked')) respondidos++; });
+    }
+    return { total: total, respondidos: respondidos };
+  }
+
+  function atualizarProgresso(id){
+    const sec = document.getElementById(id);
+    const alvo = document.getElementById('progresso-' + id);
+    const item = document.getElementById('indice-' + id);
+    if (!sec || !alvo) return;
+
+    const c = contarRespostas(sec);
+    if (!c.total) { alvo.innerHTML = ''; return; }
+    const pct = Math.round((c.respondidos / c.total) * 100);
+    const completo = c.respondidos === c.total;
+    alvo.className = 'secao-progresso' + (completo ? ' completo' : '');
+    alvo.innerHTML = '<span class="barra"><span style="width:' + pct + '%"></span></span>'
+                   + (completo ? '✓ ' : '') + c.respondidos + '/' + c.total;
+
+    if (item) {
+      item.classList.toggle('completo', completo);
+      item.classList.toggle('tem-respostas', !completo && c.respondidos > 0);
+    }
+  }
+
+  function atualizarTodosOsProgressos(){
+    SECOES_FORM.forEach(function (s) { atualizarProgresso(s.id); });
+  }
+
+  /* --- Quadro 9: a revisão de sistemas pediátrica.
+     As perguntas são geradas a partir de ITENS_REVISAO_PED (main.js), e não
+     escritas à mão no HTML, para a lista existir num sítio só. Como não usam
+     a estrutura .subfield, a leitura e o repovoamento têm leitores próprios
+     (respostasRevisaoPed e repovoarRevisaoPed), abaixo. --- */
+  function construirItensRevisaoPed(){
+    const el = document.getElementById('itens-burn-op');
+    el.innerHTML = gruposRevisaoPed().map(function (grupo) {
+      const itens = ITENS_REVISAO_PED.filter(function (i) { return i.grupo === grupo; });
+      return '<p class="eyebrow" style="margin:18px 0 8px;">' + grupo + '</p>'
+           + '<div class="revisao-grelha">' + itens.map(itemRevisaoHTML).join('') + '</div>';
+    }).join('');
+    atualizarRevisaoPed();
+  }
+
+  /* Uma pergunta curta com duas opções não precisa da largura toda: em
+     linha, e a duas colunas, o quadro cabe de uma vez no ecrã. */
+  function itemRevisaoHTML(item){
+    return '<div class="revisao-item">'
+         +   '<span class="pergunta">' + item.texto + '</span>'
+         +   '<span class="opcoes">'
+         +     '<label><input type="radio" name="rev-' + item.id + '" onchange="atualizarRevisaoPed()"><span>Sim</span></label>'
+         +     '<label><input type="radio" name="rev-' + item.id + '" onchange="atualizarRevisaoPed()"><span>Não</span></label>'
+         +   '</span>'
+         + '</div>';
+  }
+
+  /** Lê as respostas do quadro 9 tal como ficarão gravadas, para o resultado
+   *  mostrado durante o preenchimento ser exatamente o que é calculado no fim. */
+  function respostasRevisaoPed(){
+    const seccao = {};
+    ITENS_REVISAO_PED.forEach(function (item) {
+      const marcado = document.querySelector('input[name="rev-' + item.id + '"]:checked');
+      if (marcado) seccao[item.texto] = marcado.nextElementSibling.textContent.trim();
+    });
+    return seccao;
+  }
+
+  /** Repõe as respostas do quadro 9 ao reabrir um formulário gravado. Tal
+   *  como a serialização, tem de ser feito à parte: o quadro não usa
+   *  .subfield e o repovoamento genérico passa-lhe ao lado. */
+  function repovoarRevisaoPed(seccao){
+    if (!seccao) return;
+    ITENS_REVISAO_PED.forEach(function (item) {
+      const resposta = seccao[item.texto];
+      if (resposta == null) return;
+      document.querySelectorAll('input[name="rev-' + item.id + '"]').forEach(function (r) {
+        r.checked = (r.nextElementSibling.textContent.trim() === String(resposta).trim());
+      });
+    });
+    atualizarRevisaoPed();
+  }
+
+  function atualizarRevisaoPed(){
+    const r = calcularRevisaoPediatrica(respostasRevisaoPed());
+    document.getElementById('revisao-progresso').textContent =
+      r.respondidas + " de " + r.total + " perguntas respondidas";
+
+    if (!r.respondidas) {
+      document.getElementById('revisao-resultado').innerHTML =
+        '<p class="hint" style="margin:0;">Os sinais positivos aparecem à medida que responde.</p>';
+      return;
+    }
+
+    const aviso = r.completo ? "" :
+      '<p class="hint" style="margin:8px 0 0;">Faltam ' + (r.total - r.respondidas) +
+      ' perguntas. Nenhum sinal positivo com perguntas por responder não é o mesmo que nenhum sinal.</p>';
+
+    if (!r.sinais) {
+      document.getElementById('revisao-resultado').innerHTML =
+        '<span class="pill pill-ok">Sem sinais positivos</span>' + aviso;
+      return;
+    }
+
+    /* Agrupados, porque é o grupo que diz o que fazer: três sinais de sono
+       mandam a criança à psicologia, três de retração mandam-na à
+       fisioterapia, e a contagem sozinha não distingue os dois casos. */
+    const porGrupo = {};
+    r.positivos.forEach(function (pos) {
+      (porGrupo[pos.grupo] = porGrupo[pos.grupo] || []).push(pos.texto);
+    });
+
+    document.getElementById('revisao-resultado').innerHTML =
+        '<span class="pill pill-star">' + r.sinais + (r.sinais === 1 ? ' sinal positivo' : ' sinais positivos') + '</span>'
+      + '<ul style="margin:12px 0 0; padding-left:18px; font-size:.88rem; line-height:1.6;">'
+      +   Object.keys(porGrupo).map(function (g) {
+            return '<li><strong>' + g + ':</strong> ' + porGrupo[g].join(' · ') + '</li>';
+          }).join('')
+      + '</ul>'
+      + '<p style="margin:10px 0 0; font-size:.86rem; color:var(--ink-soft);">'
+      +   'Sem limiar validado. A leitura é pelo grupo a que os sinais pertencem, não pelo número.'
+      + '</p>' + aviso;
+  }
+
+  function construirTabelaAutocuidado(){
+    const cuidados = ["Fato de Compressão","Silicone","Exercícios","Massagem / mobilização cicatricial","Hidratação","Proteção solar","Produtos de Apoio"];
+    const tbody = document.getElementById('tbody-autocuidado');
+    tbody.innerHTML = cuidados.map((label, idx) => `
+      <tr>
+        <td>${label}</td>
+        <td><div class="chip-group">
+          <label class="chip"><input type="radio" name="auto-${idx}"><span>Sim</span></label>
+          <label class="chip"><input type="radio" name="auto-${idx}"><span>Não</span></label>
+          <label class="chip"><input type="radio" name="auto-${idx}"><span>Não Aplicável</span></label>
+        </div></td>
+      </tr>`).join('');
+  }
+  construirTabelaAutocuidado();
+  construirItensRevisaoPed();
+  prepararSecoes();
+
+  /* --- Objetivos do doente: lista dinâmica dentro da secção 8, apenas
+     texto livre (sem escala) — o profissional pode adicionar quantos
+     objetivos forem precisos. Ao guardar o formulário, cada objetivo aqui
+     escrito é automaticamente criado como meta na jornada do doente
+     (ver criarMetasApartirDosObjetivos, chamada em submeterFormulario). --- */
+  let contadorObjetivosDoente = 0;
+
+  function adicionarObjetivoDoente(descricaoInicial){
+    const idx = contadorObjetivosDoente++;
+    const div = document.createElement('div');
+    div.className = 'objetivo-gas-row';
+    div.dataset.idx = idx;
+    div.style.marginBottom = '10px';
+    div.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="text" class="objetivo-gas-desc" placeholder="Descreva o objetivo do doente" style="flex:1;" value="${(descricaoInicial || '').replace(/"/g, '&quot;')}">
+        <a href="#" class="hint" onclick="event.preventDefault(); this.closest('.objetivo-gas-row').remove();">remover</a>
+      </div>`;
+    document.getElementById('lista-objetivos-gas').appendChild(div);
+  }
+
+  function serializarObjetivosDoente(){
+    return Array.from(document.querySelectorAll('.objetivo-gas-row'))
+      .map(row => row.querySelector('.objetivo-gas-desc').value.trim())
+      .filter(texto => texto);
+  }
+
+  function repovoarObjetivosDoente(lista){
+    document.getElementById('lista-objetivos-gas').innerHTML = '';
+    contadorObjetivosDoente = 0;
+    if (lista && lista.length) {
+      lista.forEach(texto => adicionarObjetivoDoente(typeof texto === 'string' ? texto : texto.descricao));
+    } else {
+      adicionarObjetivoDoente(); adicionarObjetivoDoente(); adicionarObjetivoDoente();
+    }
+  }
+  repovoarObjetivosDoente(); // estado inicial: 3 linhas em branco
+
+  /** Cria uma meta na jornada do doente por cada objetivo escrito na secção 8
+   *  que ainda não exista como meta (comparação pelo texto, para não duplicar
+   *  em sucessivas gravações do formulário).
+   *
+   *  As metas ficam com origem "clinica" — aparecem ao doente como
+   *  "Definida pela equipa" — e o doente pode acrescentar atualizações em
+   *  cada uma na sua área.
+   *
+   *  Devolve o resumo do que aconteceu. Antes esta função engolia os erros
+   *  em console.error e o formulário dizia na mesma que os objetivos tinham
+   *  passado a metas, mesmo quando nenhuma tinha sido criada. */
+  async function criarMetasApartirDosObjetivos(doenteId, objetivos){
+    const resumo = { criadas: 0, jaExistiam: 0, erros: [] };
+    if (!objetivos.length) return resumo;
+
+    let metasExistentes;
+    try {
+      metasExistentes = await lumiApi.listarMetas(doenteId);
+    } catch (e) {
+      // sem esta lista não é possível saber o que já existe: criar às cegas
+      // duplicaria metas, por isso pára aqui e reporta
+      console.error("Não foi possível verificar as metas existentes:", e);
+      resumo.erros.push("não foi possível ler as metas já existentes: " + (e.message || e));
+      return resumo;
+    }
+
+    const labelsExistentes = metasExistentes.map(m => (m.label || '').trim().toLowerCase());
+    for (const texto of objetivos) {
+      if (labelsExistentes.includes(texto.trim().toLowerCase())) { resumo.jaExistiam++; continue; }
+      try {
+        await lumiApi.adicionarMeta(doenteId, {
+          label: texto, tipo: "Funcional", categoria: "funcional",
+          origem: "clinica", importante: false, estado: "pending", data_alvo: "a definir"
+        });
+        resumo.criadas++;
+        labelsExistentes.push(texto.trim().toLowerCase());
+      } catch (e) {
+        console.error(`Não foi possível criar a meta a partir do objetivo "${texto}":`, e);
+        resumo.erros.push(`"${texto}": ${e.message || e}`);
+      }
+    }
+    return resumo;
+  }
+
+  /* --- somatório automático das escalas: cada escala tem vários itens de
+     escolha (radio), cujo texto começa sempre pelo valor numérico do item
+     (ex.: "2 Hiperpigmentação", ou simplesmente "7"). Em vez de o
+     profissional somar/calcular a média à mão, isto faz-se sozinho sempre
+     que uma opção muda. --- */
+  function pontuarRadioGroup(nome){
+    const marcado = document.querySelector(`input[name="${nome}"]:checked`);
+    if (!marcado) return null;
+    const texto = marcado.nextElementSibling.textContent.trim();
+    const match = texto.match(/^-?\d+/);
+    return match ? parseInt(match[0], 10) : null;
+  }
+
+  function recalcularSoma(nomes, totalId, maximo){
+    let soma = 0, completos = 0;
+    nomes.forEach(nome => {
+      const v = pontuarRadioGroup(nome);
+      if (v != null) { soma += v; completos++; }
+    });
+    const el = document.getElementById(totalId);
+    if (el) el.value = completos ? `${soma} /${maximo}` : '';
+  }
+
+  function recalcularPosasObs(){
+    recalcularSoma(['posasobs-vasc', 'posasobs-pig', 'posasobs-esp', 'posasobs-rel', 'posasobs-flex', 'posasobs-area'], 'posasobs-total', 60);
+  }
+  function recalcularPosasDoente(){
+    recalcularSoma(['posasdo-dor', 'posasdo-prur', 'posasdo-cor', 'posasdo-rig', 'posasdo-esp', 'posasdo-irr'], 'posasdo-total', 60);
+  }
+  function recalcularPSFS(){
+    const nomes = ['psfs1', 'psfs2', 'psfs3'];
+    let soma = 0, completos = 0;
+    nomes.forEach(nome => {
+      const v = pontuarRadioGroup(nome);
+      if (v != null) { soma += v; completos++; }
+    });
+    const el = document.getElementById('psfs-media');
+    if (el) el.value = completos ? (soma / completos).toFixed(1) + ' /10' : '';
+  }
+
+  // um único listener por secção (delegação de eventos) em vez de repetir
+  // onchange="..." em cada rádio individual — dispara para todos os itens
+  // gerados dinamicamente (POSAS, PSFS)
+  document.getElementById('cicatriz').addEventListener('change', (ev) => {
+    const nome = ev.target.name || '';
+    if (nome.startsWith('posasobs-')) recalcularPosasObs();
+    else if (nome.startsWith('posasdo-')) recalcularPosasDoente();
+  });
+  document.getElementById('funcionalidade').addEventListener('change', (ev) => {
+    if (/^psfs\d$/.test(ev.target.name || '')) recalcularPSFS();
+  });
+
+  function paraISO(dataBR){
+    if (!dataBR) return null;
+    const m = dataBR.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!m) return null;
+    const [, d, mo, y] = m;
+    return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+
+  /* --- serialização genérica de uma secção: cada .subfield vira uma
+     entrada { "texto do label": valor }, cobrindo texto, escolha única
+     (radio) e escolha múltipla (checkbox) --- */
+  function valorDoCampo(campo){
+    const checkboxes = campo.querySelectorAll('.chip-group input[type="checkbox"]');
+    if (checkboxes.length) {
+      const selecionados = Array.from(checkboxes).filter(c => c.checked).map(c => c.nextElementSibling.textContent.trim());
+      // vários destes campos têm, a seguir aos chips, uma caixa "Outras" de
+      // texto livre (ex.: secção 8). Antes só se guardavam os chips e o que
+      // o profissional escrevesse nessa caixa perdia-se ao gravar.
+      const caixaOutras = campo.querySelector('input[type="text"], textarea');
+      const outras = caixaOutras ? caixaOutras.value.trim() : "";
+      // sem texto livre mantém-se a forma antiga (lista simples), para os
+      // formulários já gravados continuarem a ser lidos na mesma
+      return outras ? { selecionados, outras } : selecionados;
+    }
+    const radios = campo.querySelectorAll('.chip-group input[type="radio"], .scale input[type="radio"]');
+    const inputs = campo.querySelectorAll('input[type="text"], input[type="email"], textarea');
+
+    // caso misto: radio Sim/Não + campo(s) de texto associados (ex.: "Sequelas
+    // previsíveis" -> Sim/Não + Localização; também cobre Enxertos/Zona dadora)
+    if (radios.length && inputs.length) {
+      const marcado = Array.from(radios).find(r => r.checked);
+      const resposta = marcado ? marcado.nextElementSibling.textContent.trim() : null;
+      const detalhe = inputs.length === 1 ? inputs[0].value : Array.from(inputs).map(i => i.value);
+      return { resposta, detalhe };
+    }
+    if (radios.length) {
+      const marcado = Array.from(radios).find(r => r.checked);
+      return marcado ? marcado.nextElementSibling.textContent.trim() : null;
+    }
+    const select = campo.querySelector('select');
+    if (select) return select.value;
+    if (inputs.length === 1) return inputs[0].value;
+    if (inputs.length > 1) return Array.from(inputs).map(i => i.value);
+    return null;
+  }
+
+  function serializarSeccao(section){
+    const resultado = {};
+    section.querySelectorAll('.subfield').forEach(campo => {
+      const labelEl = campo.querySelector('label');
+      if (!labelEl) return;
+      resultado[labelEl.textContent.trim()] = valorDoCampo(campo);
+    });
+    return resultado;
+  }
+
+  function serializarRomTable(){
+    const linhas = {};
+    document.querySelectorAll('#amplitude .rom-table tbody tr').forEach(tr => {
+      const label = tr.children[0].textContent.trim();
+      const inputs = tr.querySelectorAll('input');
+      linhas[label] = { ativo: inputs[0].value, passivo: inputs[1].value };
+    });
+    return linhas;
+  }
+
+  function serializarAdesaoTable(){
+    const linhas = {};
+    document.querySelectorAll('#autocuidado .adesao-table tbody tr').forEach(tr => {
+      const label = tr.children[0].textContent.trim();
+      const marcado = tr.children[1].querySelector('input:checked');
+      linhas[label] = marcado ? marcado.nextElementSibling.textContent.trim() : null;
+    });
+    return linhas;
+  }
+
+  /** A idade entra no cálculo e vem do registo do doente, não do formulário.
+   *  DOENTE_REGISTO é preenchido no arranque da página. */
+  function idadeDoDoente(){
+    const nasc = DOENTE_REGISTO && DOENTE_REGISTO.data_nascimento;
+    if (!nasc) return null;
+    const d = new Date(nasc);
+    if (isNaN(d)) return null;
+    const hoje = new Date();
+    let anos = hoje.getFullYear() - d.getFullYear();
+    const m = hoje.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < d.getDate())) anos--;
+    return anos;
+  }
+
+  /** Mostra a prioridade na confirmação, a seguir a gravar. Não altera o
+   *  plano de seguimento: a decisão sobre a cadência é da equipa. */
+  function mostrarPrioridade(p){
+    const el = document.getElementById('resumo-prioridade');
+    if (!p) {
+      el.innerHTML = `<p class="hint" style="margin:0;">Não foi possível calcular a prioridade de seguimento a partir deste formulário. O formulário ficou gravado.</p>`;
+      return;
+    }
+    const niveis = { baixo: "baixo", medio: "intermédio", alto: "alto" };
+    const b = p.revisao;
+    const blocoRevisao = (b && b.respondidas)
+      ? (b.sinais
+          ? `<p style="margin:0 0 6px; font-size:.9rem;">
+               <strong>Revisão de sistemas:</strong>
+               <span class="pill pill-star" style="margin-left:6px;">${b.sinais} ${b.sinais === 1 ? "sinal positivo" : "sinais positivos"}</span>
+               ${b.completo ? "" : `<span class="hint" style="margin-left:6px;">(${b.total - b.respondidas} por responder)</span>`}
+             </p>`
+          : `<p style="margin:0 0 6px; font-size:.9rem;"><strong>Revisão de sistemas:</strong>
+               <span class="pill pill-ok" style="margin-left:6px;">sem sinais positivos</span></p>`)
+      : `<p class="hint" style="margin:0 0 6px;">Revisão de sistemas por preencher — quadro 9.</p>`;
+    el.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+        <span class="pill pill-${p.cor}" style="font-size:.82rem; padding:5px 14px;">${p.rotulo}</span>
+        <span style="color:var(--ink-soft); font-size:.9rem;">${p.descricao}</span>
+      </div>
+      ${blocoRevisao}
+      <p style="margin:0 0 6px; font-size:.9rem;">
+        Carga clínica e funcional: <strong>${niveis[p.clinico.nivel]}</strong> (${p.clinico.pontos} pontos) ·
+        Carga sintomática e psicossocial: <strong>${niveis[p.psicossocial.nivel]}</strong> (${p.psicossocial.pontos} pontos)
+      </p>
+      <p style="margin:0 0 6px; font-size:.9rem;">
+        <strong>Cadência proposta:</strong> <span class="mono">${descreverCadencia(p.cadencia)}</span> após a alta.
+      </p>
+      <p class="hint" style="margin:0;">
+        Proposta, não uma alteração automática. O ajuste ao plano de seguimento é feito pela
+        equipa. Os fatores que a produziram ficam gravados com o formulário e podem ser
+        consultados na ficha da criança.
+      </p>`;
+  }
+
+  /** Diz ao profissional o que aconteceu de facto à migração dos objetivos
+   *  da secção 8 para a jornada. Se alguma meta não pôde ser criada, isso
+   *  aparece aqui em vez de ficar só na consola. */
+  function mostrarResumoMetas(resumo, totalObjetivos){
+    const el = document.getElementById('resumo-metas');
+    if (!totalObjetivos) {
+      el.innerHTML = `<p class="hint" style="margin:0;">Não foi escrito nenhum objetivo na secção 8, por isso não foi criada nenhuma meta na jornada.</p>`;
+      return;
+    }
+    const partes = [];
+    if (resumo.criadas)    partes.push(`${resumo.criadas} ${resumo.criadas === 1 ? 'nova meta criada' : 'novas metas criadas'} na jornada`);
+    if (resumo.jaExistiam) partes.push(`${resumo.jaExistiam} já ${resumo.jaExistiam === 1 ? 'existia' : 'existiam'}`);
+
+    const erros = resumo.erros.length
+      ? `<div class="banner-alert" style="margin-top:10px;">
+           <div>⚠️ ${resumo.erros.length} ${resumo.erros.length === 1 ? 'objetivo não passou' : 'objetivos não passaram'} a meta:
+             <ul style="margin:6px 0 0; padding-left:18px;">${resumo.erros.map(t => `<li>${escaparTexto(t)}</li>`).join("")}</ul>
+             <p style="margin:8px 0 0;">O formulário ficou guardado. Corrija e volte a gravar, ou crie a meta à mão em Jornada e Metas.</p>
+           </div>
+         </div>`
+      : "";
+
+    el.innerHTML = `
+      <p style="margin:0; color:var(--ink-soft);">
+        <strong>Objetivos do doente → jornada:</strong> ${partes.length ? escaparTexto(partes.join(' · ')) : 'nada a acrescentar'}.
+        As metas ficam visíveis ao doente como "Definida pela equipa", e ele pode escrever atualizações em cada uma.
+      </p>
+      ${erros}`;
+  }
+
+  async function submeterFormulario(ev){
+    ev.preventDefault();
+    const btn = document.getElementById('btn-submeter-alta');
+    btn.disabled = true; btn.textContent = "A guardar...";
+
+    try {
+      const dataAlta = paraISO(document.getElementById('data-alta').value);
+      const contactoTipo = document.querySelector('input[name="contacto-tipo"]:checked').closest('label').innerText.includes('Próprio') ? 'proprio' : 'familiar';
+
+      const dados = {};
+      document.querySelectorAll('.form-section').forEach(section => {
+        dados[section.id] = serializarSeccao(section);
+      });
+      dados.amplitude_tabela = serializarRomTable();
+      dados.autocuidado_tabela = serializarAdesaoTable();
+      // o quadro 9 não usa .subfield, por isso a serialização genérica não o
+      // apanha: tem de ser lido pelo seu próprio leitor
+      dados["revisao-sistemas"] = respostasRevisaoPed();
+      const objetivosDoente = serializarObjetivosDoente();
+      dados.objetivos_gas = objetivosDoente;
+
+      // prioridade de seguimento, calculada a partir deste formulário e
+      // gravada com ele. Se falhar, o formulário grava na mesma sem ela —
+      // perder a avaliação de alta por causa de um cálculo seria absurdo.
+      let prioridade = null;
+      try {
+        prioridade = calcularPrioridadeSeguimento(dados, idadeDoDoente());
+        prioridade.revisao = calcularRevisaoPediatrica(dados["revisao-sistemas"]);
+      } catch (e) {
+        console.error("Não foi possível calcular a prioridade de seguimento:", e);
+      }
+
+      await lumiApi.guardarFormularioAlta(DOENTE_ID, dados, dataAlta, contactoTipo, prioridade);
+      const resumoMetas = await criarMetasApartirDosObjetivos(DOENTE_ID, objetivosDoente);
+
+      // a secção 1 (queimadura) atualiza automaticamente o contexto clínico do doente
+      const secQueimadura = dados.queimadura || {};
+      const tbsaTexto = secQueimadura['% Superfície corporal queimada (%SCQ)'] || '';
+      const tbsaNum = parseFloat(String(tbsaTexto).replace(',', '.').replace('%', '').trim());
+      const profundidade = secQueimadura['Profundidade'] || null;
+
+      // combinar as 6 sub-regiões + campo livre "Outra localização" num resumo legível
+      const gruposZona = [
+        'Localização anatómica — Cabeça e Pescoço',
+        'Localização anatómica — Tronco',
+        'Localização anatómica — Membro Superior Esquerdo',
+        'Localização anatómica — Membro Superior Direito',
+        'Localização anatómica — Membro Inferior Esquerdo',
+        'Localização anatómica — Membro Inferior Direito'
+      ];
+      const partesZona = [];
+      gruposZona.forEach(grupo => {
+        const itens = secQueimadura[grupo];
+        if (Array.isArray(itens) && itens.length) {
+          const rotuloCurto = grupo.replace('Localização anatómica — ', '');
+          partesZona.push(`${rotuloCurto}: ${itens.join(', ')}`);
+        }
+      });
+      const outraZona = secQueimadura['Outra localização (não listada acima)'];
+      if (outraZona && String(outraZona).trim()) partesZona.push(`Outra: ${outraZona.trim()}`);
+      const zona = partesZona.length ? partesZona.join('; ') : null;
+
+      const contexto = {};
+      if (!isNaN(tbsaNum)) contexto.tbsa = tbsaNum;
+      if (profundidade) contexto.profundidade = profundidade;
+      if (zona) contexto.zona_anatomica = zona;
+      if (dataAlta) contexto.data_alta = dataAlta;
+
+      const email = document.getElementById('doente-email').value.trim();
+      const generoEl = document.querySelector('input[name="genero"]:checked');
+      const gestorCaso = document.getElementById('gestor-caso').value;
+      if (email) contexto.email = email;
+      if (generoEl) contexto.genero = generoEl.nextElementSibling.textContent.trim();
+      if (gestorCaso) contexto.gestor_caso_id = gestorCaso;
+
+      if (Object.keys(contexto).length) {
+        await lumiApi.atualizarDoenteContexto(DOENTE_ID, contexto);
+      }
+
+      mostrarPrioridade(prioridade);
+      mostrarResumoMetas(resumoMetas, objetivosDoente.length);
+      document.getElementById('confirm-alta').style.display = 'block';
+      document.getElementById('confirm-alta').scrollIntoView({behavior:'smooth'});
+      btn.textContent = "Guardado ✓";
+    } catch (e) {
+      alert("Não foi possível guardar o formulário: " + (e.message || e));
+      btn.disabled = false; btn.textContent = "Guardar e ativar plano de seguimento";
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  /* --- repovoamento: inverso de valorDoCampo/serializarSeccao --- */
+  function repovoarCampo(campo, valor){
+    if (valor == null) return;
+
+    const checkboxes = campo.querySelectorAll('.chip-group input[type="checkbox"]');
+    if (checkboxes.length) {
+      // aceita as duas formas gravadas: lista simples (antiga) ou
+      // { selecionados, outras } quando há texto na caixa "Outras"
+      const temOutras = valor && !Array.isArray(valor) && typeof valor === "object";
+      const selecionados = temOutras
+        ? (valor.selecionados || [])
+        : (Array.isArray(valor) ? valor : [valor]);
+      checkboxes.forEach(c => {
+        const texto = c.nextElementSibling.textContent.trim();
+        c.checked = selecionados.includes(texto);
+      });
+      const caixaOutras = campo.querySelector('input[type="text"], textarea');
+      if (caixaOutras) caixaOutras.value = temOutras ? (valor.outras || "") : "";
+      return;
+    }
+    const radios = campo.querySelectorAll('.chip-group input[type="radio"], .scale input[type="radio"]');
+    const inputs = campo.querySelectorAll('input[type="text"], input[type="email"], textarea');
+
+    if (radios.length && inputs.length && valor && typeof valor === "object" && "resposta" in valor) {
+      radios.forEach(r => { r.checked = (r.nextElementSibling.textContent.trim() === valor.resposta); });
+      if (inputs.length === 1) { inputs[0].value = valor.detalhe || ""; }
+      else if (Array.isArray(valor.detalhe)) { inputs.forEach((input, i) => { if (valor.detalhe[i] != null) input.value = valor.detalhe[i]; }); }
+      return;
+    }
+    if (radios.length) {
+      radios.forEach(r => { r.checked = (r.nextElementSibling.textContent.trim() === valor); });
+      return;
+    }
+    const select = campo.querySelector('select');
+    if (select) { select.value = valor; return; }
+    if (inputs.length === 1) { inputs[0].value = valor; return; }
+    if (inputs.length > 1 && Array.isArray(valor)) {
+      inputs.forEach((input, i) => { if (valor[i] != null) input.value = valor[i]; });
+    }
+  }
+
+  function repovoarSeccao(section, dadosSecao){
+    if (!dadosSecao) return;
+    section.querySelectorAll('.subfield').forEach(campo => {
+      const labelEl = campo.querySelector('label');
+      if (!labelEl) return;
+      const chave = labelEl.textContent.trim();
+      if (chave in dadosSecao) repovoarCampo(campo, dadosSecao[chave]);
+    });
+  }
+
+  function repovoarRomTable(linhas){
+    if (!linhas) return;
+    document.querySelectorAll('#amplitude .rom-table tbody tr').forEach(tr => {
+      const label = tr.children[0].textContent.trim();
+      if (!linhas[label]) return;
+      const inputs = tr.querySelectorAll('input');
+      inputs[0].value = linhas[label].ativo || '';
+      inputs[1].value = linhas[label].passivo || '';
+    });
+  }
+
+  function repovoarAdesaoTable(linhas){
+    if (!linhas) return;
+    document.querySelectorAll('#autocuidado .adesao-table tbody tr').forEach(tr => {
+      const label = tr.children[0].textContent.trim();
+      if (linhas[label] == null) return;
+      const inputs = tr.children[1].querySelectorAll('input[type="radio"]');
+      inputs.forEach(r => { r.checked = (r.nextElementSibling.textContent.trim() === linhas[label]); });
+    });
+  }
+
+  function paraBR(dataISO){
+    if (!dataISO) return '';
+    const [y, m, d] = dataISO.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  async function carregarUltimoFormulario(){
+    const ultimo = await lumiApi.obterUltimoFormularioAlta(DOENTE_ID);
+    if (!ultimo) return;
+
+    if (ultimo.data_alta) document.getElementById('data-alta').value = paraBR(ultimo.data_alta);
+    if (ultimo.contacto_tipo) {
+      document.querySelectorAll('input[name="contacto-tipo"]').forEach(r => {
+        r.checked = (ultimo.contacto_tipo === 'proprio') === r.closest('label').innerText.includes('Próprio');
+      });
+    }
+
+    const dados = ultimo.dados || {};
+    document.querySelectorAll('.form-section').forEach(section => {
+      repovoarSeccao(section, dados[section.id]);
+    });
+    repovoarRomTable(dados.amplitude_tabela);
+    repovoarAdesaoTable(dados.autocuidado_tabela);
+    repovoarObjetivosDoente(dados.objetivos_gas);
+    repovoarRevisaoPed(dados["revisao-sistemas"]);
+    alternarProdutosApoio();
+    alternarAmputacao();
+
+    // os totais também ficam guardados como texto simples, mas recalcula-se
+    // sempre a partir dos itens repovoados, para garantir que nunca desalinha
+    recalcularPosasObs();
+    recalcularPosasDoente();
+    recalcularPSFS();
+
+    const dataUltimo = new Date(ultimo.criado_em).toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+    const aviso = document.createElement('div');
+    aviso.className = 'banner-info';
+    aviso.style.marginBottom = '20px';
+    aviso.innerHTML = `📋 Mostrando a avaliação mais recente, preenchida em ${dataUltimo}. Ao guardar, isto cria uma <strong>nova</strong> avaliação (não substitui a anterior).`;
+    document.querySelector('.main-area').insertBefore(aviso, document.querySelector('.grid'));
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+
+    const doente = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    DOENTE_ID = doente.id;
+    DOENTE_REGISTO = doente;
+    DOENTE_PROCESSO = doente.processo;
+    document.getElementById("titulo-formulario").textContent = "Formulário de Alta Hospitalar — " + doente.nome;
+    document.getElementById("sidebar-nome-doente").textContent = doente.nome;
+    ligarSidebarAoProcesso(doente.processo);
+    montarCabecalhoImpressao("Formulário de Alta Hospitalar", doente);
+
+    if (doente.email) document.getElementById('doente-email').value = doente.email;
+    if (doente.genero) {
+      document.querySelectorAll('input[name="genero"]').forEach(r => {
+        r.checked = (r.nextElementSibling.textContent.trim() === doente.genero);
+      });
+    }
+
+    // preencher o dropdown de gestor de caso com a equipa profissional real,
+    // e pré-selecionar o gestor já atribuído a este doente (se houver)
+    try {
+      const equipa = await lumiApi.listarEquipaProfissionais();
+      const select = document.getElementById('gestor-caso');
+      select.innerHTML = `<option value="">Por atribuir</option>` + equipa.map(p =>
+        `<option value="${p.id}">${p.nome}${p.especialidade ? " — " + p.especialidade : ""}</option>`
+      ).join('');
+      if (doente.gestor_caso_id) select.value = doente.gestor_caso_id;
+    } catch (e) {
+      console.error("Não foi possível carregar a lista de profissionais:", e);
+    }
+    document.getElementById("link-voltar").href = `doente.html?processo=${encodeURIComponent(doente.processo)}`;
+    document.getElementById("link-voltar").textContent = "← Voltar à ficha da criança";
+    await carregarUltimoFormulario();
+  })();
+</script>
+</body>
+</html>

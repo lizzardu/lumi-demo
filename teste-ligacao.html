@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste de Ligação — Lumi</title>
+<link rel="stylesheet" href="assets/css/styles.css?v=lumi-2">
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <span class="brand-plate"><img src="assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap-narrow" style="padding:60px 32px;">
+  <p class="eyebrow">Diagnóstico técnico</p>
+  <h1 style="font-size:1.9rem;">Teste de ligação ao Supabase</h1>
+  <p style="color:var(--ink-soft);">Esta página não faz parte do site para doentes/profissionais — serve só para confirmar, passo a passo, que a ligação à base de dados está configurada corretamente.</p>
+
+  <div id="resultados" style="margin-top:28px;"></div>
+</main>
+
+<script src="assets/js/vendor/supabase.js"></script>
+<script src="assets/js/supabase-config.js" onerror="erroConfig()"></script>
+<script>
+  const resultados = document.getElementById('resultados');
+
+  function linhaResultado(titulo, ok, detalhe) {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.marginBottom = '14px';
+    div.style.borderColor = ok ? 'var(--ok)' : 'var(--alert)';
+    div.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:1.3rem;">${ok ? '✅' : '❌'}</span>
+        <strong style="color:${ok ? 'var(--ok)' : 'var(--alert)'};">${titulo}</strong>
+      </div>
+      <p style="margin:10px 0 0; color:var(--ink-soft); font-size:.88rem;">${detalhe}</p>
+    `;
+    resultados.appendChild(div);
+  }
+
+  function erroConfig() {
+    linhaResultado(
+      'Ficheiro supabase-config.js não encontrado',
+      false,
+      'Confirme que copiou supabase-config.example.js, o renomeou para supabase-config.js, e que está na pasta assets/js/ (mesmo nível do exemplo).'
+    );
+  }
+
+  async function correrDiagnostico() {
+    // 1. Verificar se a configuração existe e parece válida
+    if (typeof window.LUMI_CONFIG === 'undefined') {
+      erroConfig();
+      return;
+    }
+    const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.LUMI_CONFIG;
+
+    if (!SUPABASE_URL || SUPABASE_URL.includes('SEU-PROJETO')) {
+      linhaResultado('Project URL não configurado', false, 'O valor de SUPABASE_URL em supabase-config.js ainda parece ser o texto de exemplo. Substitua pelo URL real do seu projeto Supabase.');
+      return;
+    }
+    if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('cole-aqui')) {
+      linhaResultado('Chave da API não configurada', false, 'O valor de SUPABASE_ANON_KEY em supabase-config.js ainda parece ser o texto de exemplo. Cole a sua publishable/anon key real.');
+      return;
+    }
+    linhaResultado('Configuração encontrada', true, `URL: ${SUPABASE_URL}`);
+
+    // 2. Criar cliente e tentar contactar o Supabase
+    let sb;
+    try {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      linhaResultado('Biblioteca do Supabase carregada', true, 'O ficheiro supabase-js foi carregado e o cliente foi criado sem erros.');
+    } catch (e) {
+      linhaResultado('Falha ao criar o cliente Supabase', false, e.message);
+      return;
+    }
+
+    // 3. Tentar uma leitura real (deve funcionar mesmo sem login, porque
+    //    a RLS bloqueia os dados mas não impede a ligação em si)
+    try {
+      const { error, status } = await sb.from('doentes').select('id', { count: 'exact', head: true });
+      if (error && status !== 401 && status !== 403) {
+        throw error;
+      }
+      linhaResultado(
+        'Ligação à base de dados confirmada',
+        true,
+        'O site conseguiu contactar a tabela "doentes". Se não estiver autenticado, é normal ver 0 resultados — isso é a segurança (RLS) a funcionar como esperado, não um erro.'
+      );
+    } catch (e) {
+      linhaResultado('Erro ao contactar a base de dados', false, `${e.message || e}. Verifique se correu o schema.sql e se o Project URL/chave estão corretos.`);
+      return;
+    }
+
+    // 4. Confirmar existência das tabelas principais
+    const tabelas = ['doentes', 'metas', 'plano_exercicios', 'duvidas', 'proms_respostas'];
+    for (const t of tabelas) {
+      const { error, status } = await sb.from(t).select('id', { count: 'exact', head: true });
+      const ok = !error || status === 401 || status === 403;
+      linhaResultado(`Tabela "${t}"`, ok, ok ? 'Existe e está acessível (protegida por RLS).' : (error ? error.message : 'Erro desconhecido.'));
+    }
+
+    linhaResultado('Diagnóstico concluído', true, 'Se todos os pontos acima estão verdes, a ligação está pronta. Podemos avançar para ligar as páginas do site a estas funções reais.');
+  }
+
+  correrDiagnostico();
+</script>
+</body>
+</html>

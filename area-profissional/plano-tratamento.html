@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano de Tratamento — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link class="active">🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Plano de tratamento</p>
+    <h1 style="font-size:1.9rem;">Cuidados, exercícios e alimentação</h1>
+    <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+      Cirurgia Plástica, Enfermagem, Fisioterapia, Terapia Ocupacional, Psicologia e
+      Nutrição podem prescrever aqui cuidados, exercícios ou orientações — incluindo
+      tratamento de feridas. Cada especialidade só entra quando for realmente
+      necessária: adicione como qualquer outra prescrição, escolhendo a categoria
+      certa. O doente regista cada execução e o esforço sentido — pode acompanhar
+      a adesão e o esforço médio de cada uma.
+    </p>
+
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin:28px 0 14px; flex-wrap:wrap; gap:10px;">
+      <p class="eyebrow" style="margin:0;">Cuidados, exercícios e prescrições ativas</p>
+      <button type="button" class="btn btn-star btn-sm" onclick="adicionarExercicio()">+ Nova prescrição</button>
+    </div>
+    <div id="plano-editor" style="max-width:760px;"></div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  async function carregarPlanoEditor(){
+    const exercicios = await lumiApi.listarExercicios(DOENTE_ID);
+    DEMO_PATIENT.plano.exercicios = exercicios.map(ex => ({
+      id: ex.id, nome: ex.nome, categoria: ex.categoria, descricao: ex.descricao,
+      prescricao: ex.prescricao, estado: ex.estado, registos: ex.plano_registos || []
+    }));
+    renderPlanoEditor('plano-editor');
+  }
+
+  /* substitui a versão de demonstração: lê os campos do cartão e grava
+     tudo de uma vez, com feedback visível no próprio botão */
+  async function guardarExercicio(id){
+    const btn = document.getElementById(`btn-guardar-${id}`);
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = "A guardar...";
+    try {
+      await lumiApi.atualizarExercicio(id, {
+        nome: document.getElementById(`ex-nome-${id}`).value,
+        categoria: document.getElementById(`ex-categoria-${id}`).value,
+        descricao: document.getElementById(`ex-descricao-${id}`).value,
+        prescricao: document.getElementById(`ex-prescricao-${id}`).value
+      });
+      btn.textContent = "Guardado ✓";
+      setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+    } catch (e) {
+      alert("Não foi possível guardar: " + (e.message || e));
+      btn.disabled = false; btn.textContent = original;
+    }
+  }
+
+  /* substitui a versão de demonstração: suspende a sério.
+     Suspender não apaga — o exercício continua aqui, com os registos de
+     execução, e volta a aparecer ao doente quando for reativado. */
+  async function alternarSuspensaoExercicio(id, suspenso){
+    try {
+      await lumiApi.atualizarExercicio(id, { estado: suspenso ? "ativo" : "suspenso" });
+      await carregarPlanoEditor();
+    } catch (e) {
+      alert("Não foi possível alterar o estado: " + (e.message || e));
+    }
+  }
+
+  /* substitui a versão de demonstração: remove a sério */
+  async function removerExercicio(id){
+    if (!confirm("Remover este cuidado/exercício prescrito?")) return;
+    await lumiApi.removerExercicio(id);
+    await carregarPlanoEditor();
+  }
+
+  /* substitui a versão de demonstração: prescreve a sério */
+  async function adicionarExercicio(){
+    await lumiApi.prescreverExercicio(DOENTE_ID, {
+      nome: "Novo exercício", categoria: "Fisioterapia", descricao: "", prescricao: ""
+    });
+    await carregarPlanoEditor();
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+
+    const doente = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    DOENTE_ID = doente.id;
+    document.getElementById("titulo-doente").textContent = "Plano de tratamento — " + doente.nome;
+    document.getElementById("sidebar-nome-doente").textContent = doente.nome;
+    ligarSidebarAoProcesso(doente.processo);
+    document.getElementById("link-voltar").href = `doente.html?processo=${encodeURIComponent(doente.processo)}`;
+    carregarPlanoEditor();
+  })();
+</script>
+</body>
+</html>

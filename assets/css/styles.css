@@ -1,0 +1,965 @@
+/* ========================================================================
+   LUMI — Plataforma de seguimento pós-alta, Unidade de Queimados Pediátricos
+   ULS São José · Design system
+   ======================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  /* --- azul Lumi (t-shirt da mascote), escurecido para contraste --- */
+  --blue-deep:     #202A45;   /* azul-noite do contorno do logótipo; fundo base */
+  --blue:          #1B7FA8;   /* azul primário: botões, ligações */
+  --blue-mid:      #2A9BC9;
+  --blue-light:    #7FD3EF;
+  --blue-line:     rgba(255,255,255,.18);
+  --blue-panel:    rgba(255,255,255,.07);
+
+  /* --- superfícies claras (conteúdo/dados) --- */
+  --paper:         #FFFFFF;
+  --paper-tint:    #EFF7FB;   /* céu muito claro */
+  --ink:           #1B2740;
+  --ink-soft:      #55637E;
+  --line:          #DCE6EE;
+
+  /* --- estrela Lumi: o amarelo do logótipo --- */
+  --star:          #FFD83B;   /* amarelo da estrela — fundos, nunca texto */
+  --star-deep:     #A8690B;   /* âmbar escuro — texto sobre branco (AA) */
+  --star-mist:     #FFF6D8;
+
+  /* --- areia: o fundo dos retratos da mascote, para os cartões onde ela aparece --- */
+  --cream:         #FBF3E8;
+
+  --alert:         #C6402E;
+  --alert-mist:    #FBE7E2;
+  --ok:            #2F8F5B;
+  --ok-mist:       #E4F2E9;
+
+  --f-display: 'Baloo 2', 'Nunito Sans', system-ui, sans-serif;
+  --f-body:    'Nunito Sans', -apple-system, system-ui, sans-serif;
+  --f-mono:    'IBM Plex Mono', monospace;
+
+  --radius: 10px;
+  --radius-lg: 18px;
+}
+
+*, *::before, *::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0;
+  background:var(--blue-deep);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{ font-family:var(--f-display); font-weight:600; margin:0 0 .4em; line-height:1.18; letter-spacing:-.01em; }
+h1{ font-size:2.6rem; font-weight:700; }
+h2{ font-size:1.7rem; font-weight:700; }
+h3{ font-size:1.2rem; }
+p{ margin:0 0 1em; }
+a{ color:var(--blue-mid); }
+.mono{ font-family:var(--f-mono); }
+img{ max-width:100%; display:block; }
+
+.wrap{ max-width:1180px; margin:0 auto; padding:0 32px; }
+.wrap-narrow{ max-width:760px; margin:0 auto; padding:0 32px; }
+.grid{ display:grid; gap:24px; }
+.g-2{ grid-template-columns:repeat(2,1fr); }
+.g-3{ grid-template-columns:repeat(3,1fr); }
+@media (max-width:860px){ .g-2,.g-3{ grid-template-columns:1fr; } h1{ font-size:2rem; } }
+
+.on-blue{ color:#fff; }
+.on-blue h1, .on-blue h2, .on-blue h3{ color:#fff; }
+.on-blue p{ color:rgba(255,255,255,.78); }
+.on-blue a{ color:#fff; }
+
+.section-blue{ background:var(--blue-deep); }
+.section-blue-mid{ background:linear-gradient(180deg, var(--blue-deep), var(--blue) 130%); }
+.section-white{ background:var(--paper); color:var(--ink); }
+.section-white h1, .section-white h2, .section-white h3{ color:var(--blue-deep); }
+.section-tint{ background:var(--paper-tint); }
+
+.topbar{ background:var(--blue-deep); border-bottom:1px solid var(--blue-line); position:sticky; top:0; z-index:30; }
+.topbar .wrap{ display:flex; align-items:center; justify-content:space-between; height:78px; gap:24px; flex-wrap:wrap; }
+.brandbar{ display:flex; align-items:center; gap:22px; }
+.uls-logo{ display:flex; align-items:center; gap:9px; color:#fff; text-decoration:none; }
+.uls-logo img{ height:34px; width:auto; display:block; }
+.uls-logo svg{ height:30px; width:auto; }
+.uls-logo .uls-text{ font-family:var(--f-body); font-weight:600; font-size:.82rem; line-height:1.15; letter-spacing:.01em; }
+.uls-logo .uls-text small{ display:block; font-weight:400; font-size:.7rem; opacity:.72; }
+.brand-divider{ width:1px; height:30px; background:var(--blue-line); }
+
+/* OCULTAR ULS — bloco único de interruptor. Esconde o logótipo da ULS São
+   José (presente em todas as páginas) e as referências textuais marcadas
+   com a classe .uls-ref (usadas pontualmente no index.html). Para voltar a
+   mostrar tudo, basta apagar (ou comentar) este bloco — nada foi removido
+   do markup, só escondido. */
+.uls-logo, .brand-divider, .uls-ref{ display:none !important; }
+.brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff; }
+.brand svg{ height:34px; width:auto; flex:none; }
+/* Logótipo com contorno branco próprio (ver assets/img/lumi-lockup*.png)
+   em vez de placa de fundo — assenta diretamente no azul-escuro do site. */
+.brand-plate{ display:flex; align-items:center; flex:none; line-height:0; }
+.brand-plate img{ height:40px; width:auto; display:block; }
+.brand .brand-name{ font-family:var(--f-display); font-weight:600; font-size:1.4rem; letter-spacing:.01em; }
+.brand .brand-name small{ display:block; font-family:var(--f-body); font-weight:500; font-size:.6rem; letter-spacing:.09em; text-transform:uppercase; color:var(--star); }
+.nav-tag{ font-family:var(--f-mono); font-size:.7rem; letter-spacing:.04em; color:rgba(255,255,255,.7); border:1px solid var(--blue-line); border-radius:20px; padding:5px 12px; }
+.topbar nav{ display:flex; align-items:center; gap:14px; }
+
+.btn{ display:inline-flex; align-items:center; gap:8px; font-family:var(--f-body); font-weight:600; font-size:.9rem; padding:12px 22px; border-radius:var(--radius); border:1px solid transparent; cursor:pointer; text-decoration:none; transition:transform .15s ease, background .15s ease, border-color .15s ease; }
+.btn:active{ transform:translateY(1px); }
+.btn-star{ background:var(--star); color:var(--blue-deep); }
+.btn-star:hover{ background:#FFE274; }
+/* O amarelo da estrela é claro de mais para levar texto branco: sobre fundo
+   azul, a regra .on-blue a ganhava à do botão e deixava-o ilegível. */
+.on-blue .btn-star, .on-blue a.btn-star{ color:var(--blue-deep); }
+.btn-primary{ background:var(--blue); color:#fff; }
+.btn-primary:hover{ background:var(--blue-mid); }
+.btn-ghost{ background:transparent; color:var(--blue-deep); border-color:var(--line); }
+.btn-ghost:hover{ border-color:var(--blue); }
+.btn-ghost-light{ background:transparent; color:#fff; border-color:var(--blue-line); }
+.btn-ghost-light:hover{ border-color:#fff; }
+.btn-sm{ padding:8px 14px; font-size:.8rem; }
+.btn-block{ width:100%; justify-content:center; }
+
+.card{ background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-lg); padding:26px; }
+.card-flush{ padding:0; overflow:hidden; }
+.card-on-blue{ background:var(--blue-panel); border:1px solid var(--blue-line); border-radius:var(--radius-lg); padding:26px; backdrop-filter:blur(6px); }
+.panel-solid-blue{ background:var(--blue-deep); border-radius:var(--radius-lg); padding:26px; }
+
+.eyebrow{ font-family:var(--f-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--star-deep); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.eyebrow::before{ content:''; width:16px; height:1px; background:var(--star); }
+.on-blue .eyebrow{ color:var(--star); }
+.on-blue .eyebrow::before{ background:var(--star); }
+
+.pill{ display:inline-flex; align-items:center; gap:6px; font-family:var(--f-mono); font-size:.72rem; padding:3px 10px; border-radius:20px; font-weight:500; }
+.pill-ok{ background:var(--ok-mist); color:var(--ok); }
+.pill-alert{ background:var(--alert-mist); color:var(--alert); }
+.pill-pending{ background:#E4EEF8; color:var(--blue); }
+.pill-star{ background:var(--star-mist); color:var(--star-deep); }
+
+footer{ background:var(--blue-deep); border-top:1px solid var(--blue-line); margin-top:0; padding:40px 0; color:rgba(255,255,255,.65); font-size:.85rem; }
+footer .wrap{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; align-items:center; }
+footer a{ color:rgba(255,255,255,.85); }
+
+/* ========================================================================
+   O CAMINHO DAS ESTRELAS — elemento de assinatura: a recuperação desenhada
+   como um percurso onde cada marco alcançado acende uma estrela
+   ======================================================================== */
+.rio{ position:relative; padding:20px 0 6px; }
+.rio svg{ width:100%; height:auto; display:block; }
+.rio-path-bg{ fill:none; stroke:rgba(255,255,255,.18); stroke-width:3; }
+.rio-path-fg{ fill:none; stroke:var(--star); stroke-width:3; stroke-linecap:round; stroke-dasharray: var(--dash, 1000); stroke-dashoffset: var(--offset, 1000); transition:stroke-dashoffset 1.2s ease; }
+.rio-node{ cursor:pointer; }
+.rio-node circle{ fill:var(--blue-deep); stroke:rgba(255,255,255,.35); stroke-width:2.5; transition:all .2s ease; }
+.rio-node.done circle{ fill:var(--star); stroke:var(--star-deep); }
+.rio-node.active circle{ fill:#fff; stroke:var(--star); }
+.rio-node.active circle.pulse{ fill:none; stroke:var(--star); opacity:.4; }
+.rio-node text.label{ font-family:var(--f-body); font-size:11px; fill:rgba(255,255,255,.85); font-weight:500; }
+.rio-node text.date{ font-family:var(--f-mono); font-size:9.5px; fill:rgba(255,255,255,.55); }
+.rio-node:hover circle{ stroke:#fff; }
+
+.rio-light .rio-path-bg{ stroke:var(--line); }
+.rio-light .rio-node circle{ fill:var(--paper); stroke:var(--line); }
+.rio-light .rio-node.done circle{ fill:var(--star); stroke:var(--star-deep); }
+.rio-light .rio-node.active circle{ fill:var(--blue); stroke:var(--blue); }
+.rio-light .rio-node text.label{ fill:var(--ink-soft); }
+.rio-light .rio-node text.date{ fill:var(--ink-soft); }
+
+.rio-tip{ position:absolute; display:none; background:var(--ink); color:#fff; padding:10px 14px; border-radius:var(--radius); font-size:.8rem; max-width:220px; pointer-events:none; z-index:30; line-height:1.4; box-shadow:0 8px 24px rgba(0,0,0,.25); }
+.rio-tip strong{ display:block; font-family:var(--f-body); margin-bottom:2px; }
+.rio-tip span{ opacity:.75; font-family:var(--f-mono); font-size:.7rem; }
+
+/* ========================================================================
+   Login / Registo
+   ======================================================================== */
+.auth-card{ background:#fff; border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 24px 60px rgba(32,42,69,.35); }
+.auth-tabs{ display:flex; background:var(--paper-tint); border-bottom:1px solid var(--line); }
+.auth-tab{ flex:1; text-align:center; padding:16px 12px; font-weight:600; font-size:.88rem; color:var(--ink-soft); cursor:pointer; border-bottom:2.5px solid transparent; background:none; border-top:none; border-left:none; border-right:none; font-family:var(--f-body); }
+.auth-tab.active{ color:var(--blue-deep); border-bottom-color:var(--star-deep); background:#fff; }
+.auth-panel{ padding:28px; display:none; }
+.auth-panel.active{ display:block; }
+.auth-note{ display:flex; gap:10px; background:var(--paper-tint); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; font-size:.82rem; color:var(--ink-soft); margin-bottom:20px; }
+
+label{ display:block; font-weight:600; font-size:.85rem; margin-bottom:8px; color:var(--blue-deep); }
+.field{ margin-bottom:22px; }
+.hint{ font-size:.8rem; color:var(--ink-soft); margin-top:6px; }
+input[type=text], input[type=email], input[type=password], input[type=tel], textarea{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius); font-family:var(--f-body); font-size:.95rem; background:#fff; color:var(--ink); }
+input:focus, textarea:focus, .scale-opt input:focus + span, button:focus-visible, a:focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
+
+.scale{ display:flex; gap:6px; flex-wrap:wrap; }
+.scale-opt{ position:relative; }
+.scale-opt input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+.scale-opt span{ display:flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:50%; border:1.5px solid var(--line); font-family:var(--f-mono); font-size:.85rem; color:var(--ink-soft); cursor:pointer; transition:all .15s ease; }
+.scale-opt input:checked + span{ background:var(--blue-deep); border-color:var(--blue-deep); color:#fff; }
+.scale-labels{ display:flex; justify-content:space-between; font-size:.75rem; color:var(--ink-soft); margin-top:8px; }
+
+.likert{ display:flex; flex-direction:column; gap:8px; }
+.likert-opt{ position:relative; }
+.likert-opt input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+.likert-opt div{ padding:12px 16px; border:1.5px solid var(--line); border-radius:var(--radius); font-size:.9rem; cursor:pointer; transition:all .15s ease; }
+.likert-opt input:checked + div{ border-color:var(--blue); background:var(--paper-tint); font-weight:600; color:var(--blue-deep); }
+
+table{ width:100%; border-collapse:collapse; font-size:.88rem; }
+th{ text-align:left; font-family:var(--f-mono); font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); padding:10px 14px; border-bottom:1px solid var(--line); }
+td{ padding:14px; border-bottom:1px solid var(--line); vertical-align:middle; }
+tr.row-link{ cursor:pointer; transition:background .12s ease; }
+tr.row-link:hover{ background:var(--paper-tint); }
+
+.bar{ width:80px; height:6px; background:var(--line); border-radius:4px; overflow:hidden; }
+.bar span{ display:block; height:100%; background:var(--star); }
+
+.app-shell{ display:grid; grid-template-columns:230px 1fr; min-height:calc(100vh - 78px); background:var(--paper-tint); }
+/* A barra lateral acompanha o scroll: fica colada por baixo da topbar (78px)
+   e ocupa exatamente a altura restante do ecra, com scroll proprio se o menu
+   for mais alto. Sem o align-self:start o item da grelha era esticado e o
+   position:sticky nao tinha efeito. */
+.sidebar{
+  background:var(--paper); border-right:1px solid var(--line); padding:28px 0;
+  position:sticky; top:78px; align-self:start;
+  height:calc(100vh - 78px); overflow-y:auto; overscroll-behavior:contain;
+}
+.sidebar a{ display:flex; align-items:center; gap:10px; padding:11px 28px; color:var(--ink-soft); text-decoration:none; font-size:.88rem; font-weight:500; border-left:3px solid transparent; }
+/* Um link escondido com o atributo "hidden" continuava à vista: a regra
+   acima dá-lhe display:flex, e uma classe vence o [hidden] do browser.
+   Foi o que manteve a Alta do acompanhamento no menu do doente. */
+.sidebar a[hidden]{ display:none !important; }
+.sidebar a.active{ color:var(--blue-deep); border-left-color:var(--star-deep); background:var(--paper-tint); font-weight:600; }
+.sidebar a:hover:not(.active){ background:var(--paper-tint); }
+/* Pop-up modal. Estava só dentro do prom.html, onde nasceu; passa para aqui
+   porque o convite para avaliar a consulta aparece em qualquer página do
+   doente e é construído em main.js. */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(27,39,64,.55); backdrop-filter:blur(2px);
+  display:none; align-items:center; justify-content:center; z-index:1000; padding:20px;
+}
+.modal-box{
+  background:#fff; border-radius:var(--radius-lg); padding:32px; max-width:420px; width:100%;
+  text-align:center; box-shadow:0 20px 60px rgba(27,39,64,.35);
+  max-height:calc(100vh - 40px); overflow-y:auto;
+}
+
+/* min-width:0 porque um item de grelha não encolhe abaixo do seu conteúdo
+   mínimo por omissão: bastava um rótulo que não parte para a coluna ficar
+   mais larga do que o ecrã e a página inteira deslizar na horizontal. */
+.main-area{ padding:36px; min-width:0; }
+/* Em telemóvel e tablet não há espaço para uma coluna fixa, mas escondê-la
+   sem mais deixava a página sem navegação nenhuma. Passa a abrir por cima do
+   conteúdo, a partir do botão Menu, e fecha-se ao escolher um destino. */
+.btn-menu{ display:none; }
+@media (max-width:900px){
+  .app-shell{ grid-template-columns:1fr; }
+  .sidebar{ display:none; }
+  .btn-menu{ display:inline-flex; }
+
+  body.menu-aberto{ overflow:hidden; }
+  body.menu-aberto .sidebar{
+    display:block; position:fixed; top:78px; left:0; right:0; bottom:0;
+    z-index:40; height:auto; max-height:calc(100vh - 78px); overflow-y:auto;
+    padding:10px 0 34px;
+    border-right:none; box-shadow:0 14px 32px rgba(32,42,69,.2);
+  }
+  /* alvos de toque: 48px de altura, o mínimo confortável no telemóvel */
+  body.menu-aberto .sidebar a{ padding:15px 24px; font-size:1rem; }
+}
+
+.chart-box{ position:relative; height:220px; }
+.chart-box.small{ height:140px; }
+
+.banner-alert{ display:flex; gap:12px; align-items:flex-start; background:var(--alert-mist); border:1px solid #E9BEB2; border-radius:var(--radius); padding:14px 18px; font-size:.87rem; color:#7A2A1B; }
+.banner-info{ display:flex; gap:12px; align-items:flex-start; background:#E4EEF8; border:1px solid #C4DAEF; border-radius:var(--radius); padding:14px 18px; font-size:.87rem; color:var(--blue-deep); }
+
+.stat .num{ font-family:var(--f-display); font-size:2.4rem; color:var(--blue-deep); font-weight:600; line-height:1; }
+.stat .lbl{ font-size:.78rem; color:var(--ink-soft); margin-top:6px; }
+
+.divider{ height:1px; background:var(--line); margin:28px 0; border:none; }
+.divider-light{ height:1px; background:var(--blue-line); margin:28px 0; border:none; }
+
+.badge-team{ display:inline-flex; align-items:center; gap:6px; font-size:.78rem; background:var(--paper-tint); color:var(--blue-deep); padding:4px 10px; border-radius:20px; border:1px solid var(--line); }
+
+.skip-link{ position:absolute; left:-999px; top:0; background:var(--star-deep); color:#fff; padding:10px 16px; z-index:100; }
+.skip-link:focus{ left:12px; top:12px; }
+
+.stage-card{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:26px; height:100%; }
+.stage-card .stage-icon{ width:44px; height:44px; margin-bottom:16px; }
+
+/* ---------- subnavegação da área do doente ---------- */
+/* Acompanha o scroll, colada por baixo da topbar (78px). O z-index fica um
+   abaixo do da topbar para passar por trás dela e não ao contrário.
+   O overflow-x mantém todos os separadores alcançáveis em ecrãs estreitos,
+   onde os seis não cabem lado a lado, sem pôr a página a deslizar na
+   horizontal. */
+.subnav{
+  background:#fff; border-bottom:1px solid var(--line);
+  position:sticky; top:78px; z-index:29;
+}
+.subnav .wrap{ display:flex; gap:4px; overflow-x:auto; }
+.subnav a{
+  display:inline-flex; align-items:center; gap:7px; padding:15px 18px;
+  font-size:.88rem; font-weight:600; color:var(--ink-soft); text-decoration:none;
+  border-bottom:2.5px solid transparent;
+}
+.subnav a.active{ color:var(--blue-deep); border-bottom-color:var(--star-deep); }
+.subnav a:hover:not(.active){ color:var(--blue-deep); }
+
+/* ---------- recursos: vídeos ---------- */
+.video-card{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); overflow:hidden; }
+.video-thumb{
+  position:relative; aspect-ratio:16/9; background:linear-gradient(135deg, var(--blue-deep), var(--blue-mid));
+  display:flex; align-items:center; justify-content:center;
+}
+.video-thumb .play{
+  width:52px; height:52px; border-radius:50%; background:rgba(255,255,255,.94);
+  display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,.25);
+}
+.video-thumb .play svg{ margin-left:3px; }
+.video-thumb .dur{
+  position:absolute; right:10px; bottom:10px; background:rgba(0,0,0,.6); color:#fff;
+  font-family:var(--f-mono); font-size:.7rem; padding:2px 7px; border-radius:3px;
+}
+/* vídeo verdadeiro, com os controlos do próprio navegador */
+.video-real{ aspect-ratio:16/9; background:#000; }
+.video-real video{ width:100%; height:100%; display:block; object-fit:contain; background:#000; }
+.video-card .body{ padding:16px 18px; }
+.video-card h3{ font-size:.98rem; margin-bottom:4px; }
+
+/* ---------- recursos: folhetos ---------- */
+.resource-item{
+  display:flex; align-items:center; gap:14px; padding:16px 18px;
+  border-bottom:1px solid var(--line);
+}
+.resource-item:last-child{ border-bottom:none; }
+.resource-icon{
+  flex:none; width:42px; height:42px; border-radius:8px; background:var(--star-mist);
+  display:flex; align-items:center; justify-content:center; color:var(--star-deep);
+}
+.resource-info{ flex:1; min-width:0; }
+.resource-info strong{ display:block; font-size:.92rem; color:var(--blue-deep); }
+.resource-info span{ font-size:.78rem; color:var(--ink-soft); }
+
+/* ---------- recursos: FAQ ---------- */
+.faq-item{ border-bottom:1px solid var(--line); }
+.faq-item:last-child{ border-bottom:none; }
+.faq-item summary{
+  padding:18px 4px; cursor:pointer; font-weight:600; color:var(--blue-deep);
+  font-size:.96rem; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px;
+}
+.faq-item summary::-webkit-details-marker{ display:none; }
+.faq-item summary::after{
+  content:'+'; font-family:var(--f-display); font-size:1.3rem; color:var(--star-deep); flex:none;
+  transition:transform .2s ease;
+}
+.faq-item[open] summary::after{ transform:rotate(45deg); }
+.faq-item .faq-a{ padding:0 4px 20px; color:var(--ink-soft); font-size:.9rem; max-width:70ch; }
+
+/* ---------- logo Lumi em destaque no hero ---------- */
+/* Contorno branco próprio da imagem (ver assets/img/lumi-lockup.png)
+   — sem placa de fundo, assenta diretamente no azul-escuro do hero. */
+.hero-logo-wrap{ text-align:center; margin-bottom:8px; }
+.hero-logo-plate{ display:inline-block; filter:drop-shadow(0 10px 26px rgba(0,0,0,.30)); }
+.hero-logo{ height:132px; width:auto; display:block; margin:0 auto; }
+.hero-tagline{ font-size:clamp(1.3rem,2.6vw,1.9rem); line-height:1.3; margin:0; }
+@media (max-width:640px){ .hero-logo{ height:auto; width:min(100%,280px); } }
+
+/* ========================================================================
+   Formulário de Alta (avaliação clínica pré-alta)
+   ======================================================================== */
+.form-toc{ position:sticky; top:79px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:10px; }
+.form-toc a{
+  display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius);
+  color:var(--ink-soft); text-decoration:none; font-size:.83rem; font-weight:500;
+}
+.form-toc a:hover{ background:var(--paper-tint); color:var(--blue-deep); }
+.form-toc a .n{
+  flex:none; width:20px; height:20px; border-radius:50%; background:var(--paper-tint);
+  color:var(--ink-soft); font-family:var(--f-mono); font-size:.68rem; font-weight:600;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.form-section{ scroll-margin-top:96px; margin-bottom:22px; }
+.form-section .section-head{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.section-num{
+  flex:none; display:flex; align-items:center; justify-content:center; width:30px; height:30px;
+  border-radius:50%; background:var(--star-mist); color:var(--star-deep);
+  font-family:var(--f-mono); font-weight:600; font-size:.85rem;
+}
+.form-section h2{ font-size:1.25rem; margin:0; }
+
+.subfield{ margin-bottom:18px; }
+.subfield > label{ font-weight:600; font-size:.85rem; color:var(--blue-deep); margin-bottom:8px; }
+.subfield .scale-note{ font-size:.76rem; color:var(--ink-soft); margin-bottom:8px; }
+
+.chip-group{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{ position:relative; }
+.chip input{ position:absolute; opacity:0; inset:0; cursor:pointer; margin:0; }
+.chip span{
+  display:inline-flex; align-items:center; padding:8px 14px; border:1.5px solid var(--line);
+  border-radius:20px; font-size:.83rem; color:var(--ink-soft); cursor:pointer; transition:all .15s ease;
+}
+.chip input:checked + span{ background:var(--blue-deep); border-color:var(--blue-deep); color:#fff; }
+.chip input:focus-visible + span{ outline:2px solid var(--blue); outline-offset:2px; }
+
+.mini-scale .scale-opt span{ width:36px; height:36px; font-size:.76rem; }
+
+/* Texto que existe para o significado, não para a vista: lido por leitores de
+   ecrã e presente no que se grava, invisível no ecrã. Na matriz serve para a
+   linha mostrar "Dor" e o registo guardar "Importância: Dor". */
+.so-leitor{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0;
+}
+
+/* ---------- matriz de importância ----------
+   Seis sintomas com quatro níveis cada dariam vinte e quatro pastilhas, com
+   os mesmos quatro rótulos repetidos seis vezes: muito para ler e difícil de
+   comparar entre linhas. Aqui os níveis são escritos uma só vez, no
+   cabeçalho, e cada linha traz apenas os botões alinhados por baixo — a
+   leitura passa a ser vertical, que é como se compara.
+
+   O texto de cada opção continua no HTML, apenas reduzido a zero: é dele
+   que sai o valor gravado, e é ele que os leitores de ecrã anunciam. */
+.matriz-escala{ border:1px solid var(--line); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:6px; }
+.matriz-cabecalho, .matriz-escala .subfield{
+  display:grid; grid-template-columns:minmax(120px, 1.3fr) repeat(5, minmax(56px, 1fr));
+  align-items:center; gap:0; margin:0;
+}
+.matriz-cabecalho{ background:var(--paper-tint); border-bottom:1px solid var(--line); }
+.matriz-cabecalho span{
+  padding:10px 6px; text-align:center; font-size:.72rem; font-weight:600;
+  color:var(--ink-soft); line-height:1.25;
+}
+.matriz-escala .subfield{ border-top:1px solid var(--line); }
+.matriz-escala .subfield:first-of-type{ border-top:none; }
+.matriz-escala .subfield:nth-of-type(even){ background:rgba(242,246,250,.5); }
+.matriz-escala .subfield > label{ margin:0; padding:12px 14px; font-size:.86rem; }
+.matriz-escala .chip-group{ display:contents; }
+.matriz-escala .chip{ display:flex; justify-content:center; align-items:center; padding:10px 4px; }
+.matriz-escala .chip:hover{ background:var(--paper-tint); }
+.matriz-escala .chip span{
+  width:22px; height:22px; padding:0; border-radius:50%; font-size:0;
+  border:2px solid var(--line); background:#fff;
+}
+.matriz-escala .chip input:checked + span{
+  background:var(--blue-deep); border-color:var(--blue-deep);
+  box-shadow:inset 0 0 0 3px #fff;
+}
+
+/* Em ecrãs estreitos a matriz não cabe: cada linha volta a ser a pergunta
+   com as quatro respostas escritas por extenso, que é o que funciona ao
+   polegar. */
+@media (max-width:700px){
+  .matriz-escala{ border:none; }
+  .matriz-cabecalho{ display:none; }
+  .matriz-escala .subfield{ display:block; padding:0 0 16px; background:none; border-top:1px solid var(--line); }
+  .matriz-escala .subfield > label{ padding:14px 0 8px; }
+  .matriz-escala .chip-group{ display:flex; flex-wrap:wrap; gap:8px; }
+  .matriz-escala .chip{ display:inline-flex; padding:0; }
+  .matriz-escala .chip:hover{ background:none; }
+  .matriz-escala .chip span{
+    width:auto; height:auto; min-height:40px; border-radius:20px; font-size:.83rem;
+    padding:8px 14px; border-width:1.5px; box-shadow:none;
+  }
+  .matriz-escala .chip input:checked + span{ box-shadow:none; color:#fff; }
+}
+
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px 22px; }
+@media (max-width:640px){ .form-row{ grid-template-columns:1fr; } }
+
+.rom-table{ width:100%; border-collapse:collapse; }
+.rom-table td{ padding:9px 4px; border-bottom:1px solid var(--line); font-size:.86rem; }
+.rom-table td:first-child{ color:var(--blue-deep); font-weight:600; width:38%; }
+.rom-table input{ padding:8px 10px; font-size:.85rem; }
+.rom-inputs{ display:flex; align-items:center; gap:6px; }
+.rom-inputs span{ color:var(--ink-soft); font-family:var(--f-mono); }
+
+.adesao-table{ width:100%; border-collapse:collapse; }
+.adesao-table th{ text-align:left; font-family:var(--f-mono); font-size:.68rem; text-transform:uppercase; color:var(--ink-soft); padding:8px 6px; border-bottom:1px solid var(--line); }
+.adesao-table td{ padding:10px 6px; border-bottom:1px solid var(--line); font-size:.85rem; }
+.adesao-table td:first-child{ font-weight:600; color:var(--blue-deep); }
+
+.form-actions{
+  position:sticky; bottom:0; background:#fff; border-top:1px solid var(--line);
+  padding:16px 0; margin-top:8px; display:flex; gap:12px; justify-content:flex-end;
+}
+
+/* ========================================================================
+   Jornada de Recuperação — metas e badges
+   ======================================================================== */
+.milestone-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:20px 22px; margin-bottom:14px; transition:border-color .15s ease;
+}
+.milestone-card.is-done{ border-color:var(--star); background:linear-gradient(180deg, var(--star-mist) 0%, #fff 70px); }
+.milestone-card.is-active{ border-color:var(--blue); }
+.milestone-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.milestone-title{ font-family:var(--f-display); font-size:1.08rem; color:var(--blue-deep); margin:0 0 6px; }
+.milestone-meta{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:4px; }
+.milestone-tag{
+  font-family:var(--f-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--ink-soft); background:var(--paper-tint); padding:3px 9px; border-radius:20px;
+}
+.milestone-tag.origem-doente{ background:var(--star-mist); color:var(--star-deep); }
+.milestone-badge-earned{
+  display:flex; align-items:center; gap:8px; margin-top:10px; padding:8px 12px;
+  background:var(--star-mist); border-radius:var(--radius); font-size:.83rem; color:var(--star-deep); font-weight:600;
+}
+.milestone-badge-earned .ic{ font-size:1.3rem; }
+
+.milestone-photo{ margin-top:12px; }
+.milestone-photo img{ max-width:220px; border-radius:8px; border:1px solid var(--line); }
+
+/* --- marcar um alerta como tratado (área profissional) --- */
+.tratar-bloco{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); }
+.tratar-bloco input[type=text]{ flex:1; min-width:200px; padding:8px 12px; font-size:.86rem; }
+.tratar-bloco .hint{ margin:0; }
+
+/* --- fio de atualizações de cada meta (doente <-> equipa) --- */
+.meta-updates{ margin-top:16px; padding-top:14px; border-top:1px dashed var(--line); }
+.meta-updates .updates-titulo{ font-family:var(--f-mono); font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px; }
+.update-item{ display:flex; gap:10px; margin-bottom:12px; }
+.update-item .avatar{ flex:none; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.8rem; background:var(--paper-tint); border:1px solid var(--line); }
+.update-item.do-doente .avatar{ background:var(--star-mist); border-color:var(--star); }
+.update-item .corpo{ flex:1; min-width:0; }
+.update-item .quem{ font-size:.82rem; font-weight:600; color:var(--blue-deep); }
+.update-item .quando{ font-family:var(--f-mono); font-size:.72rem; color:var(--ink-soft); margin-left:6px; font-weight:400; }
+.update-item .texto{ margin:2px 0 0; font-size:.88rem; color:var(--ink); overflow-wrap:anywhere; }
+.update-form{ display:flex; gap:8px; align-items:flex-start; margin-top:10px; }
+.update-form textarea{ flex:1; font-size:.88rem; padding:9px 12px; }
+
+.photo-upload{
+  margin-top:12px; border:1.5px dashed var(--line); border-radius:var(--radius);
+  padding:16px; text-align:center; background:var(--paper-tint); cursor:pointer;
+}
+.photo-upload:hover{ border-color:var(--blue); }
+.photo-upload input{ display:none; }
+.photo-upload .lbl{ font-size:.82rem; color:var(--ink-soft); }
+
+/* ---------- prateleira de conquistas (badges) ---------- */
+.badge-shelf{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:14px; }
+.badge-item{
+  text-align:center; padding:20px 12px; border-radius:var(--radius-lg); border:1px solid var(--line);
+  background:#fff;
+}
+.badge-item .ic{
+  width:56px; height:56px; margin:0 auto 10px; border-radius:50%; background:var(--star-mist);
+  display:flex; align-items:center; justify-content:center; font-size:1.6rem;
+}
+.badge-item strong{ display:block; font-size:.82rem; color:var(--blue-deep); }
+.badge-item span{ font-size:.72rem; color:var(--ink-soft); }
+.badge-item.locked{ opacity:.4; }
+.badge-item.locked .ic{ background:var(--paper-tint); filter:grayscale(1); }
+
+/* ---------- resumo de progresso da jornada (substitui o mapa "rio") ---------- */
+.progress-row{ display:flex; align-items:center; gap:14px; }
+.bar-track{ flex:1; height:10px; background:var(--line); border-radius:6px; overflow:hidden; }
+.bar-fill{ height:100%; background:var(--star); border-radius:6px; transition:width .4s ease; }
+.proximas-metas{ margin-top:18px; }
+.mini-meta{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); font-size:.9rem; color:var(--blue-deep); }
+.mini-meta:last-child{ border-bottom:none; }
+
+/* ---------- dúvidas / mensagens ---------- */
+.duvida-resposta{
+  margin-top:14px; padding:14px 16px; background:var(--paper-tint); border-radius:var(--radius);
+  border-left:3px solid var(--star); font-size:.9rem;
+}
+
+/* toggle "importante para o doente" */
+.star-toggle{ position:relative; display:inline-flex; }
+.star-toggle input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+.star-toggle span{
+  display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:20px;
+  border:1.5px solid var(--line); font-size:.8rem; color:var(--ink-soft); cursor:pointer;
+}
+.star-toggle input:checked + span{ background:var(--star-mist); border-color:var(--star); color:var(--star-deep); font-weight:600; }
+
+/* páginas internas do doente (fora do app-shell) usam fundo claro, não o azul do body */
+body.page-tint{ background:var(--paper-tint); }
+
+@media (prefers-reduced-motion:reduce){ *{ animation:none !important; transition:none !important; } }
+/* ========================================================================
+   IMPRESSÃO / GUARDAR EM PDF
+
+   O que sai em papel não é a página: é o documento. Um formulário impresso
+   com as caixas todas, incluindo as opções que ninguém escolheu, seria
+   ilegível e ocuparia o triplo das folhas.
+
+   Por isso: as opções não escolhidas desaparecem e as escolhidas passam a
+   texto simples. O que fica é o que foi respondido, na ordem em que foi
+   perguntado — que é o que alguém quer ler num processo clínico.
+   ======================================================================== */
+@media print{
+  .topbar, .sidebar, footer, .btn, .form-indice, .form-actions,
+  .secao-toggle .seta, .secao-progresso, .matriz-cabecalho{ display:none !important; }
+
+  body{ background:#fff; color:#000; font-size:11pt; }
+  .app-shell{ display:block; }
+  .main-area{ padding:0; }
+  .card, .form-section{ border:none !important; box-shadow:none; padding:0; margin:0 0 14px; background:none !important; }
+
+  /* quadros recolhidos abrem para o papel */
+  .secao-corpo[hidden]{ display:block !important; }
+  .section-head{ break-after:avoid; }
+  .form-section, .subfield, .prom-linha, .consulta-cartao{ break-inside:avoid; }
+
+  /* só as respostas dadas, e em texto */
+  .chip:has(input:not(:checked)), .scale-opt:has(input:not(:checked)){ display:none !important; }
+  .chip span, .scale-opt span{
+    border:none !important; background:none !important; color:#000 !important;
+    padding:0 !important; width:auto !important; height:auto !important;
+    border-radius:0 !important; box-shadow:none !important; font-weight:600;
+  }
+  .chip-group{ gap:0 10px; }
+
+  /* a matriz vira lista: sintoma e o nível escolhido */
+  .matriz-escala{ border:none !important; }
+  .matriz-escala .subfield{ display:flex !important; gap:10px; border:none !important; background:none !important; padding:2px 0; }
+  .matriz-escala .subfield > label{ padding:0 !important; min-width:150px; }
+  .matriz-escala .chip-group{ display:flex !important; }
+  .matriz-escala .chip{ padding:0 !important; }
+  .matriz-escala .chip span{ font-size:11pt !important; }
+
+  /* campos de texto sem aspeto de campo */
+  input, textarea, select{
+    border:none !important; padding:0 !important; background:none !important;
+    color:#000 !important; font-size:11pt !important; resize:none;
+  }
+  textarea{ overflow:visible !important; }
+  .subfield > label{ color:#000 !important; }
+  .scale-note, .hint{ color:#444 !important; }
+
+  /* cabeçalho próprio do documento, escondido no ecrã */
+  .print-cabecalho{ display:block !important; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:18px; }
+  a[href]::after{ content:""; }   /* sem URLs no meio do texto */
+}
+.print-cabecalho{ display:none; }
+
+/* ---------- Formulário de Alta: quadros recolhíveis ----------
+   São 9 quadros e cerca de 90 campos. Tudo aberto ao mesmo tempo dava uma
+   página impossível de percorrer, e nenhum profissional preenche os nove:
+   cada área preenche o seu. Por isso abrem um de cada vez, e o índice
+   mostra de relance o que já foi respondido. */
+.form-section{ scroll-margin-top:150px; }
+
+.secao-toggle{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  background:none; border:none; padding:0; margin:0; cursor:pointer;
+  font-family:var(--f-body); color:inherit;
+}
+.secao-toggle .seta{
+  margin-left:auto; flex:none; color:var(--ink-soft); font-size:.9rem;
+  transition:transform .18s ease;
+}
+.secao-toggle[aria-expanded="true"] .seta{ transform:rotate(90deg); }
+.secao-toggle:hover h2{ color:var(--blue); }
+.secao-toggle h2{ transition:color .15s ease; }
+
+.secao-progresso{
+  display:flex; align-items:center; gap:8px; flex:none;
+  font-family:var(--f-mono); font-size:.72rem; color:var(--ink-soft);
+  white-space:nowrap;
+}
+.secao-progresso .barra{ width:46px; height:5px; background:var(--line); border-radius:4px; overflow:hidden; }
+.secao-progresso .barra span{ display:block; height:100%; background:var(--star); transition:width .25s ease; }
+.secao-progresso.completo{ color:var(--ok); }
+.secao-progresso.completo .barra span{ background:var(--ok); }
+
+.secao-corpo{ padding-top:16px; }
+.secao-corpo[hidden]{ display:none; }
+
+/* ---------- índice fixo dos quadros ---------- */
+.form-indice{
+  position:sticky; top:78px; z-index:20;
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:12px 14px; margin-bottom:22px;
+  box-shadow:0 2px 10px rgba(27,39,64,.05);
+}
+.form-indice .linha{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.form-indice .rotulo{
+  font-family:var(--f-mono); font-size:.66rem; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-soft); margin-right:4px;
+}
+.indice-item{
+  display:inline-flex; align-items:center; gap:6px; padding:5px 10px;
+  border:1px solid var(--line); border-radius:20px; background:#fff;
+  font-size:.78rem; color:var(--ink-soft); cursor:pointer;
+  font-family:var(--f-body); transition:all .15s ease;
+}
+.indice-item:hover{ border-color:var(--blue); color:var(--blue-deep); }
+.indice-item .n{ font-family:var(--f-mono); font-size:.72rem; font-weight:600; }
+.indice-item.tem-respostas{ border-color:var(--star); color:var(--star-deep); background:var(--star-mist); }
+.indice-item.completo{ border-color:var(--ok); color:var(--ok); background:var(--ok-mist); }
+.indice-item.aberto{ box-shadow:0 0 0 2px var(--blue-light); }
+.form-indice .acoes{ margin-left:auto; display:flex; gap:6px; }
+
+/* ---------- as 23 perguntas do BURN-OP, em grelha compacta ----------
+   Uma pergunta curta com duas opções não precisa de ocupar a largura toda.
+   Em duas colunas e com linhas justas, o quadro 9 passa de ecrãs de scroll
+   para um bloco que se abarca de uma vez. */
+.revisao-grelha{ display:grid; grid-template-columns:repeat(2,1fr); gap:2px 20px; }
+.revisao-item{
+  display:flex; align-items:center; gap:12px; justify-content:space-between;
+  padding:7px 0; border-bottom:1px solid var(--line-soft, #EEF2F6);
+}
+.revisao-item .pergunta{ font-size:.86rem; line-height:1.35; }
+.revisao-item .opcoes{ display:flex; gap:4px; flex:none; }
+.revisao-item .opcoes label{ margin:0; position:relative; }
+.revisao-item .opcoes input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+.revisao-item .opcoes span{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:38px; padding:3px 9px; border:1px solid var(--line); border-radius:20px;
+  font-size:.76rem; color:var(--ink-soft); cursor:pointer; background:#fff;
+  transition:all .12s ease;
+}
+.revisao-item .opcoes input:checked + span{ border-color:var(--blue); background:var(--blue); color:#fff; font-weight:600; }
+.revisao-item .opcoes input:focus-visible + span{ outline:2px solid var(--blue); outline-offset:2px; }
+
+@media (max-width:820px){
+  .revisao-grelha{ grid-template-columns:1fr; }
+}
+
+/* Ao imprimir, nada disto se aplica: o formulário sai inteiro, com todos os
+   quadros abertos e sem o índice. */
+/* (as regras de impressão dos quadros estão na secção de impressão, acima) */
+
+/* O formulário ocupa uma coluna estreita, onde nove rótulos não cabem lado a
+   lado — ficavam empilhados e o índice ocupava mais espaço do que poupava.
+   Reduzido a círculos numerados, que é o que o cabeçalho de cada quadro já
+   mostra; o nome do quadro aberto aparece ao lado, e os restantes no title. */
+.indice-item{ padding:0; width:30px; height:30px; justify-content:center; border-radius:50%; }
+.indice-item .titulo{ display:none; }
+.form-indice .linha{ gap:6px; }
+.form-indice .atual{
+  font-size:.8rem; color:var(--blue-deep); font-weight:600;
+  margin-left:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.form-indice .acoes .btn{ padding:5px 10px; font-size:.72rem; }
+
+/* ========================================================================
+   TELEMÓVEL E TABLET — área do doente
+   Medido em 375x812 antes de escrever isto. A boa notícia é que nada
+   transbordava na horizontal; os problemas eram outros três, e sistemáticos.
+   ======================================================================== */
+
+/* ---------- tablet ---------- */
+@media (max-width:900px){
+  .wrap, .wrap-narrow{ padding-left:20px; padding-right:20px; }
+  .card{ padding:20px; }
+  main.wrap{ padding-left:20px !important; padding-right:20px !important; }
+}
+
+/* ---------- telemóvel ---------- */
+@media (max-width:700px){
+
+  /* PROBLEMA 1 — a topbar tinha altura fixa de 78px mas o conteúdo ocupava
+     126px: o nome do utilizador e o botão Sair ficavam cortados. Passa a
+     crescer com o que tem dentro.
+     E deixa de ser fixa: num ecrã de 812px, 78px de cabeçalho mais a barra
+     de separadores comiam 16% da altura útil de forma permanente. Numa
+     página a que se chega já autenticado, a marca não precisa de ficar
+     sempre à vista; a navegação precisa. Por isso o cabeçalho sobe com o
+     scroll e é a barra de separadores que fica colada ao topo. */
+  .topbar{ position:static; }
+  .topbar .wrap{ height:auto; min-height:0; padding:12px 20px; gap:12px 14px; }
+  .brandbar{ gap:12px; }
+  .brand img{ height:32px; }
+  .brand .brand-name{ font-size:1.15rem; }
+  .uls-logo img{ height:26px; }
+  .subnav{ top:0; }
+
+  /* PROBLEMA 2 — campos de texto com menos de 16px fazem o iOS aproximar a
+     página sozinho quando se toca neles, e depois o doente fica com o ecrã
+     desalinhado. 16px é o limiar exato a partir do qual o Safari deixa de o
+     fazer. Não é uma questão estética. */
+  input[type=text], input[type=email], input[type=password], input[type=tel],
+  input[type=number], input[type=date], textarea, select{
+    font-size:16px;
+  }
+
+  /* PROBLEMA 3 — alvos de toque abaixo do recomendado. Os botões 👍/👎 dos
+     recursos mediam 45x31 e havia 36 deles numa página; os botões pequenos
+     tinham 38px de altura. Passam todos a caber num polegar. */
+  .btn{ padding:13px 20px; }
+  .btn-sm{ padding:11px 16px; font-size:.85rem; }
+  .rating-btn{ min-width:48px; min-height:44px; font-size:1.05rem; }
+  .rating-row{ gap:10px; }
+
+  /* a escala 0–10 encolhia para 34px por opção em vez de mudar de linha */
+  .scale{ gap:8px; }
+  .scale-opt{ flex:0 0 auto; }
+  .scale-opt span{ width:44px; height:44px; }
+
+  /* o resto: respirar melhor num ecrã estreito */
+  .wrap, .wrap-narrow{ padding-left:16px; padding-right:16px; }
+  main.wrap{ padding:28px 16px 64px !important; }
+  /* o conteúdo do app-shell segue a mesma margem: 36px de cada lado num
+     telemóvel de 375px deixavam 303px úteis */
+  .main-area{ padding:28px 16px 64px; }
+  .card{ padding:18px; }
+  h1{ font-size:1.6rem !important; }
+  h2{ font-size:1.3rem; }
+  .subnav a{ padding:13px 14px; }
+  .likert-opt div{ padding:14px 16px; }
+  .chip span{ min-height:40px; display:inline-flex; align-items:center; }
+
+  /* tabelas: deslizam dentro do seu contentor, sem arrastar a página */
+  .card-flush{ overflow-x:auto; }
+  .resource-item{ flex-wrap:wrap; gap:10px; }
+
+  /* o pop-up de humor ocupa o ecrã todo em telemóvel */
+  .modal-box{ padding:22px 18px; }
+}
+
+/* ---------- ecrãs muito estreitos ---------- */
+@media (max-width:380px){
+  .brand .brand-name small{ display:none; }
+  .mood-faces{ grid-template-columns:repeat(2,1fr); }
+}
+
+/* ---------- tablets e qualquer ecrã tátil ----------
+   As regras de toque não podem parar nos 700px. Um iPad é um ecrã grande
+   operado com um dedo, não com um rato: os alvos pequenos e o zoom
+   automático do iOS ao focar um campo afetam-no exatamente da mesma
+   maneira. Daí o pointer:coarse, que apanha o tátil independentemente da
+   largura, e o limite de 1024px para os tablets que não o anunciam. */
+@media (max-width:1024px), (pointer:coarse){
+  input[type=text], input[type=email], input[type=password], input[type=tel],
+  input[type=number], input[type=date], input[type=datetime-local],
+  textarea, select{ font-size:16px; }
+
+  .btn{ padding:13px 20px; }
+  .btn-sm{ padding:11px 16px; font-size:.85rem; }
+  .rating-btn{ min-width:48px; min-height:44px; font-size:1.05rem; }
+  .rating-row{ gap:10px; }
+  .scale-opt{ flex:0 0 auto; }
+  .scale-opt span{ width:44px; height:44px; }
+  .likert-opt div{ padding:14px 16px; }
+}
+
+/* Os separadores encolhiam até o texto partir em três linhas ("Plano de
+   Tratamento"), e a barra ficava com 190px de altura. Passam a manter a
+   largura e a deslizar na horizontal — que era a intenção do overflow-x,
+   anulada pelo flex-shrink por omissão. */
+.subnav a{ white-space:nowrap; flex:0 0 auto; }
+.subnav .wrap{ scrollbar-width:thin; -webkit-overflow-scrolling:touch; }
+.subnav .wrap::-webkit-scrollbar{ height:3px; }
+.subnav .wrap::-webkit-scrollbar-thumb{ background:var(--line); border-radius:3px; }
+
+/* ========================================================================
+   LUMI — componentes próprios da versão pediátrica
+   ------------------------------------------------------------------------
+   Tudo o que aqui está existe por causa de uma diferença real face à
+   versão de adultos: quem responde pode ser a criança, o pai ou a mãe, e a
+   leitura muda com a idade. A mascote não é decoração — é o sinal de que o
+   ecrã está a falar com a criança e não com o adulto.
+   ======================================================================== */
+
+/* ---------- a mascote: retrato + balão de fala ---------- */
+.lumi-painel{
+  display:flex; align-items:center; gap:22px; flex-wrap:wrap;
+  background:var(--cream); border:1px solid #EFE2D0; border-radius:var(--radius-lg);
+  padding:22px 26px;
+}
+/* O retrato mostra a figura inteira, e não um recorte redondo da cara: a
+   diferença entre a Lumi dos 6 e a dos 15 anos está na roupa, na mochila e no
+   que leva na mão — cortar ao pescoço deitava fora precisamente o que
+   distingue as faixas. */
+.lumi-retrato{
+  flex:none; width:132px; height:168px;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+/* a figura assenta direta no painel: já vem recortada do fundo, e uma placa
+   branca por baixo dela dava uma caixa dentro de outra caixa */
+.lumi-retrato img{
+  width:auto; max-width:100%; height:100%; object-fit:contain;
+  filter:drop-shadow(0 6px 12px rgba(32,42,69,.12));
+}
+.lumi-retrato.grande{ width:190px; height:240px; }
+.lumi-fala{ flex:1 1 260px; min-width:0; }
+.lumi-fala .balao{
+  position:relative; background:#fff; border:1px solid #EFE2D0; border-radius:var(--radius-lg);
+  padding:16px 20px; font-size:1rem; color:var(--ink); line-height:1.5;
+}
+.lumi-fala .balao::before{
+  content:''; position:absolute; left:-9px; top:26px; width:16px; height:16px;
+  background:#fff; border-left:1px solid #EFE2D0; border-bottom:1px solid #EFE2D0;
+  transform:rotate(45deg);
+}
+.lumi-fala .balao strong{ font-family:var(--f-display); font-weight:700; }
+@media (max-width:560px){
+  .lumi-painel{ flex-direction:column; text-align:center; }
+  .lumi-fala .balao::before{ left:calc(50% - 8px); top:-9px; border:none; border-top:1px solid #EFE2D0; border-left:1px solid #EFE2D0; }
+}
+
+/* retrato inteiro, para o painel de boas-vindas da área da criança */
+.lumi-cartaz{
+  background:var(--cream); border-radius:var(--radius-lg); overflow:hidden;
+  border:1px solid #EFE2D0; display:flex; justify-content:center; padding:18px;
+}
+.lumi-cartaz img{ width:auto; max-width:100%; max-height:300px; height:auto; display:block; }
+
+/* ---------- as seis idades, lado a lado (página inicial) ---------- */
+.lumi-idades{
+  display:grid; grid-template-columns:repeat(6,1fr); gap:10px;
+  background:var(--cream); border:1px solid #EFE2D0; border-radius:var(--radius-lg);
+  padding:18px 16px;
+}
+.lumi-idade{ text-align:center; }
+.lumi-idade .fig{
+  height:132px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:8px;
+}
+.lumi-idade img{ width:auto; max-width:100%; height:100%; object-fit:contain; }
+.lumi-idade .anos{
+  font-family:var(--f-mono); font-size:.66rem; letter-spacing:.03em;
+  color:var(--ink-soft); white-space:nowrap;
+}
+@media (max-width:860px){
+  .lumi-idades{ grid-template-columns:repeat(3,1fr); gap:16px 10px; }
+  .lumi-idade .fig{ height:112px; }
+}
+@media (max-width:420px){
+  .lumi-idades{ grid-template-columns:repeat(2,1fr); }
+}
+
+/* ---------- etiqueta de faixa etária ---------- */
+.pill-idade{ background:var(--star-mist); color:var(--star-deep); }
+
+/* ---------- quem está a responder (criança / cuidador) ---------- */
+.quem-responde{
+  display:flex; gap:10px; flex-wrap:wrap; margin:0 0 22px;
+}
+.quem-responde label{ margin:0; }
+.quem-responde .chip span{ font-size:.9rem; }
+
+/* ---------- escala de caras (dor, humor, prurido em idade pediátrica) ----------
+   Seis caras, tamanho de dedo de criança. A cor segue a escala — verde em
+   cima, âmbar no meio, vermelho em baixo — para que a leitura não dependa
+   só da expressão desenhada. */
+.escala-caras{ display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+.cara-opt{ position:relative; }
+.cara-opt input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+.cara-opt > div{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:14px 6px; border:2px solid var(--line); border-radius:var(--radius-lg);
+  background:#fff; cursor:pointer; transition:transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.cara-opt > div .cara{ font-size:2rem; line-height:1; }
+.cara-opt > div .num{ font-family:var(--f-mono); font-size:.72rem; color:var(--ink-soft); }
+.cara-opt:hover > div{ transform:translateY(-2px); }
+.cara-opt input:checked + div{ border-color:var(--blue); background:var(--paper-tint); }
+.cara-opt[data-tom="bom"] input:checked + div{ border-color:var(--ok); background:var(--ok-mist); }
+.cara-opt[data-tom="medio"] input:checked + div{ border-color:#D89A1F; background:#FFF6DA; }
+.cara-opt[data-tom="baixo"] input:checked + div{ border-color:var(--alert); background:var(--alert-mist); }
+@media (max-width:560px){ .escala-caras{ grid-template-columns:repeat(3,1fr); } }
+
+/* ---------- blocos de PROM por faixa etária ---------- */
+.bloco-idade{ display:none; }
+.bloco-idade.ativo{ display:block; }
+.nota-proxy{
+  display:flex; gap:10px; align-items:flex-start;
+  background:var(--star-mist); border:1px solid #F3E2AE; border-radius:var(--radius);
+  padding:12px 14px; font-size:.84rem; color:#6B4A09; margin-bottom:20px;
+}
+
+/* ---------- cartão de instrumento, na lista de instrumentos ---------- */
+.inst-idade{ font-family:var(--f-mono); font-size:.72rem; color:var(--ink-soft); white-space:nowrap; }

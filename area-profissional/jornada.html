@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jornada e Metas — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link class="active">🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Jornada de recuperação</p>
+    <h1 style="font-size:1.9rem;">Definir e rever metas</h1>
+    <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+      As metas iniciais devem ser definidas após o Formulário de Alta Hospitalar e ficam sempre
+      visíveis e editáveis para o doente. Devem refletir aquilo que o próprio doente
+      considera importante — não apenas objetivos clínicos.
+    </p>
+
+    <div class="banner-info" style="margin:20px 0 24px;">
+      💡 O quadro abaixo vem da secção <strong>8. Outcomes Centrados no Doente</strong> do
+      Formulário de Alta Hospitalar — é aí que se regista o que o doente mais receia não conseguir fazer
+      sozinho e o que mais o incomoda. Use essa informação para propor metas alinhadas com as
+      prioridades dele, e não apenas com a evolução clínica.
+    </div>
+
+    <div class="card" style="margin-bottom:28px; background:var(--paper-tint);" id="painel-outcomes">
+      <p class="eyebrow" style="margin-bottom:10px;">O que o doente indicou como importante (Formulário de Alta Hospitalar)</p>
+      <div id="outcomes-conteudo"><p class="hint" style="margin:0;">A carregar...</p></div>
+    </div>
+
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+      <p class="eyebrow" style="margin:0;">Metas e marcos da jornada</p>
+      <button type="button" class="btn btn-star btn-sm" onclick="adicionarMetaEditor()">+ Adicionar meta</button>
+    </div>
+
+    <div id="editor-metas" style="max-width:1100px;"></div>
+
+    <div class="card" style="max-width:760px; margin-top:8px;">
+      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:400; color:var(--ink);">
+        <input type="checkbox" id="revisto-conjunto" style="margin-top:3px;" onchange="document.getElementById('campo-data-revisao').style.display = this.checked ? 'block' : 'none';">
+        <span style="font-size:.88rem;">Estas metas foram revistas em conjunto com o doente nesta consulta.</span>
+      </label>
+      <div class="field" id="campo-data-revisao" style="display:none; margin-top:14px; margin-bottom:0;">
+        <label for="data-revisao">Data da revisão</label>
+        <input type="text" id="data-revisao" placeholder="dd/mm/aaaa" style="max-width:200px;">
+      </div>
+      <p class="hint" style="margin:14px 0 0;">Nota: cada meta é gravada individualmente ao clicar em "Guardar alterações" no respetivo cartão, acima. Este registo de revisão é só para assinalar que houve conversa com a doente sobre as metas nesta consulta.</p>
+    </div>
+
+    <div class="form-actions" style="max-width:760px;">
+      <a href="doente.html" class="btn btn-ghost">Voltar</a>
+      <button type="button" class="btn btn-primary" onclick="guardarJornada()">Registar revisão</button>
+    </div>
+
+    <div id="confirm-jornada" class="card" style="max-width:760px; margin-top:8px; display:none; border-color:var(--ok); background:var(--ok-mist);">
+      <span class="pill pill-ok">Guardado</span>
+      <h3 style="margin-top:14px;">Jornada atualizada</h3>
+      <p style="color:var(--ink-soft); margin:0;">As metas ficam já visíveis e editáveis na área do doente. A doente será notificada das novas metas adicionadas.</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  /** Vai buscar as metas reais e "empresta" o array a DEMO_PATIENT.milestones,
+   *  para reaproveitar renderMilestonesEditor/editorRowHTML sem alterações. */
+  async function carregarEditor(){
+    const linhas = await lumiApi.listarMetas(DOENTE_ID);
+    DEMO_PATIENT.milestones = linhas.map(r => ({
+      id: r.id, label: r.label, tipo: r.tipo, categoria: r.categoria,
+      origem: r.origem, importante: r.importante, estado: r.estado,
+      data: r.data_alvo, foto: r.foto_url
+    }));
+    renderMilestonesEditor('editor-metas');
+    await carregarAtualizacoes();
+  }
+
+  /** Mostra, dentro de cada cartão, o que o doente tem escrito sobre a meta
+   *  e deixa a equipa responder no mesmo fio. É o mesmo fio que o doente vê
+   *  na sua área — não usar para notas internas (para isso existe a
+   *  "Comunicação da equipa", na ficha da criança). */
+  async function carregarAtualizacoes(){
+    let porMeta;
+    try {
+      porMeta = agruparAtualizacoesPorMeta(await lumiApi.listarAtualizacoesMetas(DOENTE_ID));
+    } catch (e) {
+      console.error("Erro ao carregar as atualizações das metas:", e);
+      DEMO_PATIENT.milestones.forEach(m => {
+        const el = document.getElementById(`meta-updates-${m.id}`);
+        if (el) el.innerHTML = `<p class="hint" style="margin:0;">⚠️ Não foi possível carregar as atualizações: ${escaparTexto(e.message || e)}</p>`;
+      });
+      return;
+    }
+    DEMO_PATIENT.milestones.forEach(m => {
+      renderAtualizacoesMeta(m.id, porMeta[m.id], {
+        titulo: "Atualizações do doente",
+        vazio: "O doente ainda não escreveu nada sobre esta meta.",
+        placeholder: "Responder ao doente sobre esta meta (o doente lê esta resposta)...",
+        botao: "Responder",
+        aoEnviar: "enviarAtualizacaoProfissional"
+      });
+    });
+  }
+
+  /** Resposta da equipa no fio de uma meta. Fica visível para o doente. */
+  async function enviarAtualizacaoProfissional(metaId){
+    const campo = document.getElementById(`update-texto-${metaId}`);
+    const estado = document.getElementById(`update-estado-${metaId}`);
+    const botao = document.getElementById(`update-btn-${metaId}`);
+    const texto = campo.value.trim();
+    if (!texto) { estado.textContent = "Escreva a resposta antes de enviar."; campo.focus(); return; }
+
+    botao.disabled = true;
+    estado.textContent = "A enviar...";
+    try {
+      await lumiApi.registarAtualizacaoMeta(metaId, DOENTE_ID, texto);
+      await carregarAtualizacoes();
+    } catch (e) {
+      console.error("Erro ao responder no fio da meta:", e);
+      estado.textContent = "Não foi possível enviar: " + (e.message || e);
+      botao.disabled = false;
+    }
+  }
+
+  /* substitui a versão de demonstração: lê todos os campos do cartão e
+     grava de uma vez, com feedback visível no próprio botão */
+  async function guardarMeta(id){
+    const btn = document.getElementById(`btn-guardar-meta-${id}`);
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = "A guardar...";
+    try {
+      await lumiApi.atualizarMeta(id, {
+        label: document.getElementById(`meta-label-${id}`).value,
+        data_alvo: document.getElementById(`meta-data-${id}`).value,
+        categoria: document.getElementById(`meta-categoria-${id}`).value,
+        estado: document.getElementById(`meta-estado-${id}`).value,
+        importante: document.getElementById(`meta-importante-${id}`).checked
+      });
+      btn.textContent = "Guardado ✓";
+      setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+    } catch (e) {
+      alert("Não foi possível guardar: " + (e.message || e));
+      btn.disabled = false; btn.textContent = original;
+    }
+  }
+
+  /* substitui a versão de demonstração: remove a sério */
+  async function removerMeta(id){
+    const meta = DEMO_PATIENT.milestones.find(m => String(m.id) === String(id));
+    if (!meta) return;
+    if (!confirm(`Remover a meta "${meta.label}"?`)) return;
+    await lumiApi.removerMeta(id);
+    await carregarEditor();
+  }
+
+  /* substitui a versão de demonstração: cria a sério */
+  async function adicionarMetaEditor(){
+    await lumiApi.adicionarMeta(DOENTE_ID, {
+      label: "Nova meta", tipo: "Funcional", categoria: "funcional",
+      origem: "clinica", importante: false, estado: "pending", data_alvo: "a definir"
+    });
+    await carregarEditor();
+  }
+
+  /* ---------------------------------------------------------------------
+     Quadro 8 do Formulário de Alta Hospitalar ("Outcomes Centrados no Doente"),
+     lido do último formulário gravado. Antes estava escrito à mão no HTML
+     com os dados da demonstração, pelo que mostrava sempre o mesmo
+     independentemente do doente.
+     --------------------------------------------------------------------- */
+
+  /** Um campo do quadro 8 pode ser uma lista de opções, ou uma lista mais
+   *  o texto livre do campo "Outras" — aceita as duas formas. */
+  function textoDoCampoOutcomes(valor){
+    if (valor == null) return "";
+    if (Array.isArray(valor)) return valor.join(", ");
+    if (typeof valor === "object") {
+      const partes = Array.isArray(valor.selecionados) ? valor.selecionados.slice() : [];
+      if (valor.outras) partes.push(valor.outras);
+      return partes.join(", ");
+    }
+    return String(valor);
+  }
+
+  function blocoOutcome(titulo, texto){
+    return `
+      <div>
+        <p class="hint" style="margin-bottom:4px; font-weight:600; color:var(--blue-deep);">${escaparTexto(titulo)}</p>
+        <p style="margin:0; font-size:.9rem;">${texto ? escaparTexto(texto) : '<span class="hint">— não preenchido</span>'}</p>
+      </div>`;
+  }
+
+  async function carregarOutcomes(){
+    const el = document.getElementById('outcomes-conteudo');
+    let formulario;
+    try {
+      formulario = await lumiApi.obterUltimoFormularioAlta(DOENTE_ID);
+    } catch (e) {
+      console.error("Erro ao carregar o Formulário de Alta Hospitalar:", e);
+      el.innerHTML = `<p class="hint" style="margin:0;">⚠️ Não foi possível carregar o Formulário de Alta Hospitalar: ${escaparTexto(e.message || e)}</p>`;
+      return;
+    }
+    if (!formulario) {
+      el.innerHTML = `<p class="hint" style="margin:0;">Ainda não há Formulário de Alta Hospitalar gravado para este doente. Preencha-o primeiro — a secção 8 aparece aqui e os objetivos passam a metas automaticamente.</p>`;
+      return;
+    }
+
+    const mapa = (formulario.dados && formulario.dados.mapa) || {};
+    const receia = textoDoCampoOutcomes(mapa["O que o doente mais receia não conseguir fazer sozinho"]);
+    const incomoda = textoDoCampoOutcomes(mapa["O que mais o incomoda"]);
+    const confianca = textoDoCampoOutcomes(mapa["Confiança para cuidar da cicatriz"]);
+    const alivia = textoDoCampoOutcomes(mapa["O que alivia a sua dor"]);
+    const objetivos = (formulario.dados && formulario.dados.objetivos_gas) || [];
+
+    const labelsMetas = DEMO_PATIENT.milestones.map(m => (m.label || "").trim().toLowerCase());
+    const listaObjetivos = objetivos.length
+      ? `<ul style="margin:0; padding-left:18px; font-size:.9rem;">` + objetivos.map(o => {
+          const jaEMeta = labelsMetas.includes(String(o).trim().toLowerCase());
+          return `<li style="margin-bottom:4px;">${escaparTexto(o)} ${jaEMeta
+            ? '<span class="pill pill-ok" style="margin-left:4px;">já é meta</span>'
+            : '<span class="pill pill-alert" style="margin-left:4px;">ainda não é meta</span>'}</li>`;
+        }).join("") + `</ul>`
+      : `<p class="hint" style="margin:0;">Nenhum objetivo registado na secção 8.</p>`;
+
+    el.innerHTML = `
+      <div class="grid g-2" style="margin-bottom:18px;">
+        ${blocoOutcome("Receia não conseguir fazer sozinho", receia)}
+        ${blocoOutcome("O que mais o incomoda", incomoda)}
+        ${blocoOutcome("Confiança para cuidar da cicatriz (0–10)", confianca)}
+        ${blocoOutcome("O que alivia a dor", alivia)}
+      </div>
+      <p class="hint" style="margin-bottom:6px; font-weight:600; color:var(--blue-deep);">Objetivos do doente registados na secção 8</p>
+      ${listaObjetivos}`;
+  }
+
+  function guardarJornada(){
+    document.getElementById('confirm-jornada').style.display = 'block';
+    document.getElementById('confirm-jornada').scrollIntoView({behavior:'smooth'});
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+
+    const doente = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    DOENTE_ID = doente.id;
+    document.getElementById("titulo-doente").textContent = "Jornada de recuperação — " + doente.nome;
+    document.getElementById("sidebar-nome-doente").textContent = doente.nome;
+    ligarSidebarAoProcesso(doente.processo);
+    document.getElementById("link-voltar").href = `doente.html?processo=${encodeURIComponent(doente.processo)}`;
+    await carregarEditor();
+    carregarOutcomes();
+  })();
+</script>
+</body>
+</html>

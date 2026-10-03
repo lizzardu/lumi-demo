@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alta do acompanhamento — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  .destaque{ border-left:4px solid var(--star-deep); padding:18px 22px; background:#fff;
+             border-radius:var(--radius-lg); margin-bottom:20px; }
+  .destaque h2{ font-family:var(--f-body); font-size:1.05rem; color:var(--blue-deep); margin:0 0 10px; }
+  .destaque p{ margin:0 0 10px; white-space:pre-wrap; }
+  .prom-fim{ display:flex; gap:10px; align-items:baseline; padding:10px 0; border-bottom:1px solid var(--line); }
+  .prom-fim:last-child{ border-bottom:none; }
+  .prom-fim .num{ font-family:var(--f-mono); font-weight:600; color:var(--blue-deep); }
+  .melhor{ color:var(--ok); font-weight:600; } .pior{ color:var(--alert); font-weight:600; }
+  .igual{ color:var(--ink-soft); font-weight:600; }
+  .obj{ display:flex; gap:10px; align-items:baseline; padding:7px 0; }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" class="active" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+    <div class="print-cabecalho" id="print-cabecalho"></div>
+    <div id="conteudo"><p class="hint">A carregar...</p></div>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  /* O doente recebe o documento que foi escrito para ele, e não o relatório
+     clínico inteiro. O que a equipa escreveu no quadro 7 vem primeiro e em
+     destaque; os números do percurso vêm a seguir, porque ajudam a ver o
+     caminho feito; a leitura clínica dirigida a outros profissionais fica de
+     fora — não foi escrita para ele e só o confundiria. */
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function valor(bloco, campo){
+    const v = bloco && bloco[campo];
+    if (v == null) return "";
+    if (typeof v === "object") {
+      const partes = [];
+      if (v.resposta) partes.push(v.resposta);
+      if (v.detalhe && String(v.detalhe).trim()) partes.push(String(v.detalhe).trim());
+      return partes.join(" — ");
+    }
+    return String(v).trim();
+  }
+
+  function desenhar(alta){
+    const d = alta.dados || {};
+    const doc = d.doente || {};
+    const pos = d["pos-alta"] || {};
+    const r = alta.resumo || {};
+    let html = "";
+
+    html += '<p class="eyebrow">Fim do acompanhamento</p>'
+         + '<h1 style="font-size:2rem;">O seu percurso connosco</h1>'
+         + '<p style="color:var(--ink-soft);">'
+         + (alta.data_alta ? "Alta do acompanhamento a " + esc(dataCurta(alta.data_alta)) + ". " : "")
+         + "Assinado por " + esc(alta.profissional_nome) + ".</p>";
+
+    const resumo = valor(doc, "Resumo do percurso, em linguagem simples");
+    if (resumo) html += '<div class="destaque"><h2>Como correu</h2><p>' + esc(resumo) + "</p></div>";
+
+    const continuar = valor(doc, "O que deve continuar a fazer");
+    if (continuar) html += '<div class="destaque"><h2>O que deve continuar a fazer</h2><p>' + esc(continuar) + "</p></div>";
+
+    const alerta = valor(pos, "Sinais de alerta");
+    if (alerta) {
+      html += '<div class="banner-alert" style="margin-bottom:20px;"><div>'
+            + "<strong>Procure ajuda se notar:</strong><br>" + esc(alerta) + "</div></div>";
+    }
+
+    // números do percurso
+    const partes = [];
+    if (r.consultas_presenciais) partes.push(r.consultas_presenciais + (r.consultas_presenciais === 1 ? " consulta presencial" : " consultas presenciais"));
+    if (r.teleconsultas) partes.push(r.teleconsultas + (r.teleconsultas === 1 ? " teleconsulta" : " teleconsultas"));
+    if (partes.length) {
+      html += '<div class="card" style="margin-bottom:20px;"><p class="eyebrow">O caminho que fez</p>'
+            + "<p style=\"margin:0;\">Ao longo do acompanhamento houve " + esc(partes.join(" e ")) + ".</p></div>";
+    }
+
+    // evolução dos questionários
+    if (r.proms && r.proms.length) {
+      html += '<div class="card" style="margin-bottom:20px;"><p class="eyebrow">O que os seus questionários mostraram</p>'
+            + r.proms.map(function(p){
+                const mudanca = p.variacao == null
+                  ? '<span class="hint">só respondeu uma vez</span>'
+                  : '<span class="' + p.sentido + '">'
+                    + (p.sentido === "melhor" ? "melhorou" : p.sentido === "pior" ? "agravou" : "manteve-se") + "</span>";
+                return '<div class="prom-fim"><span>' + esc(p.nome) + "</span>"
+                     + '<span class="num">' + p.inicial + " → " + p.final + "</span>" + mudanca + "</div>";
+              }).join("")
+            + "</div>";
+    }
+
+    // objetivos
+    if (d.objetivos && d.objetivos.length) {
+      const selo = { "Atingido":"pill-ok", "Parcialmente atingido":"pill-star", "Não atingido":"pill-pending" };
+      html += '<div class="card" style="margin-bottom:20px;"><p class="eyebrow">Os objetivos que tinha</p>'
+            + d.objetivos.map(function(o){
+                return '<div class="obj"><span class="pill ' + (selo[o.classificacao] || "pill-pending") + '">'
+                     + esc(o.classificacao) + "</span><span>" + esc(o.label) + "</span></div>";
+              }).join("")
+            + "</div>";
+    }
+
+    const contactos = valor(doc, "Contactos úteis");
+    const recursos = valor(doc, "Recursos que lhe podem ser úteis");
+    const seguimento = valor(pos, "Necessidade de seguimento");
+    if (contactos || recursos || seguimento) {
+      html += '<div class="card" style="margin-bottom:20px;">';
+      if (seguimento) html += '<p class="eyebrow">Seguimento a partir daqui</p><p>' + esc(seguimento) + "</p>";
+      if (contactos) html += '<p class="eyebrow">Contactos úteis</p><p style="white-space:pre-wrap;">' + esc(contactos) + "</p>";
+      if (recursos) html += '<p class="eyebrow">Recursos</p><p style="white-space:pre-wrap;">' + esc(recursos) + "</p>";
+      html += "</div>";
+    }
+
+    html += '<div class="banner-info"><div>Se tiver dúvidas sobre alguma coisa aqui escrita, '
+          + '<a href="duvidas.html">escreva à equipa</a> — a sua conta continua acessível.</div></div>';
+
+    document.getElementById("conteudo").innerHTML = html;
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    atualizarBadgeDuvidas(sessao.perfil.doente_id);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    montarCabecalhoImpressao("Alta do acompanhamento", { nome: sessao.perfil.nome });
+
+    const el = document.getElementById("conteudo");
+    try {
+      // a base de dados só entrega ao doente o relatório emitido
+      const alta = await lumiApi.obterAltaSeguimento(sessao.perfil.doente_id);
+      if (!alta) {
+        el.innerHTML = '<p class="eyebrow">Fim do acompanhamento</p>'
+          + '<h1 style="font-size:1.8rem;">Ainda não há relatório de alta</h1>'
+          + '<p style="color:var(--ink-soft); max-width:60ch;">Quando o seu acompanhamento terminar, '
+          + "a equipa publica aqui um resumo do percurso e o que deve continuar a fazer. "
+          + "Até lá, continua tudo como está.</p>";
+        return;
+      }
+      desenhar(alta);
+    } catch (e) {
+      console.error("Erro ao carregar a alta:", e);
+      el.innerHTML = '<p class="hint">Não foi possível carregar o relatório.</p>';
+    }
+  })();
+</script>
+</body>
+</html>

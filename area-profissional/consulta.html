@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registo de consulta — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  .prom-linha{ border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:12px; }
+  .prom-linha.alterado{ border-color:var(--star-deep); background:var(--star-mist); }
+  .prom-topo{ display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; }
+  .prom-topo .nome{ font-weight:600; font-size:.92rem; color:var(--blue-deep); }
+  .prom-topo .valor{ font-family:var(--f-mono); font-size:1.25rem; font-weight:600; }
+  .prom-origem{ font-size:.75rem; color:var(--ink-soft); }
+  .prom-editar{ margin-top:10px; display:none; }
+  .prom-linha input[type="number"]{ max-width:110px; }
+  .delta.melhor{ color:var(--ok); font-weight:600; }
+  .delta.pior{ color:var(--alert); font-weight:600; }
+  .delta.igual{ color:var(--ink-soft); font-weight:600; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link class="active">🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+    <div class="print-cabecalho" id="print-cabecalho"></div>
+
+    <a href="consultas.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar às consultas</a>
+
+    <p class="eyebrow" id="titulo-doente">Registo de consulta</p>
+    <h1 style="font-size:1.9rem;">Registo de consulta</h1>
+    <p style="color:var(--ink-soft); max-width:74ch; margin-top:6px;" id="subtitulo">
+      Fica em rascunho enquanto escreve. Só quando der a consulta por concluída é
+      que o doente passa a vê-la na sua área.
+    </p>
+
+    <div id="banner-estado" class="banner-info" style="margin:20px 0; display:none;"></div>
+    <div id="erro-geral" class="banner-alert" style="margin:20px 0; display:none;"></div>
+
+    <form id="form-consulta" onsubmit="return false;" style="max-width:940px; margin-top:22px;">
+
+      <div class="form-indice">
+        <div class="linha">
+          <span class="rotulo">Quadros</span>
+          <span id="indice-quadros" style="display:contents;"></span>
+          <span class="atual" id="indice-atual"></span>
+          <span class="acoes">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="abrirTodosOsQuadros()">Abrir todos</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="fecharTodosOsQuadros()">Fechar todos</button>
+          </span>
+        </div>
+      </div>
+
+      <!-- ================= 1. IDENTIFICAÇÃO ================= -->
+      <section id="identificacao" class="form-section card">
+        <div class="section-head"><span class="section-num">1</span><h2>Identificação da consulta</h2></div>
+        <div class="form-row">
+          <div class="subfield">
+            <label for="c-data">Data e hora</label>
+            <input type="datetime-local" id="c-data">
+          </div>
+          <div class="subfield">
+            <label for="c-tipo">Tipo de consulta</label>
+            <select id="c-tipo">
+              <option value="presencial">Presencial</option>
+              <option value="teleconsulta">Teleconsulta</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="subfield">
+            <label for="c-profissional">Profissional responsável</label>
+            <input type="text" id="c-profissional">
+          </div>
+          <div class="subfield">
+            <label for="c-especialidade">Especialidade</label>
+            <select id="c-especialidade">
+              <option>Cirurgia Plástica</option>
+              <option>Enfermagem</option>
+              <option>Fisioterapia</option>
+              <option>Terapia Ocupacional</option>
+              <option>Psicologia</option>
+              <option>Nutrição</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. SITUAÇÃO CLÍNICA ================= -->
+      <section id="situacao" class="form-section card">
+        <div class="section-head"><span class="section-num">2</span><h2>Situação clínica atual</h2></div>
+        <div class="subfield">
+          <label for="s-motivo">Motivo da consulta</label>
+          <input type="text" id="s-motivo" placeholder="ex.: reavaliação de cicatriz e ajuste do plano">
+        </div>
+        <div class="subfield">
+          <label for="s-sintomas">Sintomas principais</label>
+          <textarea id="s-sintomas" rows="2"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="s-evolucao">Evolução desde a última observação</label>
+          <textarea id="s-evolucao" rows="2"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="s-intercorrencias">Intercorrências desde a última consulta</label>
+          <textarea id="s-intercorrencias" rows="2" placeholder="ex.: recorreu à urgência a 3 de setembro por febre"></textarea>
+        </div>
+      </section>
+
+      <!-- ================= 3. PROMs ================= -->
+      <section id="proms" class="form-section card">
+        <div class="section-head"><span class="section-num">3</span><h2>Resultados reportados pelo doente</h2></div>
+        <p class="scale-note" style="margin-bottom:16px;">
+          Vêm dos questionários respondidos pelo doente e aparecem bloqueados de
+          propósito. São a palavra dele. Podem ser corrigidos — um doente pode
+          enganar-se na escala — mas só com uma razão escrita, que fica registada.
+        </p>
+
+        <div id="lista-proms"><p class="hint" style="margin:0;">A carregar os últimos resultados...</p></div>
+
+        <div class="subfield" style="margin-top:18px;">
+          <label for="p-comentarios">Comentários do doente sobre estes resultados</label>
+          <textarea id="p-comentarios" rows="2" placeholder="ex.: diz que a dor piora à noite, mas que o creme ajudou"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="p-interpretacao">Leitura clínica da evolução</label>
+          <textarea id="p-interpretacao" rows="2"></textarea>
+        </div>
+
+        <div id="auditoria" style="display:none; margin-top:18px;">
+          <hr class="divider" style="margin:0 0 14px;">
+          <p class="eyebrow" style="margin-bottom:10px;">Alterações a valores reportados</p>
+          <div id="lista-auditoria"></div>
+        </div>
+      </section>
+
+      <!-- ================= 4. AVALIAÇÃO ================= -->
+      <section id="avaliacao" class="form-section card">
+        <div class="section-head"><span class="section-num">4</span><h2>Avaliação do profissional</h2></div>
+        <div class="subfield">
+          <label for="a-clinica">Avaliação clínica</label>
+          <textarea id="a-clinica" rows="3"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="a-objetivo">Exame objetivo</label>
+          <textarea id="a-objetivo" rows="3"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="a-diagnostico">Diagnóstico</label>
+          <input type="text" id="a-diagnostico">
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="a-alteracoes">Alterações face à consulta anterior</label>
+          <textarea id="a-alteracoes" rows="2"></textarea>
+        </div>
+      </section>
+
+      <!-- ================= 5. PLANO ================= -->
+      <section id="plano" class="form-section card">
+        <div class="section-head"><span class="section-num">5</span><h2>Plano terapêutico</h2></div>
+        <div class="subfield">
+          <label for="pl-objetivos">Objetivos definidos nesta consulta</label>
+          <textarea id="pl-objetivos" rows="2"></textarea>
+          <p class="scale-note">As metas que o doente acompanha vivem na Jornada e Metas; aqui fica o que foi combinado hoje.</p>
+        </div>
+        <div class="subfield">
+          <label for="pl-intervencoes">Intervenções propostas</label>
+          <textarea id="pl-intervencoes" rows="2"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="pl-recomendacoes">Recomendações</label>
+          <textarea id="pl-recomendacoes" rows="2"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="pl-monitorizacao">Plano de monitorização</label>
+          <textarea id="pl-monitorizacao" rows="2" placeholder="ex.: NRS-dor semanal; fotografia da cicatriz de 15 em 15 dias"></textarea>
+        </div>
+      </section>
+
+      <!-- ================= 6. MEDICAÇÃO ================= -->
+      <section id="medicacao" class="form-section card">
+        <div class="section-head"><span class="section-num">6</span><h2>Medicação</h2></div>
+        <div class="subfield">
+          <label for="m-atual">Medicação atual</label>
+          <textarea id="m-atual" rows="3"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="m-alteracoes">Alterações efetuadas nesta consulta</label>
+          <textarea id="m-alteracoes" rows="2"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label>Adesão terapêutica</label>
+          <div class="chip-group">
+            <label class="chip"><input type="radio" name="adesao-med"><span>Boa</span></label>
+            <label class="chip"><input type="radio" name="adesao-med"><span>Parcial</span></label>
+            <label class="chip"><input type="radio" name="adesao-med"><span>Fraca</span></label>
+            <label class="chip"><input type="radio" name="adesao-med"><span>Não aplicável</span></label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 7. NECESSIDADES ================= -->
+      <section id="necessidades" class="form-section card">
+        <div class="section-head"><span class="section-num">7</span><h2>Necessidades adicionais</h2></div>
+        <div class="subfield">
+          <label>Necessidade de referenciação</label>
+          <div class="chip-group" style="margin-bottom:10px;">
+            <label class="chip"><input type="radio" name="referenciacao"><span>Sim</span></label>
+            <label class="chip"><input type="radio" name="referenciacao" checked><span>Não</span></label>
+          </div>
+          <input type="text" placeholder="Para onde e porquê">
+        </div>
+        <div class="subfield">
+          <label>Necessidade de novos exames</label>
+          <div class="chip-group" style="margin-bottom:10px;">
+            <label class="chip"><input type="radio" name="exames"><span>Sim</span></label>
+            <label class="chip"><input type="radio" name="exames" checked><span>Não</span></label>
+          </div>
+          <input type="text" placeholder="Quais">
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label>Necessidade de apoio multidisciplinar</label>
+          <div class="chip-group" style="margin-bottom:10px;">
+            <label class="chip"><input type="checkbox"><span>Cirurgia Plástica</span></label>
+            <label class="chip"><input type="checkbox"><span>Enfermagem</span></label>
+            <label class="chip"><input type="checkbox"><span>Fisioterapia</span></label>
+            <label class="chip"><input type="checkbox"><span>Terapia Ocupacional</span></label>
+            <label class="chip"><input type="checkbox"><span>Psicologia</span></label>
+            <label class="chip"><input type="checkbox"><span>Nutrição</span></label>
+            <label class="chip"><input type="checkbox"><span>Serviço Social</span></label>
+          </div>
+          <input type="text" placeholder="Outro apoio">
+        </div>
+      </section>
+
+      <!-- ================= 8. PRÓXIMOS PASSOS ================= -->
+      <section id="proximos" class="form-section card">
+        <div class="section-head"><span class="section-num">8</span><h2>Próximos passos</h2></div>
+        <div class="subfield">
+          <label>Necessidade de nova consulta</label>
+          <div class="chip-group">
+            <label class="chip"><input type="radio" name="nova-consulta"><span>Sim</span></label>
+            <label class="chip"><input type="radio" name="nova-consulta"><span>Não</span></label>
+            <label class="chip"><input type="radio" name="nova-consulta"><span>A decidir</span></label>
+          </div>
+        </div>
+        <div class="subfield">
+          <label>Periodicidade recomendada</label>
+          <div class="chip-group">
+            <label class="chip"><input type="radio" name="periodicidade"><span>Semanal</span></label>
+            <label class="chip"><input type="radio" name="periodicidade"><span>Quinzenal</span></label>
+            <label class="chip"><input type="radio" name="periodicidade"><span>Mensal</span></label>
+            <label class="chip"><input type="radio" name="periodicidade"><span>Trimestral</span></label>
+            <label class="chip"><input type="radio" name="periodicidade"><span>Alta do seguimento</span></label>
+          </div>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="px-criterios">Critérios de contacto antecipado</label>
+          <textarea id="px-criterios" rows="2" placeholder="ex.: febre, exsudado com cheiro, dor que não cede à medicação"></textarea>
+          <p class="scale-note">Fica visível ao doente quando a consulta for concluída.</p>
+        </div>
+      </section>
+
+      <div class="form-actions" style="flex-wrap:wrap; gap:12px;">
+        <a href="consultas.html" class="btn btn-ghost" id="btn-cancelar">Voltar</a>
+        <button type="button" class="btn btn-ghost" onclick="guardar(false)" id="btn-rascunho">Guardar rascunho</button>
+        <button type="button" class="btn btn-primary" onclick="guardar(true)" id="btn-concluir">Concluir e mostrar ao doente</button>
+        <button type="button" class="btn btn-ghost" onclick="guardarEmPDF()">🖨️ Guardar em PDF</button>
+        <span class="hint" style="margin:0;" id="estado-guardar"></span>
+      </div>
+
+      <!-- Só aparece depois de a consulta estar concluída: pedir a opinião
+           sobre uma consulta que ainda está em rascunho seria pedi-la antes
+           de o doente ter visto o que ficou registado. -->
+      <div class="card" id="cartao-satisfacao" hidden style="margin-top:20px;">
+        <p class="eyebrow" style="margin-bottom:8px;">Avaliação da consulta</p>
+        <p class="hint" style="margin:0 0 12px;">
+          O doente recebe um convite quando entrar na plataforma, e um email com a
+          ligação. Pode responder, adiar ou recusar — a recusa também fica registada.
+        </p>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn btn-star btn-sm" id="btn-satisfacao" onclick="pedirAvaliacao()">Pedir avaliação desta consulta ao doente</button>
+          <span class="hint" style="margin:0;" id="estado-satisfacao"></span>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE = null;
+  let CONSULTA = null;        // linha em consultas, quando já existe
+  let AGENDAMENTO = null;
+  let PROMS = [];             // resumo dos últimos resultados
+  const ALTERACOES = {};      // instrumento -> { valor_doente, valor_novo, motivo }
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function mostrarErro(e, contexto){
+    console.error(contexto, e);
+    const el = document.getElementById("erro-geral");
+    el.innerHTML = "⚠️ " + esc(contexto) + ": " + esc(e.message || e);
+    el.style.display = "flex";
+    el.scrollIntoView({ behavior:"smooth", block:"center" });
+  }
+  function paraInputDataHora(iso){
+    const d = new Date(iso);
+    const p = n => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate())
+         + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+
+  /* ---------- PROMs: mostrados bloqueados, alterados só com razão ---------- */
+  function desenharProms(){
+    const el = document.getElementById("lista-proms");
+    const comValor = PROMS.filter(function(p){ return p.valor != null; });
+    if (!comValor.length) {
+      el.innerHTML = '<p class="hint" style="margin:0;">O doente ainda não respondeu a nenhum questionário. '
+        + "Não há valores para trazer para aqui.</p>";
+      return;
+    }
+    el.innerHTML = comValor.map(function(p){
+      const delta = p.variacao == null
+        ? '<span class="hint">primeira resposta</span>'
+        : '<span class="delta ' + p.sentido + '">'
+          + (p.variacao > 0 ? "▲ +" : p.variacao < 0 ? "▼ " : "— ") + p.variacao + "</span>"
+          + ' <span class="hint">face a ' + p.anterior + " de " + esc(dataCurta(p.dataAnterior)) + "</span>";
+      return '<div class="prom-linha" id="prom-' + p.instrumento + '">'
+           +   '<div class="prom-topo">'
+           +     '<span class="nome">' + esc(p.nome) + "</span>"
+           +     '<span class="valor" id="valor-' + p.instrumento + '">' + p.valor + "/" + p.maximo + "</span>"
+           +     delta
+           +   "</div>"
+           +   '<p class="prom-origem" style="margin:6px 0 0;">Respondido pelo doente em '
+           +     esc(dataCurta(p.data)) + " · " + p.total + (p.total === 1 ? " resposta" : " respostas") + " no total</p>"
+           +   '<button type="button" class="btn btn-ghost btn-sm" style="margin-top:10px;" '
+           +     'id="btn-alterar-' + p.instrumento + '" onclick="pedirAlteracao(\'' + p.instrumento + '\')">Corrigir este valor</button>'
+           +   '<div class="prom-editar" id="editar-' + p.instrumento + '">'
+           +     '<div class="form-row" style="margin-top:6px;">'
+           +       '<div class="field">'
+           +         '<label for="novo-' + p.instrumento + '">Valor corrigido (0–' + p.maximo + ")</label>"
+           +         '<input type="number" id="novo-' + p.instrumento + '" min="0" max="' + p.maximo + '" value="' + p.valor + '">'
+           +       "</div>"
+           +       '<div class="field">'
+           +         '<label for="motivo-' + p.instrumento + '">Razão da correção</label>'
+           +         '<input type="text" id="motivo-' + p.instrumento + '" placeholder="ex.: doente confirmou que trocou a escala">'
+           +       "</div>"
+           +     "</div>"
+           +     '<p class="scale-note" style="margin:0;">Fica registado quem corrigiu, quando, o que lá estava e porquê.</p>'
+           +   "</div>"
+           + "</div>";
+    }).join("");
+  }
+
+  function pedirAlteracao(instrumento){
+    const caixa = document.getElementById("editar-" + instrumento);
+    const botao = document.getElementById("btn-alterar-" + instrumento);
+    if (caixa.style.display === "block") {   // desistir
+      caixa.style.display = "none";
+      botao.textContent = "Corrigir este valor";
+      document.getElementById("prom-" + instrumento).classList.remove("alterado");
+      delete ALTERACOES[instrumento];
+      return;
+    }
+    if (!confirm("Vai alterar um valor que foi o doente a reportar.\n\n"
+      + "Só faça isto se souber que o valor está errado — por exemplo, se ele confirmou "
+      + "que se enganou na escala. A alteração fica registada com o seu nome.")) return;
+    caixa.style.display = "block";
+    botao.textContent = "Desistir da correção";
+    document.getElementById("prom-" + instrumento).classList.add("alterado");
+    document.getElementById("motivo-" + instrumento).focus();
+  }
+
+  /** Lê as correções pendentes. Devolve { alteracoes, faltaMotivo }. */
+  function lerAlteracoesProm(){
+    const alteracoes = [];
+    const faltaMotivo = [];
+    PROMS.forEach(function(p){
+      if (p.valor == null) return;
+      const caixa = document.getElementById("editar-" + p.instrumento);
+      if (!caixa || caixa.style.display !== "block") return;
+      const novo = document.getElementById("novo-" + p.instrumento).value.trim();
+      const motivo = document.getElementById("motivo-" + p.instrumento).value.trim();
+      if (novo === "" || Number(novo) === p.valor) return;   // nada mudou
+      if (!motivo) { faltaMotivo.push(p.nome); return; }
+      alteracoes.push({ campo: p.nome, instrumento: p.instrumento,
+                        valor_doente: p.valor, valor_novo: Number(novo), motivo: motivo });
+    });
+    return { alteracoes: alteracoes, faltaMotivo: faltaMotivo };
+  }
+
+  async function carregarAuditoria(){
+    if (!CONSULTA) return;
+    try {
+      const linhas = await lumiApi.listarAuditoriaConsulta(CONSULTA.id);
+      if (!linhas.length) return;
+      document.getElementById("auditoria").style.display = "block";
+      document.getElementById("lista-auditoria").innerHTML = linhas.map(function(a){
+        return '<div style="border-left:3px solid var(--star-deep); padding:8px 0 8px 12px; margin-bottom:10px;">'
+             +   '<p style="margin:0; font-size:.88rem;"><strong>' + esc(a.campo) + "</strong>: "
+             +     esc(a.valor_doente) + " → " + esc(a.valor_novo) + "</p>"
+             +   '<p class="hint" style="margin:4px 0 0;">' + esc(a.motivo || "sem razão registada")
+             +     " — " + esc(a.autor_nome) + ", " + esc(new Date(a.criado_em).toLocaleString("pt-PT")) + "</p>"
+             + "</div>";
+      }).join("");
+    } catch (e) {
+      console.warn("Auditoria indisponível:", e);
+    }
+  }
+
+  /* ---------- gravar ---------- */
+  function recolherDados(){
+    const dados = {};
+    document.querySelectorAll(".form-section").forEach(function(sec){
+      dados[sec.id] = serializarQuadro(sec);
+    });
+    // os PROMs não são campos do formulário: são o que o doente reportou
+    dados.proms = PROMS.filter(function(p){ return p.valor != null; }).map(function(p){
+      return { instrumento: p.instrumento, nome: p.nome, valor: p.valor, maximo: p.maximo,
+               data: p.data, anterior: p.anterior, variacao: p.variacao, sentido: p.sentido };
+    });
+    return dados;
+  }
+
+  async function guardar(concluir){
+    const estado = document.getElementById("estado-guardar");
+    const botoes = [document.getElementById("btn-rascunho"), document.getElementById("btn-concluir")];
+    document.getElementById("erro-geral").style.display = "none";
+
+    const correcoes = lerAlteracoesProm();
+    if (correcoes.faltaMotivo.length) {
+      mostrarErro(new Error("falta a razão em " + correcoes.faltaMotivo.join(", ")),
+                  "Uma correção a um valor do doente não se grava sem razão escrita");
+      return;
+    }
+    if (concluir && !confirm("Concluir a consulta?\n\nA partir daqui o doente passa a ver este registo na área dele, e o registo deixa de ser um rascunho.")) return;
+
+    botoes.forEach(b => b.disabled = true);
+    estado.textContent = "A guardar...";
+
+    try {
+      const dados = recolherDados();
+      // as correções entram no que fica gravado, para o registo mostrar o valor usado
+      correcoes.alteracoes.forEach(function(a){
+        const alvo = dados.proms.find(function(p){ return p.instrumento === a.instrumento; });
+        if (alvo) { alvo.valor_corrigido = a.valor_novo; alvo.motivo_correcao = a.motivo; }
+      });
+
+      const comum = {
+        data_consulta: new Date(document.getElementById("c-data").value || Date.now()).toISOString(),
+        tipo: document.getElementById("c-tipo").value,
+        especialidade: document.getElementById("c-especialidade").value,
+        dados: dados,
+        proms_base: dados.proms,
+        estado: concluir ? "concluida" : "rascunho"
+      };
+
+      if (CONSULTA) {
+        CONSULTA = await lumiApi.atualizarConsulta(CONSULTA.id, comum);
+      } else {
+        CONSULTA = await lumiApi.criarConsulta(DOENTE.id, Object.assign({
+          agendamento_id: AGENDAMENTO ? AGENDAMENTO.id : null
+        }, comum));
+      }
+
+      for (const a of correcoes.alteracoes) {
+        await lumiApi.registarAuditoriaConsulta(CONSULTA.id, DOENTE.id, a);
+      }
+
+      if (concluir && AGENDAMENTO && AGENDAMENTO.estado === "agendado") {
+        try { await lumiApi.atualizarAgendamento(AGENDAMENTO.id, { estado: "concluido" }); }
+        catch (e) { console.warn("Não foi possível marcar a marcação como realizada:", e); }
+      }
+
+      estado.textContent = concluir
+        ? "Consulta concluída. O doente já a vê."
+        : "Rascunho guardado às " + new Date().toLocaleTimeString("pt-PT", { hour:"2-digit", minute:"2-digit" }) + ".";
+      mostrarBannerEstado();
+      await carregarAuditoria();
+      if (correcoes.alteracoes.length) {
+        PROMS = await resumoPromsParaConsulta(DOENTE.id);   // recarrega para limpar as caixas
+        desenharProms();
+        repovoar(CONSULTA.dados);
+      }
+    } catch (e) {
+      estado.textContent = "";
+      mostrarErro(e, "Não foi possível guardar");
+    } finally {
+      botoes.forEach(b => b.disabled = false);
+    }
+  }
+
+  function mostrarBannerEstado(){
+    const el = document.getElementById("banner-estado");
+    if (!CONSULTA) { el.style.display = "none"; return; }
+    if (CONSULTA.estado === "concluida") {
+      // A data pode não vir: registos antigos, ou uma gravação que só mexeu
+      // no estado. Melhor não dizer a data do que escrever "Invalid Date".
+      const carimbo = new Date(CONSULTA.concluida_em || CONSULTA.atualizado_em || "");
+      const quando = isNaN(carimbo.getTime()) ? "" : " em " + carimbo.toLocaleString("pt-PT");
+      el.className = "banner-info";
+      el.innerHTML = "<div>✅ Consulta concluída" + esc(quando)
+        + ". O doente vê este registo na área dele. Se voltar a guardar, a versão dele é atualizada.</div>";
+    } else {
+      el.className = "banner-info";
+      el.innerHTML = "<div>📝 Rascunho. Só a equipa vê isto — o doente não vê nada até concluir.</div>";
+    }
+    el.style.display = "flex";
+    atualizarCartaoSatisfacao();
+  }
+
+  /* ---------- avaliação da consulta ---------- */
+  async function atualizarCartaoSatisfacao(){
+    const cartao = document.getElementById("cartao-satisfacao");
+    const concluida = CONSULTA && CONSULTA.estado === "concluida";
+    cartao.hidden = !concluida;
+    if (!concluida) return;
+
+    // Se esta consulta veio de uma marcação e já há pedido para ela, dizê-lo:
+    // reabrir o registo não deve convidar a pedir a mesma avaliação duas vezes.
+    if (!CONSULTA.agendamento_id) return;
+    try {
+      const pedidos = await lumiApi.listarPedidosSatisfacao(DOENTE.id);
+      const existente = pedidos.find(function(p){ return p.agendamento_id === CONSULTA.agendamento_id; });
+      if (existente) {
+        const estados = { pendente: "por responder", respondida: "já respondida", recusada: "dispensada pelo doente" };
+        document.getElementById("btn-satisfacao").disabled = true;
+        document.getElementById("btn-satisfacao").textContent = "Avaliação já pedida";
+        document.getElementById("estado-satisfacao").textContent = "Estado: " + (estados[existente.estado] || existente.estado) + ".";
+      }
+    } catch (e) {
+      console.warn("Não foi possível verificar pedidos anteriores:", e);
+    }
+  }
+
+  async function pedirAvaliacao(){
+    const btn = document.getElementById("btn-satisfacao");
+    const estado = document.getElementById("estado-satisfacao");
+    btn.disabled = true; estado.textContent = "A enviar o convite...";
+    try {
+      await lumiApi.pedirAvaliacaoSatisfacao(DOENTE.id, "breve", CONSULTA.agendamento_id || null);
+      btn.textContent = "Avaliação pedida ✓";
+      estado.textContent = "O doente foi convidado.";
+    } catch (e) {
+      console.error("Erro ao pedir a avaliação:", e);
+      estado.textContent = "Não foi possível pedir: " + (e.message || e);
+      btn.disabled = false;
+    }
+  }
+
+  /* ---------- repovoar um registo já gravado ---------- */
+  function repovoar(dados){
+    if (!dados) return;
+    document.querySelectorAll(".form-section").forEach(function(sec){
+      const guardado = dados[sec.id];
+      if (!guardado) return;
+      sec.querySelectorAll(".subfield").forEach(function(campo){
+        const label = campo.querySelector("label");
+        if (!label) return;
+        const valor = guardado[label.textContent.trim()];
+        if (valor == null) return;
+        repovoarCampo(campo, valor);
+      });
+      atualizarProgressoQuadro(sec.id);
+    });
+  }
+
+  /** Mesmo critério de leitura do serializador, ao contrário. */
+  function repovoarCampo(campo, valor){
+    const checkboxes = campo.querySelectorAll('.chip-group input[type="checkbox"]');
+    if (checkboxes.length) {
+      const lista = Array.isArray(valor) ? valor : (valor.selecionados || []);
+      checkboxes.forEach(function(c){
+        c.checked = lista.indexOf(c.nextElementSibling.textContent.trim()) >= 0;
+      });
+      const caixa = campo.querySelector('input[type="text"], textarea');
+      if (caixa && valor && valor.outras) caixa.value = valor.outras;
+      return;
+    }
+    const radios = campo.querySelectorAll('.chip-group input[type="radio"]');
+    const inputs = campo.querySelectorAll('input[type="text"], input[type="number"], input[type="datetime-local"], textarea');
+    const select = campo.querySelector("select");
+
+    if (radios.length) {
+      const escolha = (valor && typeof valor === "object") ? valor.resposta : valor;
+      radios.forEach(function(r){ r.checked = r.nextElementSibling.textContent.trim() === escolha; });
+      if (valor && typeof valor === "object" && inputs.length === 1) inputs[0].value = valor.detalhe || "";
+      return;
+    }
+    if (select) { select.value = valor; return; }
+    if (inputs.length === 1) inputs[0].value = valor;
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent =
+      sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    prepararQuadros("indice-quadros");
+    atualizarBadgeAlertas();
+
+    DOENTE = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    document.getElementById("titulo-doente").textContent = "Registo de consulta — " + DOENTE.nome;
+    document.getElementById("sidebar-nome-doente").textContent = DOENTE.nome;
+    ligarSidebarAoProcesso(DOENTE.processo);
+    montarCabecalhoImpressao("Registo de consulta", DOENTE);
+    const voltar = "consultas.html?processo=" + encodeURIComponent(DOENTE.processo);
+    document.getElementById("link-voltar").href = voltar;
+    document.getElementById("btn-cancelar").href = voltar;
+
+    // valores por omissão
+    document.getElementById("c-data").value = paraInputDataHora(new Date());
+    document.getElementById("c-profissional").value = sessao.perfil.nome;
+    if (sessao.perfil.especialidade) {
+      const sel = document.getElementById("c-especialidade");
+      Array.from(sel.options).forEach(function(o){ if (o.value === sessao.perfil.especialidade) sel.value = o.value; });
+    }
+
+    const params = new URLSearchParams(window.location.search);
+
+    // consulta já existente
+    const idConsulta = params.get("consulta");
+    if (idConsulta) {
+      try {
+        CONSULTA = await lumiApi.obterConsulta(idConsulta);
+        if (CONSULTA) {
+          document.getElementById("c-data").value = paraInputDataHora(CONSULTA.data_consulta);
+          document.getElementById("c-tipo").value = CONSULTA.tipo || "presencial";
+          document.getElementById("c-profissional").value = CONSULTA.profissional_nome;
+          if (CONSULTA.especialidade) document.getElementById("c-especialidade").value = CONSULTA.especialidade;
+        }
+      } catch (e) { mostrarErro(e, "Não foi possível abrir a consulta"); }
+    }
+
+    // marcação de origem
+    const idAgendamento = params.get("agendamento");
+    if (idAgendamento && !CONSULTA) {
+      try {
+        const marcacoes = await lumiApi.listarAgendamentos(DOENTE.id);
+        AGENDAMENTO = marcacoes.find(function(m){ return m.id === idAgendamento; }) || null;
+        if (AGENDAMENTO) {
+          document.getElementById("c-data").value = paraInputDataHora(AGENDAMENTO.data_hora);
+          if (AGENDAMENTO.tipo) document.getElementById("c-tipo").value = AGENDAMENTO.tipo;
+          if (AGENDAMENTO.especialidade) document.getElementById("c-especialidade").value = AGENDAMENTO.especialidade;
+          if (AGENDAMENTO.profissional_nome) document.getElementById("c-profissional").value = AGENDAMENTO.profissional_nome;
+          document.getElementById("subtitulo").textContent =
+            "Marcação de " + new Date(AGENDAMENTO.data_hora).toLocaleString("pt-PT")
+            + ". Fica em rascunho enquanto escreve; o doente só vê quando concluir.";
+        }
+      } catch (e) { console.warn("Marcação não encontrada:", e); }
+    }
+
+    PROMS = await resumoPromsParaConsulta(DOENTE.id);
+    desenharProms();
+    if (CONSULTA) { repovoar(CONSULTA.dados); mostrarBannerEstado(); carregarAuditoria(); }
+  })();
+</script>
+</body>
+</html>

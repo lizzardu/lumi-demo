@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alta do seguimento — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  .calculado{ background:var(--paper-tint); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:16px; }
+  .calculado .eyebrow{ margin-bottom:8px; }
+  .numeros{ display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:12px; }
+  .numero .n{ font-family:var(--f-mono); font-size:1.6rem; font-weight:600; color:var(--blue-deep); }
+  .numero .r{ font-size:.76rem; color:var(--ink-soft); }
+  .prom-evo{ display:flex; gap:10px; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--line); }
+  .prom-evo:last-child{ border-bottom:none; }
+  .prom-evo .seta{ font-family:var(--f-mono); font-weight:600; }
+  .melhor{ color:var(--ok); } .pior{ color:var(--alert); } .igual{ color:var(--ink-soft); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link class="active">🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+    <div class="print-cabecalho" id="print-cabecalho"></div>
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Alta do seguimento</p>
+    <h1 style="font-size:1.9rem;">Relatório de alta do seguimento</h1>
+    <p style="color:var(--ink-soft); max-width:74ch; margin-top:6px;">
+      Fecha o acompanhamento em telessaúde e consolida o percurso. Não confundir
+      com o Formulário de Alta Hospitalar, que é a porta de entrada na
+      plataforma — este é a saída. Grande parte do conteúdo é calculada do que já
+      está gravado; o que escreve é a leitura clínica e o que o doente leva consigo.
+    </p>
+
+    <div id="banner-estado" class="banner-info" style="margin:20px 0; display:none;"></div>
+    <div id="erro-geral" class="banner-alert" style="margin:20px 0; display:none;"></div>
+
+    <form id="form-alta" onsubmit="return false;" style="max-width:940px; margin-top:22px;">
+
+      <div class="form-indice">
+        <div class="linha">
+          <span class="rotulo">Quadros</span>
+          <span id="indice-quadros" style="display:contents;"></span>
+          <span class="atual" id="indice-atual"></span>
+          <span class="acoes">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="abrirTodosOsQuadros()">Abrir todos</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="fecharTodosOsQuadros()">Fechar todos</button>
+          </span>
+        </div>
+      </div>
+
+      <!-- ============ 1. IDENTIFICAÇÃO ============ -->
+      <section id="identificacao" class="form-section card">
+        <div class="section-head"><span class="section-num">1</span><h2>Identificação</h2></div>
+        <div class="calculado" id="bloco-identificacao"><p class="hint" style="margin:0;">A carregar...</p></div>
+        <div class="form-row">
+          <div class="subfield">
+            <label for="i-admissao">Data de admissão na plataforma</label>
+            <input type="date" id="i-admissao">
+          </div>
+          <div class="subfield">
+            <label for="i-alta">Data de alta do seguimento</label>
+            <input type="date" id="i-alta">
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 2. DIAGNÓSTICO ============ -->
+      <section id="diagnostico" class="form-section card">
+        <div class="section-head"><span class="section-num">2</span><h2>Diagnóstico e enquadramento</h2></div>
+        <div class="subfield">
+          <label for="d-principal">Diagnóstico principal</label>
+          <input type="text" id="d-principal">
+        </div>
+        <div class="subfield">
+          <label for="d-associados">Diagnósticos associados</label>
+          <textarea id="d-associados" rows="2"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="d-objetivos">Objetivos definidos no início do acompanhamento</label>
+          <textarea id="d-objetivos" rows="2"></textarea>
+          <p class="scale-note">As metas registadas na plataforma aparecem no quadro 5; aqui fica o enquadramento.</p>
+        </div>
+      </section>
+
+      <!-- ============ 3. PERCURSO ============ -->
+      <section id="percurso" class="form-section card">
+        <div class="section-head"><span class="section-num">3</span><h2>Percurso assistencial</h2></div>
+        <div class="calculado">
+          <p class="eyebrow">Contado a partir do que ficou registado</p>
+          <div class="numeros" id="bloco-numeros"><p class="hint" style="margin:0;">A carregar...</p></div>
+          <p class="hint" style="margin:14px 0 0;" id="bloco-equipa"></p>
+        </div>
+        <div class="subfield">
+          <label for="p-intervencoes">Intervenções efetuadas</label>
+          <textarea id="p-intervencoes" rows="3" placeholder="ex.: ensino de massagem da cicatriz; ajuste do plano de mobilidade; apoio psicológico"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="p-eventos">Eventos relevantes durante o acompanhamento</label>
+          <textarea id="p-eventos" rows="2" placeholder="ex.: episódio de infeção tratado em ambulatório a 12 de setembro"></textarea>
+        </div>
+      </section>
+
+      <!-- ============ 4. EVOLUÇÃO E PROMs ============ -->
+      <section id="evolucao" class="form-section card">
+        <div class="section-head"><span class="section-num">4</span><h2>Evolução clínica e resultados</h2></div>
+        <div class="calculado">
+          <p class="eyebrow">Do primeiro ao último questionário</p>
+          <div id="bloco-proms"><p class="hint" style="margin:0;">A carregar...</p></div>
+        </div>
+        <div class="subfield">
+          <label for="e-resumo">Resumo da evolução</label>
+          <textarea id="e-resumo" rows="3"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="e-ganhos">Principais ganhos em saúde</label>
+          <textarea id="e-ganhos" rows="2"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="e-interpretacao">Interpretação clínica da evolução dos resultados</label>
+          <textarea id="e-interpretacao" rows="2" placeholder="o que os números acima significam neste doente"></textarea>
+        </div>
+      </section>
+
+      <!-- ============ 5. OBJETIVOS ============ -->
+      <section id="objetivos" class="form-section card">
+        <div class="section-head"><span class="section-num">5</span><h2>Objetivos</h2></div>
+        <p class="scale-note" style="margin-bottom:16px;">
+          As metas definidas ao longo do acompanhamento, para classificar uma a uma.
+          Um objetivo não atingido não é uma falha do doente nem da equipa — é
+          informação, e a que mais ajuda quem o receber a seguir.
+        </p>
+        <div id="lista-metas"><p class="hint" style="margin:0;">A carregar...</p></div>
+      </section>
+
+      <!-- ============ 6. PLANO PÓS-ALTA ============ -->
+      <section id="pos-alta" class="form-section card">
+        <div class="section-head"><span class="section-num">6</span><h2>Plano pós-alta</h2></div>
+        <div class="subfield">
+          <label for="pa-recomendacoes">Recomendações clínicas</label>
+          <textarea id="pa-recomendacoes" rows="3"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="pa-medicacao">Medicação à data da alta</label>
+          <textarea id="pa-medicacao" rows="2"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="pa-alerta">Sinais de alerta</label>
+          <textarea id="pa-alerta" rows="2" placeholder="ex.: febre, vermelhidão que alastra, dor que não cede"></textarea>
+          <p class="scale-note">Vai em destaque no documento do doente.</p>
+        </div>
+        <div class="subfield">
+          <label>Necessidade de seguimento</label>
+          <p class="scale-note">
+            Em pediatria, a <strong>alta definitiva antes da maturidade esquelética é a exceção e
+            tem de ser justificada</strong>. Uma cicatriz que atravessa uma articulação acompanha o
+            crescimento, e o momento em que volta a limitar costuma ser um estirão — não uma
+            consulta marcada. A opção por omissão é a revisão anual.
+          </p>
+          <div class="chip-group" style="margin-bottom:10px;">
+            <label class="chip"><input type="radio" name="seguimento" checked onchange="alternarJustificacaoAlta()"><span>Revisão anual até ao fim do crescimento</span></label>
+            <label class="chip"><input type="radio" name="seguimento" onchange="alternarJustificacaoAlta()"><span>Consulta hospitalar</span></label>
+            <label class="chip"><input type="radio" name="seguimento" onchange="alternarJustificacaoAlta()"><span>Cuidados de saúde primários</span></label>
+            <label class="chip"><input type="radio" name="seguimento" onchange="alternarJustificacaoAlta()"><span>Alta definitiva</span></label>
+            <label class="chip"><input type="radio" name="seguimento" onchange="alternarJustificacaoAlta()"><span>Outro</span></label>
+          </div>
+          <input type="text" placeholder="Onde e quando">
+        </div>
+
+        <div class="subfield" id="campo-justificacao-alta" style="display:none; margin-bottom:0;">
+          <label for="justificacao-alta">Porque é que a alta definitiva é adequada nesta criança</label>
+          <textarea id="justificacao-alta" rows="3" placeholder="ex.: queimadura superficial, sem cicatriz sobre articulação, pele indistinguível da envolvente aos 12 meses, criança com crescimento já terminado"></textarea>
+        </div>
+      </section>
+
+      <!-- ============ 7. DOCUMENTO DO DOENTE ============ -->
+      <section id="doente" class="form-section card">
+        <div class="section-head"><span class="section-num">7</span><h2>Documento para o doente</h2></div>
+        <div class="subfield">
+          <label for="doc-resumo">Resumo do percurso, em linguagem simples</label>
+          <textarea id="doc-resumo" rows="4" placeholder="ex.: Esteve connosco desde agosto. A ferida fechou bem e a cicatriz está mais macia. A dor baixou de 7 para 3."></textarea>
+        </div>
+        <div class="subfield">
+          <label for="doc-recomendacoes">O que deve continuar a fazer</label>
+          <textarea id="doc-recomendacoes" rows="3"></textarea>
+        </div>
+        <div class="subfield">
+          <label for="doc-contactos">Contactos úteis</label>
+          <textarea id="doc-contactos" rows="2" placeholder="ex.: Unidade de Queimados Pediátricos, 21 XXX XXXX, dias úteis das 9h às 17h"></textarea>
+        </div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="doc-recursos">Recursos que lhe podem ser úteis</label>
+          <textarea id="doc-recursos" rows="2" placeholder="ex.: folheto Conviver com a queimadura, na página Recursos"></textarea>
+        </div>
+      </section>
+
+      <div class="form-actions" style="flex-wrap:wrap; gap:12px;">
+        <a href="doente.html" class="btn btn-ghost" id="btn-cancelar">Voltar</a>
+        <button type="button" class="btn btn-ghost" onclick="guardarEmPDF()">🖨️ Guardar em PDF</button>
+        <button type="button" class="btn btn-ghost" onclick="guardar(false)" id="btn-rascunho">Guardar rascunho</button>
+        <button type="button" class="btn btn-primary" onclick="guardar(true)" id="btn-emitir">Emitir e entregar ao doente</button>
+        <span class="hint" style="margin:0;" id="estado-guardar"></span>
+      </div>
+
+      <!-- Só aparece depois de o relatório estar emitido: pedir a avaliação
+           final de um acompanhamento que ainda não terminou oficialmente não
+           faz sentido, e o doente ainda nem viu o documento de alta. -->
+      <div class="card" id="cartao-satisfacao-final" hidden style="margin-top:20px;">
+        <p class="eyebrow" style="margin-bottom:8px;">Avaliação final do acompanhamento</p>
+        <p class="hint" style="margin:0 0 12px;">
+          Questionário de fecho, 13 perguntas, cerca de três minutos. O doente recebe
+          um convite quando entrar na plataforma, e um email com a ligação. Pode
+          responder, adiar ou recusar — a recusa também fica registada.
+        </p>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn btn-star btn-sm" id="btn-satisfacao-final" onclick="pedirAvaliacaoFinal()">Pedir avaliação final ao doente</button>
+          <span class="hint" style="margin:0;" id="estado-satisfacao-final"></span>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE = null;
+  let ALTA = null;
+  let METAS = [];
+  let RESUMO = {};      // números calculados, gravados com o relatório
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function mostrarErro(e, contexto){
+    console.error(contexto, e);
+    const el = document.getElementById("erro-geral");
+    el.innerHTML = "⚠️ " + esc(contexto) + ": " + esc(e.message || e);
+    el.style.display = "flex";
+    el.scrollIntoView({ behavior:"smooth", block:"center" });
+  }
+  function paraInputData(iso){
+    if (!iso) return "";
+    return new Date(iso).toISOString().slice(0,10);
+  }
+
+  /* ---------- o que se calcula ---------- */
+  async function calcular(){
+    // identificação
+    document.getElementById("bloco-identificacao").innerHTML =
+        '<p style="margin:0; font-size:.9rem;"><strong>' + esc(DOENTE.nome) + "</strong> · Processo "
+      + esc(DOENTE.processo) + (DOENTE.data_alta ? " · Alta hospitalar em " + esc(dataCurta(DOENTE.data_alta)) : "")
+      + "</p>";
+
+    // percurso
+    let consultas = [];
+    try { consultas = await lumiApi.listarConsultas(DOENTE.id); } catch (e) { console.warn(e); }
+    const concluidas = consultas.filter(function(c){ return c.estado === "concluida"; });
+    const presenciais = concluidas.filter(function(c){ return c.tipo !== "teleconsulta"; }).length;
+    const teleconsultas = concluidas.filter(function(c){ return c.tipo === "teleconsulta"; }).length;
+
+    let contactos72 = 0;
+    try { contactos72 = (await lumiApi.obterUltimaConsulta72h(DOENTE.id)) ? 1 : 0; } catch (e) { /* opcional */ }
+
+    RESUMO.consultas_presenciais = presenciais;
+    RESUMO.teleconsultas = teleconsultas;
+    RESUMO.contactos_72h = contactos72;
+
+    document.getElementById("bloco-numeros").innerHTML =
+        numeroHTML(presenciais, "consultas presenciais")
+      + numeroHTML(teleconsultas, "teleconsultas")
+      + numeroHTML(contactos72, "contacto às 72h");
+
+    const equipa = (DOENTE.equipa || []);
+    RESUMO.equipa = equipa;
+    document.getElementById("bloco-equipa").textContent = equipa.length
+      ? "Profissionais envolvidos: " + equipa.join(", ") + "."
+      : "Sem equipa atribuída na ficha da criança.";
+
+    // PROMs do princípio ao fim
+    const evolucao = await evolucaoPromsDoAcompanhamento(DOENTE.id);
+    RESUMO.proms = evolucao;
+    const alvo = document.getElementById("bloco-proms");
+    alvo.innerHTML = evolucao.length
+      ? evolucao.map(function(p){
+          const mudanca = p.variacao == null
+            ? '<span class="hint">uma só resposta, sem evolução para comparar</span>'
+            : '<span class="seta ' + p.sentido + '">'
+              + (p.variacao > 0 ? "▲ +" : p.variacao < 0 ? "▼ " : "— ") + p.variacao + "</span> "
+              + '<span class="hint">' + (p.sentido === "melhor" ? "melhorou" : p.sentido === "pior" ? "agravou" : "sem alteração") + "</span>";
+          return '<div class="prom-evo">'
+               +   "<strong>" + esc(p.nome) + "</strong>"
+               +   '<span class="hint">' + p.inicial + " (" + esc(dataCurta(p.dataInicial)) + ")"
+               +     " → " + p.final + " (" + esc(dataCurta(p.dataFinal)) + ")</span>"
+               +   mudanca
+               + "</div>";
+        }).join("")
+      : '<p class="hint" style="margin:0;">O doente não respondeu a questionários durante o acompanhamento.</p>';
+
+    // metas
+    try { METAS = await lumiApi.listarMetas(DOENTE.id); } catch (e) { METAS = []; }
+    desenharMetas();
+  }
+
+  function numeroHTML(n, rotulo){
+    return '<div class="numero"><div class="n">' + n + '</div><div class="r">' + esc(rotulo) + "</div></div>";
+  }
+
+  function desenharMetas(){
+    const el = document.getElementById("lista-metas");
+    if (!METAS.length) {
+      el.innerHTML = '<p class="hint" style="margin:0;">Não foram definidas metas para este doente.</p>';
+      return;
+    }
+    el.innerHTML = METAS.map(function(m){
+      // quem já estava concluída entra com "atingido" pré-selecionado,
+      // mas a equipa pode discordar do que a plataforma registou
+      const atingida = m.estado === "done";
+      return '<div class="subfield" style="margin-bottom:12px;">'
+           +   "<label>" + esc(m.label) + "</label>"
+           +   '<div class="chip-group">'
+           +     '<label class="chip"><input type="radio" name="meta-' + m.id + '"' + (atingida ? " checked" : "") + "><span>Atingido</span></label>"
+           +     '<label class="chip"><input type="radio" name="meta-' + m.id + '"><span>Parcialmente atingido</span></label>'
+           +     '<label class="chip"><input type="radio" name="meta-' + m.id + '"><span>Não atingido</span></label>'
+           +   "</div>"
+           + "</div>";
+    }).join("");
+  }
+
+  function lerMetas(){
+    return METAS.map(function(m){
+      const marcado = document.querySelector('input[name="meta-' + m.id + '"]:checked');
+      return { id: m.id, label: m.label,
+               classificacao: marcado ? marcado.nextElementSibling.textContent.trim() : "Por classificar" };
+    });
+  }
+
+  /* ---------- gravar ---------- */
+  function recolherDados(){
+    const dados = {};
+    document.querySelectorAll(".form-section").forEach(function(sec){
+      dados[sec.id] = serializarQuadro(sec);
+    });
+    dados.objetivos = lerMetas();
+    return dados;
+  }
+
+  async function guardar(emitir){
+    const estado = document.getElementById("estado-guardar");
+    const botoes = [document.getElementById("btn-rascunho"), document.getElementById("btn-emitir")];
+    document.getElementById("erro-geral").style.display = "none";
+
+    if (emitir) {
+      const porClassificar = lerMetas().filter(function(m){ return m.classificacao === "Por classificar"; });
+      if (porClassificar.length) {
+        mostrarErro(new Error(porClassificar.map(function(m){ return '"' + m.label + '"'; }).join(", ")),
+          "Falta classificar " + porClassificar.length + (porClassificar.length === 1 ? " objetivo" : " objetivos"));
+        abrirQuadro("objetivos", true);
+        return;
+      }
+      if (!document.getElementById("doc-resumo").value.trim()) {
+        mostrarErro(new Error("o resumo em linguagem simples está vazio"),
+          "O documento do doente não pode sair em branco");
+        abrirQuadro("doente", true);
+        return;
+      }
+      if (!confirm("Emitir o relatório de alta?\n\nA partir daqui o doente passa a vê-lo na área dele, e o acompanhamento fica dado como terminado.")) return;
+    }
+
+    botoes.forEach(b => b.disabled = true);
+    estado.textContent = "A guardar...";
+    try {
+      const comum = {
+        data_admissao: document.getElementById("i-admissao").value || null,
+        data_alta: document.getElementById("i-alta").value || null,
+        dados: recolherDados(),
+        resumo: RESUMO,
+        estado: emitir ? "emitida" : "rascunho"
+      };
+      ALTA = ALTA
+        ? await lumiApi.atualizarAltaSeguimento(ALTA.id, comum)
+        : await lumiApi.criarAltaSeguimento(DOENTE.id, comum);
+
+      estado.textContent = emitir ? "Relatório emitido. O doente já o vê." : "Rascunho guardado.";
+      mostrarBannerEstado();
+    } catch (e) {
+      estado.textContent = "";
+      mostrarErro(e, "Não foi possível guardar");
+    } finally {
+      botoes.forEach(b => b.disabled = false);
+    }
+  }
+
+  function mostrarBannerEstado(){
+    const el = document.getElementById("banner-estado");
+    if (!ALTA) { el.style.display = "none"; return; }
+    if (ALTA.estado === "emitida") {
+      const carimbo = new Date(ALTA.emitida_em || ALTA.atualizado_em || "");
+      const quando = isNaN(carimbo.getTime()) ? "" : " em " + carimbo.toLocaleString("pt-PT");
+      el.innerHTML = "<div>🏁 Relatório emitido" + esc(quando)
+        + ". O doente vê-o na área dele. Se voltar a guardar, a versão dele é atualizada.</div>";
+    } else {
+      el.innerHTML = "<div>📝 Rascunho. Só a equipa vê isto — o doente não vê nada até ser emitido.</div>";
+    }
+    el.style.display = "flex";
+    atualizarCartaoSatisfacaoFinal();
+  }
+
+  /* ---------- avaliação final do acompanhamento ---------- */
+  async function atualizarCartaoSatisfacaoFinal(){
+    const cartao = document.getElementById("cartao-satisfacao-final");
+    const emitida = ALTA && ALTA.estado === "emitida";
+    cartao.hidden = !emitida;
+    if (!emitida) return;
+
+    // Um acompanhamento só tem um fecho: se já foi pedida a avaliação final
+    // para este doente, dizer o estado em vez de convidar a pedir outra vez.
+    try {
+      const pedidos = await lumiApi.listarPedidosSatisfacao(DOENTE.id);
+      const existente = pedidos.find(function(p){ return p.tipo === "final"; });
+      if (existente) {
+        const estados = { pendente: "por responder", respondida: "já respondida", recusada: "dispensada pelo doente" };
+        document.getElementById("btn-satisfacao-final").disabled = true;
+        document.getElementById("btn-satisfacao-final").textContent = "Avaliação final já pedida";
+        document.getElementById("estado-satisfacao-final").textContent = "Estado: " + (estados[existente.estado] || existente.estado) + ".";
+      }
+    } catch (e) {
+      console.warn("Não foi possível verificar pedidos anteriores:", e);
+    }
+  }
+
+  async function pedirAvaliacaoFinal(){
+    const btn = document.getElementById("btn-satisfacao-final");
+    const estado = document.getElementById("estado-satisfacao-final");
+    btn.disabled = true; estado.textContent = "A enviar o convite...";
+    try {
+      await lumiApi.pedirAvaliacaoSatisfacao(DOENTE.id, "final", null);
+      btn.textContent = "Avaliação final pedida ✓";
+      estado.textContent = "O doente foi convidado.";
+    } catch (e) {
+      console.error("Erro ao pedir a avaliação final:", e);
+      estado.textContent = "Não foi possível pedir: " + (e.message || e);
+      btn.disabled = false;
+    }
+  }
+
+  function repovoar(dados){
+    if (!dados) return;
+    document.querySelectorAll(".form-section").forEach(function(sec){
+      const guardado = dados[sec.id];
+      if (!guardado) return;
+      sec.querySelectorAll(".subfield").forEach(function(campo){
+        const label = campo.querySelector("label");
+        if (!label) return;
+        const valor = guardado[label.textContent.trim()];
+        if (valor == null) return;
+        const radios = campo.querySelectorAll('.chip-group input[type="radio"]');
+        const inputs = campo.querySelectorAll('input[type="text"], input[type="date"], textarea');
+        if (radios.length) {
+          const escolha = (valor && typeof valor === "object") ? valor.resposta : valor;
+          radios.forEach(function(r){ r.checked = r.nextElementSibling.textContent.trim() === escolha; });
+          if (valor && typeof valor === "object" && inputs.length === 1) inputs[0].value = valor.detalhe || "";
+        } else if (inputs.length === 1) {
+          inputs[0].value = valor;
+        }
+      });
+      atualizarProgressoQuadro(sec.id);
+    });
+    // classificação dos objetivos
+    (dados.objetivos || []).forEach(function(o){
+      const radios = document.querySelectorAll('input[name="meta-' + o.id + '"]');
+      radios.forEach(function(r){ r.checked = r.nextElementSibling.textContent.trim() === o.classificacao; });
+    });
+  }
+
+  /* A justificação só aparece quando a equipa escolhe a alta definitiva. Não é
+     um bloqueio — é um pedido de uma frase, que fica no relatório e que daqui a
+     cinco anos explica a decisão a quem a ler. */
+  function alternarJustificacaoAlta(){
+    const marcado = document.querySelector('input[name="seguimento"]:checked');
+    const definitiva = marcado && marcado.closest('label').innerText.trim().toLowerCase().startsWith('alta definitiva');
+    document.getElementById('campo-justificacao-alta').style.display = definitiva ? 'block' : 'none';
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent =
+      sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    prepararQuadros("indice-quadros");
+    atualizarBadgeAlertas();
+
+    DOENTE = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    document.getElementById("titulo-doente").textContent = "Alta do seguimento — " + DOENTE.nome;
+    document.getElementById("sidebar-nome-doente").textContent = DOENTE.nome;
+    ligarSidebarAoProcesso(DOENTE.processo);
+    montarCabecalhoImpressao("Relatório de alta do seguimento", DOENTE);
+    const voltar = "doente.html?processo=" + encodeURIComponent(DOENTE.processo);
+    document.getElementById("link-voltar").href = voltar;
+    document.getElementById("btn-cancelar").href = voltar;
+
+    document.getElementById("i-admissao").value = paraInputData(DOENTE.criado_em || DOENTE.data_alta);
+    document.getElementById("i-alta").value = new Date().toISOString().slice(0,10);
+
+    await calcular();
+
+    try {
+      ALTA = await lumiApi.obterAltaSeguimento(DOENTE.id);
+      if (ALTA) {
+        if (ALTA.data_admissao) document.getElementById("i-admissao").value = ALTA.data_admissao;
+        if (ALTA.data_alta) document.getElementById("i-alta").value = ALTA.data_alta;
+        repovoar(ALTA.dados);
+        mostrarBannerEstado();
+      }
+    } catch (e) {
+      console.warn("Relatório anterior indisponível:", e);
+    }
+  })();
+</script>
+</body>
+</html>

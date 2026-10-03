@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dúvidas — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html" class="active">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+  <p class="eyebrow">Fale com a sua equipa</p>
+  <h1 style="font-size:2rem;">Dúvidas e preocupações</h1>
+  <p style="color:var(--ink-soft); max-width:64ch;">
+    Tem alguma dúvida sobre a ferida, a medicação, a dor, o sono, a escola ou o
+    comportamento da criança? Escreva aqui — a equipa responde assim que possível.
+    Não há perguntas pequenas de mais. Para emergências, não espere pela resposta:
+    contacte a unidade diretamente ou dirija-se às urgências pediátricas.
+  </p>
+
+  <div class="card" style="max-width:720px; margin-top:24px;">
+    <p class="eyebrow" style="margin-bottom:14px;">Nova dúvida</p>
+    <form onsubmit="submeterNovaDuvida(event)">
+      <div class="field">
+        <label for="duvida-categoria">Sobre o que é?</label>
+        <div class="chip-group" id="duvida-categoria">
+          <label class="chip"><input type="radio" name="duvida-cat" value="Ferida" checked><span>Ferida / Cicatriz</span></label>
+          <label class="chip"><input type="radio" name="duvida-cat" value="Dor"><span>Dor</span></label>
+          <label class="chip"><input type="radio" name="duvida-cat" value="Medicação"><span>Medicação</span></label>
+          <label class="chip"><input type="radio" name="duvida-cat" value="Emocional"><span>Como me sinto</span></label>
+          <label class="chip"><input type="radio" name="duvida-cat" value="Outra"><span>Outra</span></label>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label for="duvida-texto">A sua dúvida ou preocupação</label>
+        <textarea id="duvida-texto" rows="3" placeholder="Escreva aqui..." required></textarea>
+      </div>
+      <div class="field" style="margin-bottom:20px;">
+        <label class="star-toggle">
+          <input type="checkbox" id="duvida-telefone">
+          <span>📞 Prefiro ser contactado(a) por telefone</span>
+        </label>
+      </div>
+      <button class="btn btn-primary" type="submit">Enviar à equipa</button>
+    </form>
+  </div>
+
+  <p class="eyebrow" style="margin-top:36px;">As suas dúvidas</p>
+  <div id="lista-duvidas" style="max-width:720px; margin-top:14px;"></div>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function mapearDuvida(row){
+    return {
+      id: row.id, doente: "", categoria: row.categoria, pergunta: row.pergunta,
+      contactoTelefonico: row.contacto_telefonico,
+      data: formatarData(row.data), estado: row.estado, resposta: row.resposta,
+      respondidoPor: row.respondido_por, dataResposta: formatarData(row.data_resposta)
+    };
+  }
+
+  async function carregarDuvidas(){
+    const linhas = await lumiApi.listarDuvidas(DOENTE_ID);
+    const el = document.getElementById("lista-duvidas");
+    el.innerHTML = linhas.length
+      ? linhas.map(r => duvidaCardHTML(mapearDuvida(r), false)).join("")
+      : `<p class="hint">Ainda não enviou nenhuma dúvida.</p>`;
+
+    // Chegou aqui, viu as respostas: o contador zera. É feito DEPOIS de
+    // desenhar a lista, para não marcar como lido o que não chegou a
+    // aparecer por causa de um erro a carregar.
+    try {
+      await lumiApi.marcarRespostasVistas();
+      const selo = document.getElementById("badge-duvidas");
+      if (selo) { selo.textContent = ""; selo.title = ""; }
+    } catch (e) {
+      console.error("Não foi possível marcar as respostas como vistas:", e);
+    }
+  }
+
+  async function submeterNovaDuvida(ev){
+    ev.preventDefault();
+    const categoria = document.querySelector('input[name="duvida-cat"]:checked').value;
+    const texto = document.getElementById('duvida-texto');
+    const telefone = document.getElementById('duvida-telefone').checked;
+    if (!texto.value.trim()) return;
+    await lumiApi.submeterDuvida(DOENTE_ID, categoria, texto.value, telefone);
+    texto.value = '';
+    document.getElementById('duvida-telefone').checked = false;
+    carregarDuvidas();
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarDuvidas();
+  })();
+</script>
+</body>
+</html>

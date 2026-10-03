@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crianças — Portal Clínico · Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="active" href="dashboard.html">📋 Crianças</a>
+    <a href="novo-doente.html">➕ Nova Criança</a>
+    <a href="alertas.html">🔔 Alertas <span class="pill pill-alert" style="margin-left:6px;" id="badge-alertas"></span></a>
+    <a href="equipa.html">👥 Equipa</a>
+    <a href="definicoes.html">⚙️ Definições</a>
+  </aside>
+
+  <div class="main-area">
+
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <p class="eyebrow">Unidade de Queimados Pediátricos</p>
+        <h1 style="font-size:1.8rem;">Crianças em seguimento pós-alta</h1>
+      </div>
+      <a class="btn btn-primary" href="novo-doente.html">➕ Nova criança</a>
+    </div>
+
+    <div class="grid g-3" style="margin-bottom:28px;">
+      <div class="card stat"><div class="num" id="stat-total">—</div><div class="lbl">Crianças em seguimento ativo</div></div>
+      <div class="card stat"><div class="num">—</div><div class="lbl">Alertas por rever (por implementar)</div></div>
+      <div class="card stat"><div class="num">—</div><div class="lbl">Adesão média aos PROMs (por implementar)</div></div>
+    </div>
+
+    <div class="card card-flush">
+      <table>
+        <thead>
+          <tr>
+            <th>Doente</th><th>%TBSA</th><th>Profundidade</th><th>Equipa</th><th>Acessos</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="linhas-doentes">
+          <tr><td colspan="6" class="hint" style="padding:20px;">A carregar doentes...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  async function carregarDoentes(){
+    const doentes = await lumiApi.listarDoentes();
+    document.getElementById('stat-total').textContent = doentes.length;
+
+    const tbody = document.getElementById('linhas-doentes');
+    if (!doentes.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="hint" style="padding:20px;">Ainda não há doentes registados. <a href="novo-doente.html">Registar o primeiro</a>.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = doentes.map(d => `
+      <tr class="row-link" onclick="window.location.href='doente.html?processo=${encodeURIComponent(d.processo)}'">
+        <td><strong>${d.nome}</strong><br><span class="mono" style="font-size:.75rem; color:var(--ink-soft);">${d.processo}</span></td>
+        <td>${d.tbsa != null ? d.tbsa + '%' : '—'}</td>
+        <td>${d.profundidade || '—'}</td>
+        <td style="font-size:.82rem; color:var(--ink-soft);">${(d.equipa || []).join(', ') || '—'}</td>
+        <td class="mono" style="text-align:center;" title="Número de vezes que o doente/familiar entrou na sua área">🔑 ${d.contagem_acessos ?? 0}</td>
+        <td><a class="btn btn-ghost btn-sm" href="doente.html?processo=${encodeURIComponent(d.processo)}">Ver ficha</a></td>
+      </tr>`).join('');
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    atualizarBadgeAlertas();
+    carregarDoentes();
+  })();
+</script>
+</body>
+</html>

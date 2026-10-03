@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultas — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<style>
+  .consulta-cartao{ border:1px solid var(--line); border-radius:var(--radius-lg); padding:20px 22px; margin-bottom:14px; background:#fff; }
+  .consulta-cartao.proxima{ border-left:4px solid var(--star-deep); }
+  .consulta-cartao .quando{ font-family:var(--f-mono); font-size:.95rem; font-weight:600; color:var(--blue-deep); }
+  .consulta-cartao .detalhe{ font-size:.9rem; color:var(--ink-soft); margin:6px 0 0; }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html" class="active">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+    <p class="eyebrow">As suas consultas</p>
+    <h1 style="font-size:2rem;">Consultas</h1>
+    <p style="color:var(--ink-soft); max-width:64ch;">
+      Aqui vê as consultas marcadas e o que a equipa registou nas que já
+      aconteceram. Se tiver dúvidas sobre alguma coisa que leia, escreva à
+      equipa em Dúvidas.
+    </p>
+
+    <p class="eyebrow" style="margin-top:34px;">Marcadas</p>
+    <div id="lista-marcadas" style="max-width:720px; margin-top:14px;">
+      <p class="hint">A carregar...</p>
+    </div>
+
+    <p class="eyebrow" style="margin-top:34px;">Consultas já realizadas</p>
+    <div id="lista-realizadas" style="max-width:720px; margin-top:14px;">
+      <p class="hint">A carregar...</p>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function quando(iso){
+    return new Date(iso).toLocaleString("pt-PT",
+      { weekday:"long", day:"2-digit", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  }
+
+  async function carregarMarcadas(){
+    const el = document.getElementById("lista-marcadas");
+    try {
+      const linhas = await lumiApi.listarAgendamentos(DOENTE_ID);
+      const futuras = linhas
+        .filter(function(m){ return m.estado === "agendado"; })
+        .sort(function(a,b){ return String(a.data_hora).localeCompare(String(b.data_hora)); });
+
+      if (!futuras.length) {
+        el.innerHTML = '<p class="hint">Não tem consultas marcadas de momento. '
+          + "Quando a equipa marcar uma, aparece aqui.</p>";
+        return;
+      }
+
+      el.innerHTML = futuras.map(function(m, i){
+        const tele = m.tipo === "teleconsulta";
+        const partes = [];
+        if (m.especialidade) partes.push(esc(m.especialidade));
+        if (m.profissional_nome) partes.push("com " + esc(m.profissional_nome));
+        if (!tele && m.local) partes.push(esc(m.local));
+
+        return '<div class="consulta-cartao' + (i === 0 ? " proxima" : "") + '">'
+             +   (i === 0 ? '<span class="pill pill-star" style="margin-bottom:8px;">A próxima</span>' : "")
+             +   '<div class="quando">' + esc(quando(m.data_hora)) + "</div>"
+             +   '<p class="detalhe"><strong>' + (tele ? "💻 Teleconsulta" : "🏥 Consulta presencial") + "</strong>"
+             +     (partes.length ? " · " + partes.join(" · ") : "") + "</p>"
+             +   (m.instrucoes
+                   ? '<div class="banner-info" style="margin-top:12px;"><div>📋 ' + esc(m.instrucoes) + "</div></div>"
+                   : "")
+             +   (tele && m.ligacao
+                   ? '<a class="btn btn-primary btn-sm" style="margin-top:12px;" href="' + esc(m.ligacao)
+                     + '" target="_blank" rel="noopener">Entrar na teleconsulta</a>'
+                   : "")
+             +   '<div id="doc-' + m.id + '"></div>'
+             + "</div>";
+      }).join("");
+
+      futuras.forEach(function(m){ mostrarDocumentos(m.id); });
+    } catch (e) {
+      console.error("Erro ao carregar marcações:", e);
+      el.innerHTML = '<p class="hint">Não foi possível carregar as marcações.</p>';
+    }
+  }
+
+  /* Documentos que a equipa juntou à marcação. Carregam-se depois dos
+     cartões: se falharem — a migração pode ainda não ter corrido — a
+     marcação continua a aparecer, que é o que interessa ao doente. */
+  async function mostrarDocumentos(idMarcacao){
+    const zona = document.getElementById("doc-" + idMarcacao);
+    if (!zona) return;
+    try {
+      const lista = await lumiApi.listarAnexos(DOENTE_ID, idMarcacao);
+      if (!lista.length) return;
+      zona.innerHTML = '<p class="detalhe" style="margin-top:14px; font-weight:600;">Documentos para esta consulta</p>'
+        + lista.map(function(a){
+            return '<p style="margin:6px 0 0;"><a href="#" onclick="abrirDocumento(event, \'' + esc(a.caminho) + '\')">📄 '
+                 + esc(a.nome) + "</a>"
+                 + (a.descricao ? ' <span class="hint">— ' + esc(a.descricao) + "</span>" : "") + "</p>";
+          }).join("");
+    } catch (e) {
+      console.warn("Documentos indisponíveis:", e);
+    }
+  }
+
+  async function abrirDocumento(ev, caminho){
+    ev.preventDefault();
+    try {
+      const url = await lumiApi.enderecoAnexo(caminho);
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      console.error("Erro ao abrir o documento:", e);
+      alert("Não foi possível abrir o documento. Avise a equipa em Dúvidas.");
+    }
+  }
+
+  async function carregarRealizadas(){
+    const el = document.getElementById("lista-realizadas");
+    try {
+      const linhas = await lumiApi.listarConsultas(DOENTE_ID);
+      if (!linhas.length) {
+        el.innerHTML = '<p class="hint">Ainda não há registos de consulta para ver. '
+          + "Depois de cada consulta, a equipa publica aqui o que ficou combinado.</p>";
+        return;
+      }
+      el.innerHTML = linhas.map(function(c){
+        return '<div class="consulta-cartao">'
+             +   '<div class="quando">' + esc(quando(c.data_consulta)) + "</div>"
+             +   '<p class="detalhe">' + (c.tipo === "teleconsulta" ? "💻 Teleconsulta" : "🏥 Presencial")
+             +     " · " + esc(c.especialidade || "") + " · " + esc(c.profissional_nome) + "</p>"
+             +   '<a class="btn btn-ghost btn-sm" style="margin-top:12px;" href="consulta.html?id=' + c.id + '">Ver o que ficou registado</a>'
+             + "</div>";
+      }).join("");
+    } catch (e) {
+      console.error("Erro ao carregar consultas:", e);
+      el.innerHTML = '<p class="hint">Não foi possível carregar os registos.</p>';
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarMarcadas();
+    carregarRealizadas();
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano de Tratamento — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html" class="active">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+  <p class="eyebrow">Plano de tratamento</p>
+  <h1 style="font-size:2rem;">Plano de tratamento</h1>
+  <p style="color:var(--ink-soft); max-width:64ch;">
+    Estes cuidados, exercícios e orientações foram prescritos pela equipa —
+    Cirurgia Plástica, Enfermagem, Fisioterapia, Terapia Ocupacional, Psicologia
+    ou Nutrição, conforme o caso. Sempre que fizerem, registem aqui: ajuda a equipa
+    a perceber como está a correr e a ajustar o plano. Em casa, o que funciona
+    quase sempre é transformar isto em rotina e em jogo — a seguir ao banho, antes
+    da história, com a contagem feita pela criança.
+  </p>
+
+  <p class="eyebrow" style="margin-top:36px;">Prescrições ativas</p>
+  <div id="plano-exercicios" style="max-width:720px; margin-top:14px;"></div>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO.slice(0, 10) + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  async function carregarPlano(){
+    const exercicios = await lumiApi.listarExercicios(DOENTE_ID);
+    // Os suspensos pela equipa continuam na ficha, com o histórico, mas
+    // desaparecem daqui: mostrá-los seria pedir ao doente que fizesse algo
+    // que a equipa mandou parar.
+    DEMO_PATIENT.plano.exercicios = exercicios.filter(ex => ex.estado !== "suspenso").map(ex => ({
+      id: ex.id, nome: ex.nome, categoria: ex.categoria, descricao: ex.descricao, prescricao: ex.prescricao,
+      registos: (ex.plano_registos || [])
+        .slice()
+        .sort((a, b) => a.data.localeCompare(b.data))
+        .map(r => ({ data: formatarData(r.data), esforco: r.esforco, nota: r.nota }))
+    }));
+    renderPlanoDoente('plano-exercicios');
+  }
+
+  /* substitui a versão de demonstração: grava a sério o registo de execução */
+  async function registarExercicio(id){
+    const selecionado = document.querySelector(`input[name="esforco-${id}"]:checked`);
+    if (!selecionado) { alert("Indique o nível de esforço antes de registar."); return; }
+    const nota = document.getElementById(`nota-${id}`).value;
+    try {
+      await lumiApi.registarExecucaoExercicio(id, DOENTE_ID, parseInt(selecionado.value, 10), nota);
+      await carregarPlano();
+    } catch (e) {
+      alert("Não foi possível registar: " + (e.message || e));
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarPlano();
+  })();
+</script>
+</body>
+</html>

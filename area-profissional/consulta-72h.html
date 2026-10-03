@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulário 1.º Contacto — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link class="active">⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+    <div class="print-cabecalho" id="print-cabecalho"></div>
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Primeiro contacto pós-alta</p>
+    <h1 style="font-size:1.9rem;">Formulário 1.º Contacto</h1>
+    <p style="color:var(--ink-soft); max-width:74ch; margin-top:6px;">
+      Serve para confirmar se a alta correu bem na prática, registar a evolução nas primeiras
+      72 horas, perceber se o doente está a conseguir cuidar de si, e decidir com que frequência
+      passa a ser contactado. Um doente pode estar clinicamente estável e mesmo assim falhar o
+      percurso por não ter medicação, material ou apoio em casa.
+    </p>
+
+    <div id="ja-registado" class="banner-info" style="margin:20px 0; display:none;"></div>
+    <div id="erro-geral" class="banner-alert" style="margin:20px 0; display:none;"></div>
+
+    <form id="form-72h" onsubmit="submeterContacto(event)" style="max-width:940px; margin-top:22px;">
+
+      <div class="form-indice">
+        <div class="linha">
+          <span class="rotulo">Quadros</span>
+          <span id="indice-quadros" style="display:contents;"></span>
+          <span class="atual" id="indice-atual"></span>
+          <span class="acoes">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="abrirTodosOsQuadros()">Abrir todos</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="fecharTodosOsQuadros()">Fechar todos</button>
+          </span>
+        </div>
+      </div>
+
+      <!-- ======================= 1. TRANSIÇÃO PARA CASA ======================= -->
+      <section id="transicao" class="form-section card">
+        <div class="section-head"><span class="section-num">1</span><h2>Transição para casa</h2></div>
+        <p class="scale-note" style="margin-bottom:18px;">
+          Confirma se a alta foi operacionalmente bem-sucedida. É aqui que se apanha o doente
+          estável que, ainda assim, ficou sem medicação ou sem quem o ajude.
+        </p>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Onde está a viver</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="local"><span>Em casa</span></label>
+              <label class="chip"><input type="radio" name="local"><span>Instituição</span></label>
+              <label class="chip"><input type="radio" name="local"><span>Casa de familiar</span></label>
+              <label class="chip"><input type="radio" name="local"><span>Outro</span></label>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Tem cuidador ou apoio disponível</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="cuidador"><span>Sim, permanente</span></label>
+              <label class="chip"><input type="radio" name="cuidador"><span>Sim, parcial</span></label>
+              <label class="chip"><input type="radio" name="cuidador"><span>Não</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Recebeu e compreendeu as instruções de alta</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="instrucoes"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="instrucoes"><span>Parcialmente</span></label>
+              <label class="chip"><input type="radio" name="instrucoes"><span>Não</span></label>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Tem a medicação em casa</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="medicacao-casa"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="medicacao-casa"><span>Em falta</span></label>
+              <label class="chip"><input type="radio" name="medicacao-casa"><span>Não aplicável</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Tem material para os pensos e cuidados</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="material"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="material"><span>Em falta</span></label>
+              <label class="chip"><input type="radio" name="material"><span>Não aplicável</span></label>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Recorreu à urgência ou a outra consulta desde a alta</label>
+            <div class="chip-group" style="margin-bottom:10px;">
+              <label class="chip"><input type="radio" name="urgencia"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="urgencia" checked><span>Não</span></label>
+            </div>
+            <input type="text" placeholder="Onde e porquê, se aplicável">
+          </div>
+        </div>
+
+        <hr class="divider" style="margin:22px 0;">
+        <p class="scale-note" style="margin-bottom:14px;">
+          Acesso à plataforma. Sem isto, todo o seguimento à distância deixa de funcionar —
+          e é uma barreira que só se descobre perguntando.
+        </p>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Está familiarizado com o site</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="site-familiar"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="site-familiar"><span>Mais ou menos</span></label>
+              <label class="chip"><input type="radio" name="site-familiar"><span>Não</span></label>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Já acedeu ao site</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="site-acedeu"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="site-acedeu"><span>Ainda não</span></label>
+              <label class="chip"><input type="radio" name="site-acedeu"><span>Não consegue</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="site-duvidas">Dúvidas sobre o site</label>
+          <textarea id="site-duvidas" rows="2" placeholder="ex.: não percebeu como responder aos questionários"></textarea>
+        </div>
+      </section>
+
+      <!-- ======================= 2. ESTADO CLÍNICO NAS 72H ======================= -->
+      <section id="clinico" class="form-section card">
+        <div class="section-head"><span class="section-num">2</span><h2>Estado clínico nas 72 horas</h2></div>
+        <p class="scale-note" style="margin-bottom:18px;">
+          Itens curtos de rastreio, deliberadamente. O Burn Outcomes Questionnaire e as escalas
+          de estigma ficam para os marcos seguintes — às 72 horas a carga de resposta seria
+          excessiva para uma família que acabou de chegar a casa, e o resultado pouco informativo.
+        </p>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Dor agora (NRS 0–10)</label>
+            <div class="scale mini-scale" id="escala-dor-atual"></div>
+          </div>
+          <div class="subfield">
+            <label>Pior dor desde a alta (NRS 0–10)</label>
+            <div class="scale mini-scale" id="escala-dor-pior"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Prurido agora (0–10)</label>
+            <div class="scale mini-scale" id="escala-prurido"></div>
+          </div>
+          <div class="subfield">
+            <label>Impacto do prurido no sono (0–10)</label>
+            <div class="scale mini-scale" id="escala-sono"></div>
+          </div>
+        </div>
+
+        <div class="subfield">
+          <label>Estado da ferida e do penso</label>
+          <div class="chip-group">
+            <label class="chip"><input type="checkbox" onchange="avaliarSinaisAlarme()"><span>Seco e limpo</span></label>
+            <label class="chip"><input type="checkbox" onchange="avaliarSinaisAlarme()"><span>Exsudado</span></label>
+            <label class="chip"><input type="checkbox" onchange="avaliarSinaisAlarme()"><span>Cheiro</span></label>
+            <label class="chip"><input type="checkbox" onchange="avaliarSinaisAlarme()"><span>Penso descolado</span></label>
+            <label class="chip"><input type="checkbox" onchange="avaliarSinaisAlarme()"><span>Nova humidade</span></label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Febre, arrepios ou mal-estar</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="febre" onchange="avaliarSinaisAlarme()"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="febre" onchange="avaliarSinaisAlarme()"><span>Não</span></label>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Nova vermelhidão, calor, edema ou agravamento local</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="inflamacao" onchange="avaliarSinaisAlarme()"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="inflamacao" onchange="avaliarSinaisAlarme()"><span>Não</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="subfield">
+          <label>Abertura da ferida, hemorragia ou aumento do exsudado</label>
+          <div class="chip-group">
+            <label class="chip"><input type="radio" name="deiscencia" onchange="avaliarSinaisAlarme()"><span>Sim</span></label>
+            <label class="chip"><input type="radio" name="deiscencia" onchange="avaliarSinaisAlarme()"><span>Não</span></label>
+          </div>
+        </div>
+
+        <div id="aviso-alarme" class="banner-alert" style="display:none; margin-top:6px;"></div>
+
+        <hr class="divider" style="margin:22px 0;">
+        <p class="eyebrow" style="margin-bottom:6px;">Grau de importância</p>
+        <p class="scale-note" style="margin-bottom:14px;">Depois de medir os sintomas, o peso que o doente lhes dá. Pode ter mudado desde a alta — e é o que diz onde vale a pena investir o seguimento.</p>
+
+        <div class="matriz-escala">
+          <div class="matriz-cabecalho" aria-hidden="true">
+            <span></span><span>Nada<br>importante</span><span>Pouco<br>importante</span><span>Moderadamente<br>importante</span><span>Importante</span><span>Muito<br>importante</span>
+          </div>
+
+          <div class="subfield">
+            <label><span class="so-leitor">Importância: </span>Dor</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="imp-dor"><span>Nada importante</span></label>
+              <label class="chip"><input type="radio" name="imp-dor"><span>Pouco importante</span></label>
+              <label class="chip"><input type="radio" name="imp-dor"><span>Moderadamente importante</span></label>
+              <label class="chip"><input type="radio" name="imp-dor"><span>Importante</span></label>
+              <label class="chip"><input type="radio" name="imp-dor"><span>Muito importante</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label><span class="so-leitor">Importância: </span>Sono</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="imp-sono"><span>Nada importante</span></label>
+              <label class="chip"><input type="radio" name="imp-sono"><span>Pouco importante</span></label>
+              <label class="chip"><input type="radio" name="imp-sono"><span>Moderadamente importante</span></label>
+              <label class="chip"><input type="radio" name="imp-sono"><span>Importante</span></label>
+              <label class="chip"><input type="radio" name="imp-sono"><span>Muito importante</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label><span class="so-leitor">Importância: </span>Prurido</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="imp-prurido"><span>Nada importante</span></label>
+              <label class="chip"><input type="radio" name="imp-prurido"><span>Pouco importante</span></label>
+              <label class="chip"><input type="radio" name="imp-prurido"><span>Moderadamente importante</span></label>
+              <label class="chip"><input type="radio" name="imp-prurido"><span>Importante</span></label>
+              <label class="chip"><input type="radio" name="imp-prurido"><span>Muito importante</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label><span class="so-leitor">Importância: </span>Ansiedade</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="imp-ansiedade"><span>Nada importante</span></label>
+              <label class="chip"><input type="radio" name="imp-ansiedade"><span>Pouco importante</span></label>
+              <label class="chip"><input type="radio" name="imp-ansiedade"><span>Moderadamente importante</span></label>
+              <label class="chip"><input type="radio" name="imp-ansiedade"><span>Importante</span></label>
+              <label class="chip"><input type="radio" name="imp-ansiedade"><span>Muito importante</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label><span class="so-leitor">Importância: </span>Imagem corporal</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="imp-imagem"><span>Nada importante</span></label>
+              <label class="chip"><input type="radio" name="imp-imagem"><span>Pouco importante</span></label>
+              <label class="chip"><input type="radio" name="imp-imagem"><span>Moderadamente importante</span></label>
+              <label class="chip"><input type="radio" name="imp-imagem"><span>Importante</span></label>
+              <label class="chip"><input type="radio" name="imp-imagem"><span>Muito importante</span></label>
+            </div>
+          </div>
+
+          <div class="subfield">
+            <label><span class="so-leitor">Importância: </span>Bem-estar emocional</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="imp-emocional"><span>Nada importante</span></label>
+              <label class="chip"><input type="radio" name="imp-emocional"><span>Pouco importante</span></label>
+              <label class="chip"><input type="radio" name="imp-emocional"><span>Moderadamente importante</span></label>
+              <label class="chip"><input type="radio" name="imp-emocional"><span>Importante</span></label>
+              <label class="chip"><input type="radio" name="imp-emocional"><span>Muito importante</span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= 3. ADESÃO E AUTOCUIDADO ======================= -->
+      <section id="adesao" class="form-section card">
+        <div class="section-head"><span class="section-num">3</span><h2>Adesão e capacidade de autocuidado</h2></div>
+        <p class="scale-note" style="margin-bottom:18px;">
+          Não se repete a prescrição: pergunta-se se o doente <strong>conseguiu</strong> executá-la e
+          onde encontrou barreiras. É este quadro que muitas vezes decide a periodicidade — um
+          doente sem sinais de alarme mas sem autonomia precisa de mais contacto do que um com
+          sintomas ligeiros e boa capacidade.
+        </p>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Conseguiu fazer os cuidados e pensos como indicado</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="pensos"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="pensos"><span>Com dificuldade</span></label>
+              <label class="chip"><input type="radio" name="pensos"><span>Não</span></label>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Conseguiu realizar os exercícios prescritos</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="exercicios"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="exercicios"><span>Em parte</span></label>
+              <label class="chip"><input type="radio" name="exercicios"><span>Não</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="subfield">
+          <label>Barreiras encontradas</label>
+          <div class="chip-group" style="margin-bottom:10px;">
+            <label class="chip"><input type="checkbox"><span>Dor</span></label>
+            <label class="chip"><input type="checkbox"><span>Medo</span></label>
+            <label class="chip"><input type="checkbox"><span>Falta de material</span></label>
+            <label class="chip"><input type="checkbox"><span>Falta de ajuda</span></label>
+            <label class="chip"><input type="checkbox"><span>Não percebeu o que fazer</span></label>
+            <label class="chip"><input type="checkbox"><span>Sem barreiras</span></label>
+          </div>
+          <input type="text" placeholder="Outra barreira">
+        </div>
+
+        <div class="form-row">
+          <div class="subfield">
+            <label>Está a tomar a medicação como indicado</label>
+            <div class="chip-group">
+              <label class="chip"><input type="radio" name="medicacao-adesao"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="medicacao-adesao"><span>Em parte</span></label>
+              <label class="chip"><input type="radio" name="medicacao-adesao"><span>Não</span></label>
+              <label class="chip"><input type="radio" name="medicacao-adesao"><span>Não aplicável</span></label>
+            </div>
+          </div>
+          <div class="subfield">
+            <label>Efeitos adversos ou dúvidas com a medicação</label>
+            <div class="chip-group" style="margin-bottom:10px;">
+              <label class="chip"><input type="radio" name="efeitos"><span>Sim</span></label>
+              <label class="chip"><input type="radio" name="efeitos" checked><span>Não</span></label>
+            </div>
+            <input type="text" placeholder="Quais, se aplicável">
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= 4. METAS E PLANO ======================= -->
+      <section id="revisao-plano" class="form-section card">
+        <div class="section-head"><span class="section-num">4</span><h2>Metas e plano definidos na alta</h2></div>
+        <p class="scale-note" style="margin-bottom:18px;">
+          Confirmar ou ajustar, não preencher de novo. O que foi definido na alta aparece aqui
+          tal como está; basta assinalar o que precisa de mudar.
+        </p>
+        <div id="metas-alta"><p class="hint" style="margin:0;">A carregar as metas...</p></div>
+        <hr class="divider" style="margin:22px 0;">
+        <div id="plano-alta"><p class="hint" style="margin:0;">A carregar o plano...</p></div>
+      </section>
+
+      <!-- ======================= 5. PRIORIDADE E PRÓXIMO CONTACTO ======================= -->
+      <section id="prioridade" class="form-section card">
+        <div class="section-head"><span class="section-num">5</span><h2>Prioridade e próximo contacto</h2></div>
+
+        <div class="card" style="background:var(--paper-tint); margin-bottom:20px;">
+          <p class="eyebrow" style="margin-bottom:8px;">Prioridade definida na alta</p>
+          <div id="prioridade-alta"><p class="hint" style="margin:0;">A carregar...</p></div>
+        </div>
+
+        <div class="subfield">
+          <label>Decisão nesta consulta</label>
+          <div class="chip-group">
+            <label class="chip"><input type="radio" name="decisao" value="manter" onchange="mostrarCadencia()"><span>Manter prioridade</span></label>
+            <label class="chip"><input type="radio" name="decisao" value="aumentar" onchange="mostrarCadencia()"><span>Aumentar prioridade</span></label>
+            <label class="chip"><input type="radio" name="decisao" value="baixar" onchange="mostrarCadencia()"><span>Baixar prioridade</span></label>
+          </div>
+        </div>
+
+        <div id="explica-cadencia" class="banner-info" style="display:none; margin-bottom:18px;"></div>
+
+        <div class="subfield">
+          <label for="justificacao">Justificação da decisão</label>
+          <textarea id="justificacao" rows="2" placeholder="ex.: sem sinais de alarme, mas sem cuidador e com dificuldade nos pensos"></textarea>
+        </div>
+
+        <hr class="divider" style="margin:22px 0;">
+
+        <div class="form-row">
+          <div class="subfield">
+            <label for="ag-data-hora">Agendar próximo contacto</label>
+            <input type="datetime-local" id="ag-data-hora">
+            <p class="scale-note">Fica registado no perfil do doente, no Histórico.</p>
+          </div>
+          <div class="subfield">
+            <label for="ag-tipo">Tipo de contacto</label>
+            <select id="ag-tipo">
+              <option value="Telefone">Telefone</option>
+              <option value="Videochamada">Videochamada</option>
+              <option value="Presencial">Presencial</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= 6. NECESSIDADES DE CONTEÚDO ======================= -->
+      <section id="conteudos" class="form-section card">
+        <div class="section-head"><span class="section-num">6</span><h2>Conteúdos a disponibilizar</h2></div>
+        <div class="subfield" style="margin-bottom:0;">
+          <label for="necessidades">Novos vídeos, folhetos ou materiais que este doente precisa</label>
+          <textarea id="necessidades" rows="3" placeholder="ex.: folheto sobre massagem da cicatriz em linguagem simples; vídeo curto de mudança de penso"></textarea>
+          <p class="scale-note">Fica registado para a equipa preparar e publicar em Recursos.</p>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="guardarEmPDF()">🖨️ Guardar em PDF</button>
+        <a href="doente.html" class="btn btn-ghost" id="btn-cancelar">Voltar</a>
+        <button type="submit" class="btn btn-primary" id="btn-guardar">Guardar 1.º contacto</button>
+      </div>
+
+      <div id="confirmacao" class="card" style="margin-top:20px; display:none;">
+        <span class="pill pill-ok">Guardado</span>
+        <h3 style="margin-top:14px;">Contacto registado</h3>
+        <div id="resumo-contacto"></div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE = null;
+  let PRIORIDADE_ALTA = null;   // a que ficou definida no Formulário de Alta Hospitalar
+  let METAS = [];
+  let EXERCICIOS = [];
+
+  /* Periodicidade por prioridade, tal como definida no projeto: é o que a
+     decisão desta consulta passa a determinar. */
+  const CADENCIA_POR_PRIORIDADE = {
+    baixa: "Sem alterações relevantes: mantém-se a consulta quinzenal.",
+    intermedia: "Dificuldades no autocuidado, no acesso a medicação ou material, ou alterações funcionais sem agravamento agudo: contacto adicional até 72 horas, mantendo a consulta quinzenal.",
+    alta: "Sinais de agravamento ou combinação de indicadores que exige resposta rápida: contacto clínico no próprio dia ou até 24 horas, decidindo entre teleconsulta e avaliação presencial."
+  };
+  const ORDEM_PRIORIDADE = ["baixa", "intermedia", "alta"];
+
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  /* --- escalas 0–10, geradas em JS para não repetir 44 rótulos no HTML --- */
+  function construirEscalas(){
+    [["escala-dor-atual","dor-atual"],["escala-dor-pior","dor-pior"],
+     ["escala-prurido","prurido"],["escala-sono","sono"]].forEach(function(par){
+      const el = document.getElementById(par[0]);
+      let h = "";
+      for (let i = 0; i <= 10; i++) {
+        h += '<label class="scale-opt"><input type="radio" name="' + par[1] + '"><span>' + i + '</span></label>';
+      }
+      el.innerHTML = h;
+    });
+  }
+
+  /* --- sinais de alarme: assinalados enquanto se preenche, não só no fim ---
+     Não alteram a prioridade sozinhos. Servem para a decisão do quadro 5 ser
+     tomada com eles à vista, em vez de depender de os recordar. */
+  function sinaisDeAlarme(){
+    const marcados = [];
+    const sim = nome => {
+      const m = document.querySelector('input[name="' + nome + '"]:checked');
+      return m && m.nextElementSibling.textContent.trim() === "Sim";
+    };
+    if (sim("febre"))      marcados.push("febre, arrepios ou mal-estar");
+    if (sim("inflamacao")) marcados.push("nova vermelhidão, calor ou edema");
+    if (sim("deiscencia")) marcados.push("abertura da ferida, hemorragia ou aumento do exsudado");
+    const ferida = document.querySelectorAll('#clinico .chip-group input[type="checkbox"]:checked');
+    ferida.forEach(function(c){
+      const t = c.nextElementSibling.textContent.trim();
+      if (t === "Cheiro") marcados.push("cheiro na ferida");
+    });
+    return marcados;
+  }
+
+  function avaliarSinaisAlarme(){
+    const el = document.getElementById("aviso-alarme");
+    const lista = sinaisDeAlarme();
+    if (!lista.length) { el.style.display = "none"; return; }
+    el.innerHTML = "<div>⚠️ <strong>Sinais de alarme assinalados:</strong> " + esc(lista.join("; "))
+      + ". Justificam contacto clínico rápido — pondere aumentar a prioridade no quadro 5.</div>";
+    el.style.display = "flex";
+  }
+
+  function prioridadeResultante(){
+    const marcado = document.querySelector('input[name="decisao"]:checked');
+    if (!marcado || !PRIORIDADE_ALTA) return null;
+    const i = ORDEM_PRIORIDADE.indexOf(PRIORIDADE_ALTA);
+    if (i < 0) return null;
+    const d = marcado.value;
+    if (d === "aumentar") return ORDEM_PRIORIDADE[Math.min(i + 1, 2)];
+    if (d === "baixar")   return ORDEM_PRIORIDADE[Math.max(i - 1, 0)];
+    return PRIORIDADE_ALTA;
+  }
+
+  function mostrarCadencia(){
+    const el = document.getElementById("explica-cadencia");
+    const p = prioridadeResultante();
+    if (!p) { el.style.display = "none"; return; }
+    const nomes = { baixa: "Baixa", intermedia: "Intermédia", alta: "Alta" };
+    el.innerHTML = "<div><strong>Fica em prioridade " + nomes[p] + ".</strong> " + CADENCIA_POR_PRIORIDADE[p] + "</div>";
+    el.style.display = "flex";
+  }
+
+  /* --- metas e plano herdados da alta: confirmar ou ajustar ---
+     Um ajuste não fica só aqui: a meta reescrita e a prescrição alterada
+     passam para a Jornada e para o Plano do doente, que é onde ele as vê.
+     Por isso o campo de ajuste é obrigatório quando se escolhe "precisa de
+     ajuste" — sem ele não haveria o que enviar. */
+  function desenharMetas(){
+    const el = document.getElementById("metas-alta");
+    const porFazer = METAS.filter(function(m){ return m.estado !== "done"; });
+    if (!porFazer.length) {
+      el.innerHTML = '<p class="eyebrow" style="margin-bottom:6px;">Metas</p>'
+        + '<p class="hint" style="margin:0;">' + (METAS.length
+            ? "Todas as metas deste doente já estão concluídas."
+            : "Não há metas definidas para este doente.") + "</p>";
+      return;
+    }
+    el.innerHTML = '<p class="eyebrow" style="margin-bottom:10px;">Metas definidas na alta</p>'
+      + porFazer.map(function(m){
+        return '<div class="subfield" style="margin-bottom:14px;">'
+             +   '<label>' + esc(m.label) + '</label>'
+             +   '<div class="chip-group">'
+             +     '<label class="chip"><input type="radio" name="meta-' + m.id + '" onchange="alternarAjuste(\'meta\',\'' + m.id + '\')"><span>Mantém</span></label>'
+             +     '<label class="chip"><input type="radio" name="meta-' + m.id + '" onchange="alternarAjuste(\'meta\',\'' + m.id + '\')"><span>Precisa de ajuste</span></label>'
+             +     '<label class="chip"><input type="radio" name="meta-' + m.id + '" onchange="alternarAjuste(\'meta\',\'' + m.id + '\')"><span>Já atingida</span></label>'
+             +   '</div>'
+             +   '<div id="caixa-meta-' + m.id + '" hidden style="margin-top:10px;">'
+             +     '<textarea id="ajuste-meta-' + m.id + '" rows="2" placeholder="Como fica a meta a partir de agora — é este o texto que o doente passa a ver na Jornada">' + esc(m.label) + '</textarea>'
+             +     '<p class="scale-note">Substitui a meta anterior na Jornada do doente, com uma nota a explicar a alteração.</p>'
+             +   '</div>'
+             + '</div>';
+      }).join("");
+  }
+
+  function desenharPlano(){
+    const el = document.getElementById("plano-alta");
+    const ativos = EXERCICIOS.filter(function(x){ return x.estado !== "suspenso"; });
+    if (!ativos.length) {
+      el.innerHTML = '<p class="eyebrow" style="margin-bottom:6px;">Plano terapêutico</p>'
+        + '<p class="hint" style="margin:0;">' + (EXERCICIOS.length
+            ? "Todos os cuidados prescritos estão suspensos."
+            : "Não há plano prescrito para este doente.") + "</p>";
+      return;
+    }
+    el.innerHTML = '<p class="eyebrow" style="margin-bottom:10px;">Plano terapêutico prescrito</p>'
+      + ativos.map(function(x){
+        const desc = x.prescricao ? " — " + esc(x.prescricao) : "";
+        return '<div class="subfield" style="margin-bottom:14px;">'
+             +   '<label>' + esc(x.nome) + '<span class="hint" style="font-weight:400;">' + desc + '</span></label>'
+             +   '<div class="chip-group">'
+             +     '<label class="chip"><input type="radio" name="ex-' + x.id + '" onchange="alternarAjuste(\'ex\',\'' + x.id + '\')"><span>Mantém</span></label>'
+             +     '<label class="chip"><input type="radio" name="ex-' + x.id + '" onchange="alternarAjuste(\'ex\',\'' + x.id + '\')"><span>Precisa de ajuste</span></label>'
+             +     '<label class="chip"><input type="radio" name="ex-' + x.id + '" onchange="alternarAjuste(\'ex\',\'' + x.id + '\')"><span>Suspender</span></label>'
+             +   '</div>'
+             +   '<div id="caixa-ex-' + x.id + '" hidden style="margin-top:10px;">'
+             +     '<textarea id="ajuste-ex-' + x.id + '" rows="2"></textarea>'
+             +     '<p class="scale-note" id="nota-ex-' + x.id + '"></p>'
+             +   '</div>'
+             + '</div>';
+      }).join("");
+  }
+
+  /** Mostra a caixa de ajuste consoante a decisão tomada na linha. */
+  function alternarAjuste(tipo, id){
+    const marcado = document.querySelector('input[name="' + tipo + '-' + id + '"]:checked');
+    const decisao = marcado ? marcado.nextElementSibling.textContent.trim() : "";
+    const caixa = document.getElementById("caixa-" + tipo + "-" + id);
+    const campo = document.getElementById("ajuste-" + tipo + "-" + id);
+    if (!caixa) return;
+
+    if (tipo === "ex") {
+      const nota = document.getElementById("nota-ex-" + id);
+      if (decisao === "Precisa de ajuste") {
+        const original = (EXERCICIOS.find(function(x){ return x.id === id; }) || {}).prescricao || "";
+        campo.placeholder = "Nova prescrição — séries, repetições, frequência";
+        if (!campo.value) campo.value = original;
+        nota.textContent = "Substitui a prescrição no Plano de Tratamento do doente.";
+      } else if (decisao === "Suspender") {
+        campo.placeholder = "Motivo da suspensão";
+        campo.value = "";
+        nota.textContent = "Deixa de aparecer ao doente. Fica na ficha, com o histórico, e pode ser reativado no Plano de Tratamento.";
+      }
+      caixa.hidden = (decisao !== "Precisa de ajuste" && decisao !== "Suspender");
+    } else {
+      caixa.hidden = (decisao !== "Precisa de ajuste");
+    }
+  }
+
+  /** Lê as decisões sobre metas e plano, que não seguem o padrão .subfield
+   *  com rótulo fixo (os nomes dos campos vêm dos ids das linhas). */
+  function lerRevisaoPlano(){
+    const r = { metas: [], plano: [] };
+    const texto = function(tipo, id){
+      const c = document.getElementById("ajuste-" + tipo + "-" + id);
+      return c ? c.value.trim() : "";
+    };
+    METAS.forEach(function(m){
+      const marcado = document.querySelector('input[name="meta-' + m.id + '"]:checked');
+      if (!marcado) return;
+      const decisao = marcado.nextElementSibling.textContent.trim();
+      r.metas.push({ id: m.id, label: m.label, decisao: decisao,
+                     ajuste: decisao === "Precisa de ajuste" ? texto("meta", m.id) : null });
+    });
+    EXERCICIOS.forEach(function(x){
+      const marcado = document.querySelector('input[name="ex-' + x.id + '"]:checked');
+      if (!marcado) return;
+      const decisao = marcado.nextElementSibling.textContent.trim();
+      r.plano.push({ id: x.id, nome: x.nome, decisao: decisao,
+                     ajuste: (decisao === "Precisa de ajuste" || decisao === "Suspender") ? texto("ex", x.id) : null });
+    });
+    return r;
+  }
+
+  /** Impede guardar um ajuste sem conteúdo: seria uma decisão registada que
+   *  não chegaria ao doente. Devolve a lista de faltas, vazia se estiver bem. */
+  function faltasNaRevisao(revisao){
+    const faltas = [];
+    revisao.metas.forEach(function(m){
+      if (m.decisao === "Precisa de ajuste" && !m.ajuste) faltas.push('a meta "' + m.label + '"');
+    });
+    revisao.plano.forEach(function(x){
+      if (x.decisao === "Precisa de ajuste" && !x.ajuste) faltas.push('a prescrição de "' + x.nome + '"');
+      if (x.decisao === "Suspender" && !x.ajuste) faltas.push('o motivo para suspender "' + x.nome + '"');
+    });
+    return faltas;
+  }
+
+  /** Passa os ajustes para a Jornada e para o Plano do doente.
+   *  Corre depois de o contacto estar gravado: o registo clínico é o que não
+   *  se pode perder, e as decisões ficam lá mesmo que uma propagação falhe. */
+  async function aplicarAjustes(revisao){
+    const falhados = [];
+
+    for (const m of revisao.metas) {
+      try {
+        if (m.decisao === "Precisa de ajuste") {
+          await lumiApi.atualizarMeta(m.id, { label: m.ajuste });
+          await lumiApi.registarAtualizacaoMeta(m.id, DOENTE.id,
+            "Meta revista no 1.º contacto pós-alta. Antes: “" + m.label + "”.");
+        } else if (m.decisao === "Já atingida") {
+          await lumiApi.atualizarMeta(m.id, { estado: "done" });
+          await lumiApi.registarAtualizacaoMeta(m.id, DOENTE.id,
+            "Meta dada como atingida no 1.º contacto pós-alta.");
+        }
+      } catch (e) {
+        console.error("Falhou o ajuste da meta " + m.id, e);
+        falhados.push('meta "' + m.label + '"');
+      }
+    }
+
+    for (const x of revisao.plano) {
+      try {
+        if (x.decisao === "Precisa de ajuste") {
+          await lumiApi.atualizarExercicio(x.id, { prescricao: x.ajuste });
+        } else if (x.decisao === "Suspender") {
+          await lumiApi.atualizarExercicio(x.id, { estado: "suspenso" });
+        }
+      } catch (e) {
+        console.error("Falhou o ajuste do exercício " + x.id, e);
+        falhados.push('"' + x.nome + '"');
+      }
+    }
+
+    return falhados;
+  }
+
+  async function submeterContacto(ev){
+    ev.preventDefault();
+    const btn = document.getElementById("btn-guardar");
+    const erro = document.getElementById("erro-geral");
+    erro.style.display = "none";
+    btn.disabled = true; btn.textContent = "A guardar...";
+
+    try {
+      const dados = {};
+      document.querySelectorAll(".form-section").forEach(function(sec){
+        dados[sec.id] = serializarQuadro(sec);
+      });
+      const revisao = lerRevisaoPlano();
+      dados["revisao-plano"] = revisao;
+
+      const faltas = faltasNaRevisao(revisao);
+      if (faltas.length) {
+        erro.innerHTML = "⚠️ Falta preencher " + esc(faltas.join("; "))
+          + ". Um ajuste sem texto não chegaria ao doente.";
+        erro.style.display = "flex";
+        erro.scrollIntoView({ behavior: "smooth", block: "center" });
+        abrirQuadro("revisao-plano", false);
+        btn.disabled = false; btn.textContent = "Guardar 1.º contacto";
+        return;
+      }
+
+      const alarmes = sinaisDeAlarme();
+      const decisaoEl = document.querySelector('input[name="decisao"]:checked');
+
+      // agendamento primeiro: se falhar, o contacto não fica gravado a
+      // apontar para uma marcação que não existe
+      let agendamentoId = null;
+      const dataHora = document.getElementById("ag-data-hora").value;
+      if (dataHora) {
+        const marcacao = await lumiApi.registarAgendamento(DOENTE.id, {
+          data_hora: new Date(dataHora).toISOString(),
+          especialidade: "Unidade de Queimados Pediátricos — seguimento",
+          local: document.getElementById("ag-tipo").value,
+          notas: "Agendado no 1.º contacto pós-alta."
+        });
+        agendamentoId = marcacao ? marcacao.id : null;
+      }
+
+      const registo = await lumiApi.registarConsulta72h(DOENTE.id, {
+        dados: dados,
+        red_flags: alarmes.length > 0,
+        red_flags_lista: alarmes,
+        decisao_prioridade: decisaoEl ? decisaoEl.value : null,
+        prioridade_final: prioridadeResultante(),
+        agendamento_id: agendamentoId
+      });
+
+      const falhados = await aplicarAjustes(revisao);
+
+      mostrarConfirmacao(registo, alarmes, agendamentoId, dataHora, revisao, falhados);
+      btn.textContent = "Guardado ✓";
+    } catch (e) {
+      console.error("Erro ao guardar o 1.º contacto:", e);
+      erro.innerHTML = "⚠️ Não foi possível guardar: " + esc(e.message || e);
+      erro.style.display = "flex";
+      btn.disabled = false; btn.textContent = "Guardar 1.º contacto";
+    }
+  }
+
+  function mostrarConfirmacao(registo, alarmes, agendamentoId, dataHora, revisao, falhados){
+    const p = prioridadeResultante();
+    const nomes = { baixa: "Baixa", intermedia: "Intermédia", alta: "Alta" };
+    const partes = [];
+    if (p) partes.push('<p style="margin:0 0 8px;"><strong>Prioridade:</strong> ' + nomes[p] + ". " + CADENCIA_POR_PRIORIDADE[p] + "</p>");
+    if (alarmes.length) partes.push('<div class="banner-alert" style="margin:0 0 10px;"><div>⚠️ Sinais de alarme registados: ' + esc(alarmes.join("; ")) + ".</div></div>");
+    partes.push(agendamentoId
+      ? '<p style="margin:0 0 8px;"><strong>Próximo contacto:</strong> ' + esc(new Date(dataHora).toLocaleString("pt-PT")) + ", já visível no Histórico do doente.</p>"
+      : '<p class="hint" style="margin:0 0 8px;">Não foi agendado nenhum contacto.</p>');
+    const enviados = [];
+    (revisao.metas || []).forEach(function(m){
+      if (m.decisao === "Precisa de ajuste") enviados.push("meta reescrita: “" + esc(m.ajuste) + "”");
+      if (m.decisao === "Já atingida")       enviados.push("meta dada como atingida: “" + esc(m.label) + "”");
+    });
+    (revisao.plano || []).forEach(function(x){
+      if (x.decisao === "Precisa de ajuste") enviados.push("nova prescrição de " + esc(x.nome) + ": “" + esc(x.ajuste) + "”");
+      if (x.decisao === "Suspender")         enviados.push(esc(x.nome) + " suspenso");
+    });
+    if (enviados.length) {
+      partes.push('<p style="margin:0 0 8px;"><strong>Passou para o lado do doente:</strong></p>'
+        + '<ul style="margin:0 0 10px 18px; padding:0; font-size:.9rem; color:var(--ink-soft);"><li>'
+        + enviados.join("</li><li>") + "</li></ul>");
+    }
+    if (falhados && falhados.length) {
+      partes.push('<div class="banner-alert" style="margin:0 0 10px;"><div>⚠️ O contacto ficou gravado, mas não foi possível atualizar '
+        + esc(falhados.join("; ")) + ". Faça a alteração diretamente na Jornada ou no Plano de Tratamento.</div></div>");
+    }
+
+    partes.push('<p class="hint" style="margin:0 0 16px;">A alteração da prioridade fica registada neste contacto. O ajuste do plano de seguimento é feito pela equipa.</p>');
+
+    // O fim da consulta é o momento certo para pedir a avaliação: aqui, e não
+    // numa página à parte que se esquece de visitar.
+    partes.push('<hr class="divider" style="margin:0 0 16px;">'
+      + '<p class="eyebrow" style="margin-bottom:8px;">Avaliação da consulta</p>'
+      + '<p class="hint" style="margin:0 0 12px;">O doente recebe um email com a ligação e um convite quando entrar na plataforma. Pode recusar.</p>'
+      + '<button type="button" class="btn btn-star btn-sm" id="btn-satisfacao" onclick="pedirAvaliacao()">Pedir avaliação desta consulta ao doente</button>'
+      + '<span class="hint" style="margin-left:10px;" id="estado-satisfacao"></span>');
+    document.getElementById("resumo-contacto").innerHTML = partes.join("");
+    const c = document.getElementById("confirmacao");
+    c.style.display = "block";
+    c.scrollIntoView({ behavior: "smooth" });
+  }
+
+  async function pedirAvaliacao(){
+    const btn = document.getElementById("btn-satisfacao");
+    const estado = document.getElementById("estado-satisfacao");
+    btn.disabled = true; estado.textContent = "A enviar o convite...";
+    try {
+      await lumiApi.pedirAvaliacaoSatisfacao(DOENTE.id, "breve", null);
+      btn.textContent = "Avaliação pedida ✓";
+      estado.textContent = "O doente foi convidado.";
+    } catch (e) {
+      console.error("Erro ao pedir a avaliação:", e);
+      estado.textContent = "Não foi possível pedir: " + (e.message || e);
+      btn.disabled = false;
+    }
+  }
+
+  async function carregarContexto(){
+    // prioridade definida no Formulário de Alta Hospitalar
+    const alvo = document.getElementById("prioridade-alta");
+    try {
+      const formulario = await lumiApi.obterUltimoFormularioAlta(DOENTE.id);
+      if (formulario && formulario.prioridade) {
+        PRIORIDADE_ALTA = formulario.prioridade;
+        const nomes = { baixa: "Baixa", intermedia: "Intermédia", alta: "Alta" };
+        const cores = { baixa: "ok", intermedia: "star", alta: "alert" };
+        alvo.innerHTML = '<span class="pill pill-' + cores[PRIORIDADE_ALTA] + '" style="font-size:.82rem; padding:5px 14px;">Prioridade '
+          + nomes[PRIORIDADE_ALTA] + "</span>"
+          + '<p style="margin:10px 0 0; font-size:.9rem; color:var(--ink-soft);">' + CADENCIA_POR_PRIORIDADE[PRIORIDADE_ALTA] + "</p>";
+      } else if (formulario) {
+        alvo.innerHTML = '<p class="hint" style="margin:0;">O Formulário de Alta Hospitalar deste doente foi gravado antes de a prioridade passar a ser calculada. Escolha a decisão como se a prioridade de partida fosse intermédia.</p>';
+        PRIORIDADE_ALTA = "intermedia";
+      } else {
+        alvo.innerHTML = '<p class="hint" style="margin:0;">Ainda não há Formulário de Alta Hospitalar para este doente, por isso não há prioridade de partida.</p>';
+      }
+    } catch (e) {
+      console.error("Erro ao carregar a prioridade da alta:", e);
+      alvo.innerHTML = '<p class="hint" style="margin:0;">Não foi possível carregar a prioridade da alta.</p>';
+    }
+
+    try { METAS = await lumiApi.listarMetas(DOENTE.id); } catch (e) { console.error(e); METAS = []; }
+    desenharMetas();
+    try { EXERCICIOS = await lumiApi.listarExercicios(DOENTE.id); } catch (e) { console.error(e); EXERCICIOS = []; }
+    desenharPlano();
+
+    // contacto anterior, se já existir
+    try {
+      const anterior = await lumiApi.obterUltimaConsulta72h(DOENTE.id);
+      if (anterior) {
+        const aviso = document.getElementById("ja-registado");
+        aviso.innerHTML = "ℹ️ Já existe um contacto das 72 horas registado para este doente em "
+          + esc(new Date(anterior.data_contacto).toLocaleString("pt-PT"))
+          + ", por " + esc(anterior.realizado_por_nome)
+          + ". Guardar de novo cria um segundo registo, sem apagar o primeiro.";
+        aviso.style.display = "flex";
+      }
+    } catch (e) {
+      console.error("Não foi possível verificar contactos anteriores:", e);
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent =
+      sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+
+    construirEscalas();
+    prepararQuadros("indice-quadros");
+    atualizarBadgeAlertas();
+
+    DOENTE = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    document.getElementById("titulo-doente").textContent = "Formulário 1.º Contacto — " + DOENTE.nome;
+    document.getElementById("sidebar-nome-doente").textContent = DOENTE.nome;
+    ligarSidebarAoProcesso(DOENTE.processo);
+    montarCabecalhoImpressao("Formulário 1.º Contacto (72 horas)", DOENTE);
+    const voltar = `doente.html?processo=${encodeURIComponent(DOENTE.processo)}`;
+    document.getElementById("link-voltar").href = voltar;
+    document.getElementById("btn-cancelar").href = voltar;
+
+    carregarContexto();
+  })();
+</script>
+</body>
+</html>

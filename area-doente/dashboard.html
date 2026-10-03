@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A nossa jornada — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-utilizador">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="active">🏠 Início</a>
+    <a href="jornada.html">🎯 Jornada e Metas</a>
+    <a href="plano.html">🏋️ Plano de Tratamento</a>
+    <a href="consultas.html">🩺 Consultas</a>
+    <a href="historico.html">🗓️ Histórico</a>
+    <a href="duvidas.html">💬 Dúvidas <span class="pill pill-alert" style="margin-left:6px;" id="badge-duvidas"></span></a>
+    <a href="recursos.html">📚 Recursos</a>
+    <a href="formulario-alta.html">📝 Formulário de Alta Hospitalar</a>
+    <a href="alta-seguimento.html" id="menu-alta-seguimento" hidden>🏁 Alta do acompanhamento</a>
+  </aside>
+
+  <main class="main-area">
+
+  <div id="mascote-inicio" style="margin-bottom:30px;"></div>
+
+  <p class="eyebrow">A jornada de recuperação</p>
+  <h1 style="font-size:2rem;" id="titulo-jornada">Já percorreram um bom caminho.</h1>
+  <p style="color:var(--ink-soft); max-width:60ch;">
+    Este é o percurso desde a alta. Cada ponto é um marco — alguns já alcançados,
+    outros ainda pela frente. Toque num ponto para saber mais.
+  </p>
+
+  <div class="card" style="margin:28px 0 40px;">
+    <p class="eyebrow" style="margin-bottom:16px;">A jornada, em resumo</p>
+    <div id="jornada-resumo"></div>
+  </div>
+
+  <div class="grid g-2" style="align-items:start;">
+
+    <!-- Nova avaliação -->
+    <div class="card" style="border-color:var(--star); background:var(--star-mist);">
+      <span class="pill pill-pending">Disponível</span>
+      <h3 style="margin-top:14px;">Responder a uma avaliação</h3>
+      <p style="color:var(--ink-soft); font-size:.92rem;" id="texto-avaliacao">
+        Perguntas curtas sobre dor, comichão, cicatriz, escola e bem-estar.
+        As perguntas mudam com a idade e com o momento do seguimento, e as
+        respostas seguem diretamente para a equipa.
+      </p>
+      <a class="btn btn-primary" href="prom.html">Responder agora</a>
+    </div>
+
+    <!-- resumo / contexto -->
+    <div class="card">
+      <p class="eyebrow">A equipa que vos acompanha</p>
+      <ul style="list-style:none; padding:0; margin:0 0 20px; display:flex; flex-direction:column; gap:8px;" id="lista-equipa">
+        <li class="hint">A carregar...</li>
+      </ul>
+      <a class="btn btn-ghost btn-sm" href="#">Descarregar o resumo em PDF</a>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- teaser Plano de Tratamento -->
+  <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; background:var(--paper-tint);">
+    <div>
+      <p class="eyebrow" style="margin-bottom:6px;">Enfermagem · Fisioterapia · Terapia Ocupacional · Nutrição</p>
+      <h3 style="margin:0;">O plano de tratamento</h3>
+      <p style="color:var(--ink-soft); margin:6px 0 0; font-size:.9rem;">Pensos, massagem, malha de pressão, exercícios e alimentação. Registe cada vez que fizerem, e como correu.</p>
+    </div>
+    <a class="btn btn-primary" href="plano.html">Ver plano</a>
+  </div>
+
+  <hr class="divider">
+
+  <!-- teaser Histórico e Agendamentos -->
+  <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; background:var(--paper-tint);">
+    <div>
+      <p class="eyebrow" style="margin-bottom:6px;">Episódios passados e próximas consultas</p>
+      <h3 style="margin:0;">Histórico e agendamentos</h3>
+      <p style="color:var(--ink-soft); margin:6px 0 0; font-size:.9rem;">Registe urgências, consultas ou internamentos anteriores e marque as próximas consultas.</p>
+    </div>
+    <a class="btn btn-primary" href="historico.html">Ver histórico</a>
+  </div>
+
+  <hr class="divider">
+
+  <!-- teaser Recursos -->
+  <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; background:var(--paper-tint);">
+    <div>
+      <p class="eyebrow" style="margin-bottom:6px;">Materiais de apoio</p>
+      <h3 style="margin:0;">Vídeos, folhetos e perguntas frequentes</h3>
+      <p style="color:var(--ink-soft); margin:6px 0 0; font-size:.9rem;">Tudo o que precisam para cuidar da recuperação em casa, entre consultas — e material para explicar à criança o que se vai passar.</p>
+    </div>
+    <a class="btn btn-primary" href="recursos.html">Ver recursos</a>
+  </div>
+
+  <hr class="divider">
+
+  <p class="eyebrow">Histórico de respostas</p>
+  <div class="card card-flush">
+    <table>
+      <thead><tr><th>Data</th><th>Instrumentos respondidos</th><th>Estado</th></tr></thead>
+      <tbody id="linhas-historico-prom">
+        <tr><td colspan="3" class="hint" style="padding:16px;">A carregar histórico...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE_ID = null;
+
+  const ICONES_EQUIPA = {
+    "Cirurgia Plástica": "🩺", "Enfermagem": "🩹", "Fisioterapia": "🧑‍⚕️",
+    "Terapia Ocupacional": "🖐️", "Psicologia": "💬", "Nutrição": "🥗"
+  };
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO.slice(0, 10) + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  async function carregarHistoricoProms(){
+    const respostas = await lumiApi.listarPromsDoente(DOENTE_ID);
+    const tbody = document.getElementById('linhas-historico-prom');
+
+    if (!respostas.length) {
+      tbody.innerHTML = `<tr><td colspan="3" class="hint" style="padding:16px;">Ainda não respondeu a nenhuma avaliação.</td></tr>`;
+      return;
+    }
+
+    // agrupar por data (uma submissão gera várias linhas, uma por instrumento)
+    const porData = {};
+    respostas.forEach(r => {
+      if (!porData[r.data_resposta]) porData[r.data_resposta] = [];
+      porData[r.data_resposta].push(r.instrumento);
+    });
+    const datas = Object.keys(porData).sort().reverse();
+
+    tbody.innerHTML = datas.map(data => `
+      <tr>
+        <td class="mono">${formatarData(data)}</td>
+        <td>${porData[data].join(', ')}</td>
+        <td><span class="pill pill-ok">Concluída</span></td>
+      </tr>`).join('');
+  }
+
+  async function carregarDashboard(){
+    const doente = await lumiApi.obterDoente(DOENTE_ID);
+
+    /* A Lumi é a primeira coisa que aparece, e muda de figura aos 3 anos.
+       É aqui que a plataforma deixa de parecer a de adultos. */
+    const idade = idadeEmAnos(doente.data_nascimento);
+    const nome = primeiroNome(doente.nome);
+    renderMascote("mascote-inicio", idade,
+      "<strong>Olá" + (nome ? ", " + nome : "") + "!</strong> Sou a Lumi, e vou acompanhar-te nesta caminhada. " +
+      "Aqui vais ver o que já conseguiste e o que vem a seguir.",
+      { prefixo: "../" });
+
+    if (nome) document.getElementById("titulo-jornada").textContent = "O caminho d" + (/a$/i.test(nome) ? "a " : "o ") + nome + ".";
+
+    let itensEquipa = (doente.equipa || []).map(e =>
+      `<li>${ICONES_EQUIPA[e] || "•"} ${e}</li>`
+    ).join('');
+
+    if (doente.gestor_caso_id) {
+      try {
+        const equipa = await lumiApi.listarEquipaProfissionais();
+        const gestor = equipa.find(p => p.id === doente.gestor_caso_id);
+        if (gestor) {
+          itensEquipa = `<li style="font-weight:600; color:var(--blue-deep);">⭐ Gestor de caso — ${gestor.nome}${gestor.especialidade ? ` <span style="font-weight:400; color:var(--ink-soft);">(${gestor.especialidade})</span>` : ""}</li>` + itensEquipa;
+        }
+      } catch (e) {
+        console.error("Não foi possível identificar o gestor de caso:", e);
+      }
+    }
+
+    document.getElementById('lista-equipa').innerHTML = itensEquipa || `<li class="hint">Sem equipa atribuída ainda.</li>`;
+
+    const metas = await lumiApi.listarMetas(DOENTE_ID);
+    DEMO_PATIENT.milestones = metas.map(r => ({
+      id: r.id, label: r.label, tipo: r.tipo, categoria: r.categoria,
+      origem: r.origem, importante: r.importante, estado: r.estado,
+      data: r.data_alvo, foto: r.foto_url
+    }));
+    renderJornadaResumo("jornada-resumo", { linkHref: "jornada.html" });
+
+    carregarHistoricoProms();
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "doente") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    DOENTE_ID = sessao.perfil.doente_id;
+    atualizarBadgeDuvidas(DOENTE_ID);
+    document.getElementById("badge-utilizador").textContent = "Olá, " + primeiroNome(sessao.perfil.nome);
+    carregarDashboard();
+  })();
+</script>
+</body>
+</html>

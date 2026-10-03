@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Novo Doente — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <a href="novo-doente.html" class="active">➕ Nova Criança</a>
+    <a href="alertas.html">🔔 Alertas <span class="pill pill-alert" style="margin-left:6px;" id="badge-alertas"></span></a>
+    <a href="equipa.html">👥 Equipa</a>
+    <a href="definicoes.html">⚙️ Definições</a>
+  </aside>
+
+  <div class="main-area">
+
+    <a href="dashboard.html" class="hint" style="display:inline-block; margin-bottom:14px;">← Voltar à lista de crianças</a>
+
+    <p class="eyebrow">Registo de doente</p>
+    <h1 style="font-size:1.9rem;">Novo doente e conta de acesso</h1>
+    <p style="color:var(--ink-soft); max-width:70ch; margin-top:6px;">
+      Registe o doente na Unidade de Queimados Pediátricos e crie, no mesmo passo, o acesso à área
+      pessoal na plataforma Lumi O doente (ou familiar) não se regista sozinho —
+      a conta nasce sempre aqui, a partir da equipa clínica.
+    </p>
+
+    <!-- ================= FORMULÁRIO (estado inicial) ================= -->
+    <form id="form-novo-doente" onsubmit="criarConta(event)">
+      <div class="grid" style="grid-template-columns:1fr 360px; gap:28px; align-items:start; margin-top:24px;">
+
+        <!-- ---------- coluna esquerda: dados ---------- -->
+        <div>
+          <div class="card" style="margin-bottom:20px;">
+            <p class="eyebrow" style="margin-bottom:16px;">Identificação</p>
+            <div class="form-row">
+              <div class="field">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" placeholder="Nome da criança" required>
+              </div>
+              <div class="field">
+                <label for="processo">Nº de processo</label>
+                <input type="text" id="processo" placeholder="PROC-2026-0000" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="nascimento">Data de nascimento</label>
+                <input type="text" id="nascimento" placeholder="dd/mm/aaaa" required>
+                <p class="hint">Obrigatória: é a idade que decide o questionário que a criança vai receber e a figura da Lumi que lhe aparece.</p>
+              </div>
+              <div class="field">
+                <label for="data-alta">Data de alta prevista</label>
+                <input type="text" id="data-alta" placeholder="dd/mm/aaaa">
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <p class="eyebrow" style="margin-bottom:16px;">Escola, creche ou ama</p>
+            <p class="hint" style="margin-top:-8px; margin-bottom:16px;">O regresso à escola é, em pediatria, o resultado que ocupa o lugar do regresso ao trabalho nos adultos. Fica no registo da criança, e não no formulário de alta, porque muda com o ano letivo.</p>
+            <div class="form-row">
+              <div class="field" style="margin-bottom:0;">
+                <label for="escola">Nome da escola, creche ou ama</label>
+                <input type="text" id="escola" placeholder="ex.: EB1 de Arroios">
+              </div>
+              <div class="field" style="margin-bottom:0;">
+                <label for="ano-escolaridade">Ano ou sala</label>
+                <input type="text" id="ano-escolaridade" placeholder="ex.: 3.º ano · sala dos 3 anos">
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <p class="eyebrow" style="margin-bottom:16px;">Contacto para ativação da conta</p>
+
+            <div class="field">
+              <label>A conta será usada por</label>
+              <p class="hint" style="margin-top:-4px; margin-bottom:10px;">Ao contrário da plataforma de adultos, aqui a conta é por omissão de quem exerce as responsabilidades parentais. A conta do próprio só faz sentido em adolescentes, e com o acordo de quem cuida.</p>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="titular" checked onclick="mudarTitular('familiar')"><span>Mãe, pai ou representante legal</span></label>
+                <label class="chip"><input type="radio" name="titular" onclick="mudarTitular('proprio')"><span>O próprio adolescente</span></label>
+              </div>
+            </div>
+
+            <div id="campo-familiar" class="field">
+              <div class="form-row">
+                <div class="field" style="margin-bottom:0;">
+                  <label for="nome-familiar">Nome de quem vai aceder à conta</label>
+                  <input type="text" id="nome-familiar" placeholder="Nome do cuidador principal">
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                  <label for="parentesco">Relação com a criança</label>
+                  <input type="text" id="parentesco" placeholder="mãe · pai · avó · tutor">
+                </div>
+              </div>
+              <p class="hint">É esta pessoa que recebe os avisos e que preenche os questionários nas idades mais baixas.</p>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label for="telemovel">Telemóvel</label>
+                <input type="tel" id="telemovel" placeholder="9XX XXX XXX">
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="nome@exemplo.pt">
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label>Enviar código de ativação por</label>
+              <div class="chip-group">
+                <label class="chip"><input type="radio" name="canal" checked><span>SMS</span></label>
+                <label class="chip"><input type="radio" name="canal"><span>Email</span></label>
+                <label class="chip"><input type="radio" name="canal"><span>Ambos</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <p class="eyebrow" style="margin-bottom:16px;">Equipa responsável</p>
+            <div class="chip-group" id="grupo-equipa">
+              <label class="chip"><input type="checkbox" value="Cirurgia Plástica" checked><span>Cirurgia Plástica</span></label>
+              <label class="chip"><input type="checkbox" value="Fisioterapia"><span>Fisioterapia</span></label>
+              <label class="chip"><input type="checkbox" value="Terapia Ocupacional"><span>Terapia Ocupacional</span></label>
+              <label class="chip"><input type="checkbox" value="Psicologia"><span>Psicologia</span></label>
+              <label class="chip"><input type="checkbox" value="Nutrição"><span>Nutrição</span></label>
+              <label class="chip"><input type="checkbox" value="Enfermagem"><span>Enfermagem</span></label>
+              <label class="chip"><input type="checkbox" value="Pedopsiquiatria"><span>Pedopsiquiatria</span></label>
+              <label class="chip"><input type="checkbox" value="Serviço Social"><span>Serviço Social</span></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:400; color:var(--ink);">
+              <input type="checkbox" required style="margin-top:3px;">
+              <span style="font-size:.88rem;">Foi obtido e registado o consentimento informado de quem exerce as responsabilidades parentais para o acompanhamento remoto e tratamento de dados de saúde da criança nesta plataforma — e, se a criança tiver idade e discernimento para tal, o seu próprio assentimento.</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ---------- coluna direita: explicação de segurança ---------- -->
+        <div class="panel-solid-blue on-blue">
+          <p class="eyebrow">Como a conta é criada</p>
+          <ol style="margin:0; padding-left:20px; font-size:.87rem; line-height:1.75; color:rgba(255,255,255,.85);">
+            <li>Regista aqui os dados da criança e da equipa responsável — sem definir palavra-passe.</li>
+            <li>A plataforma gera um <strong style="color:#fff;">código de ativação de utilização única</strong>, válido 48 horas.</li>
+            <li>O código é enviado por SMS e/ou email para o contacto indicado — nunca é mostrado nem partilhado por si.</li>
+            <li>No primeiro acesso, quem cuida da criança define a sua própria palavra-passe e ativa a autenticação de dois fatores.</li>
+            <li>Se o código expirar sem ser usado, pode reenviar um novo a partir da ficha da criança.</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <a href="dashboard.html" class="btn btn-ghost">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Criar registo e gerar conta</button>
+      </div>
+    </form>
+
+    <!-- ================= CONFIRMAÇÃO (após submissão) ================= -->
+    <div id="confirmacao" style="display:none; margin-top:24px;">
+      <div class="card" style="border-color:var(--ok); background:var(--ok-mist);">
+        <span class="pill pill-ok">Conta criada</span>
+        <h2 style="margin-top:14px; font-size:1.4rem;">Criança registada com sucesso</h2>
+        <p style="color:var(--ink-soft); margin-bottom:0;" id="resumo-conta"></p>
+      </div>
+
+      <div class="grid g-2" style="margin-top:20px;">
+        <div class="card">
+          <p class="eyebrow">Código de ativação enviado</p>
+          <p style="color:var(--ink-soft); font-size:.9rem;">
+            Foi enviado um código de utilização única para o contacto indicado, válido por
+            <strong>48 horas</strong>. O doente/familiar deve usá-lo para definir a sua
+            palavra-passe no primeiro acesso.
+          </p>
+          <div style="background:var(--paper-tint); border:1px dashed var(--line); border-radius:6px; padding:16px; text-align:center; margin:14px 0;">
+            <span class="mono" style="font-size:1.4rem; letter-spacing:.12em; color:var(--blue-deep); font-weight:600;" id="codigo-simulado">••• •••</span>
+            <p class="hint" style="margin:6px 0 0;">Simulação — em produção este código não é exibido no ecrã do profissional.</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="alert('Simulação: um novo código seria gerado e enviado.')">Reenviar código</button>
+        </div>
+
+        <div class="card">
+          <p class="eyebrow">Próximos passos</p>
+          <ul style="margin:0; padding-left:20px; font-size:.9rem; color:var(--ink-soft); line-height:1.8;">
+            <li>Preencher o <a href="formulario-alta.html">Formulário de Alta Hospitalar</a> para gerar o plano de seguimento.</li>
+            <li>Confirmar que o doente ativou a conta antes da saída da unidade, se possível.</li>
+            <li>A partir de agora, o doente aparece na lista de crianças em seguimento.</li>
+          </ul>
+          <a class="btn btn-primary btn-sm" href="dashboard.html" style="margin-top:6px;">Ver lista de crianças</a>
+          <a class="btn btn-ghost btn-sm" id="link-ficha-criada" href="dashboard.html" style="margin-top:6px;">Abrir ficha da criança</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  function mudarTitular(tipo){
+    document.getElementById('campo-familiar').style.display = (tipo === 'familiar') ? 'block' : 'none';
+  }
+  // por omissão a conta é de quem cuida, pelo que o quadro começa visível
+
+  /* converte "dd/mm/aaaa" (formato usado nos campos) para "aaaa-mm-dd" (formato que a base de dados espera) */
+  function paraISO(dataBR){
+    if (!dataBR) return null;
+    const m = dataBR.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!m) return null;
+    const [, d, mo, y] = m;
+    return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+
+  async function criarConta(ev){
+    ev.preventDefault();
+    const btn = document.querySelector('#form-novo-doente button[type="submit"]');
+    btn.disabled = true; btn.textContent = "A criar...";
+
+    const nome = document.getElementById('nome').value.trim();
+    const processo = document.getElementById('processo').value.trim();
+    const nascimento = document.getElementById('nascimento').value;
+    const dataAlta = document.getElementById('data-alta').value;
+    const titularTipo = document.querySelector('input[name="titular"]:checked').closest('label').innerText.includes('próprio') ? 'proprio' : 'familiar';
+    const nomeFamiliar = document.getElementById('nome-familiar').value;
+    const parentesco = document.getElementById('parentesco').value;
+    const escola = document.getElementById('escola').value;
+    const anoEscolaridade = document.getElementById('ano-escolaridade').value;
+    const telemovel = document.getElementById('telemovel').value;
+    const email = document.getElementById('email').value;
+    const canal = document.querySelector('input[name="canal"]:checked').closest('label').innerText.trim().toLowerCase();
+    // o seletor tem de ser o do grupo da equipa e não ".card .chip-group":
+    // ao acrescentar quadros com caixas de seleção, o genérico passaria a
+    // varrer também o consentimento e a escola para dentro da equipa
+    const equipa = Array.from(document.querySelectorAll('#grupo-equipa input[type="checkbox"]:checked')).map(el => el.value);
+
+    try {
+      const { doente, codigo } = await lumiApi.criarDoenteEConta({
+        nome, processo, dataNascimento: paraISO(nascimento), dataAlta: paraISO(dataAlta),
+        equipa, titularTipo, nomeFamiliar, telemovel, email, canal,
+        escola, anoEscolaridade,
+        cuidadorPrincipal: nomeFamiliar, cuidadorParentesco: parentesco, cuidadorContacto: telemovel || email
+      });
+
+      const contacto = telemovel || email || 'contacto indicado';
+      document.getElementById('resumo-conta').textContent =
+        `${doente.nome} foi adicionado(a) à lista de crianças em seguimento. Foi enviado um código de ativação por ${canal} para ${contacto}.`;
+      document.getElementById('codigo-simulado').textContent = codigo.slice(0,3) + " " + codigo.slice(3);
+
+      const linkFicha = document.getElementById('link-ficha-criada');
+      if (linkFicha) linkFicha.href = `doente.html?processo=${encodeURIComponent(doente.processo)}`;
+
+      document.getElementById('form-novo-doente').style.display = 'none';
+      document.getElementById('confirmacao').style.display = 'block';
+      document.getElementById('confirmacao').scrollIntoView({behavior:'smooth'});
+    } catch (e) {
+      const msg = (e.message || "").includes("duplicate key")
+        ? "Já existe um doente registado com este número de processo."
+        : (e.message || "Ocorreu um erro ao criar o doente.");
+      alert("Não foi possível criar o doente: " + msg);
+      btn.disabled = false; btn.textContent = "Criar doente e gerar conta";
+    }
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    atualizarBadgeAlertas();
+  })();
+</script>
+</body>
+</html>

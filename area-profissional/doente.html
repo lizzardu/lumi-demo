@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maria Santos — Ficha do doente · Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+<script src="../assets/js/vendor/chart.umd.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link class="active">🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link>📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+
+    <a href="dashboard.html" class="hint" style="display:inline-block; margin-bottom:14px;">← Voltar à lista de crianças</a>
+
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <p class="eyebrow">Ficha de seguimento pós-alta</p>
+        <h1 style="font-size:1.9rem;" id="nome-doente">A carregar...</h1>
+        <p class="mono" style="color:var(--ink-soft); font-size:.85rem;" id="meta-doente"></p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" onclick="guardarEmPDF()">🖨️ Guardar em PDF</button>
+        <a class="btn btn-primary" id="link-formulario-alta" href="formulario-alta.html">Ver formulário de alta hospitalar</a>
+      </div>
+    </div>
+
+    <!-- ---------- contexto clínico ---------- -->
+    <div class="grid g-3" style="margin:24px 0;">
+      <div class="card"><div class="lbl eyebrow" style="margin-bottom:8px;">Extensão</div><div class="stat"><div class="num" id="ctx-tbsa">—<span style="font-size:1.1rem;">%TBSA</span></div></div></div>
+      <div class="card"><div class="eyebrow" style="margin-bottom:8px;">Profundidade</div><p style="margin:0; font-weight:600;" id="ctx-profundidade">—</p></div>
+      <div class="card"><div class="eyebrow" style="margin-bottom:8px;">Zona anatómica</div><p style="margin:0; font-weight:600;" id="ctx-zona">—</p></div>
+    </div>
+
+    <div class="card" style="margin-bottom:28px;">
+      <p class="eyebrow">Equipa responsável</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;" id="equipa-doente"></div>
+    </div>
+
+    <!-- ---------- prioridade de seguimento ---------- -->
+    <div class="card" style="margin-bottom:28px;" id="cartao-prioridade">
+      <p class="eyebrow" style="margin-bottom:10px;">Prioridade de seguimento</p>
+      <div id="prioridade-conteudo"><p class="hint" style="margin:0;">A calcular...</p></div>
+    </div>
+
+    <!-- ---------- comunicação da equipa (interno, nunca visível ao doente) ---------- -->
+    <div class="card" style="margin-bottom:32px; border-left:3px solid var(--star-deep);">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px;">
+        <p class="eyebrow" style="margin-bottom:6px;">Comunicação da equipa</p>
+        <span class="pill pill-star">🔒 Só profissionais</span>
+      </div>
+      <p style="color:var(--ink-soft); max-width:70ch; margin:0 0 20px; font-size:.9rem;">
+        Espaço reservado à equipa para partilhar informação sobre este doente.
+        Fica registada a data, a hora e o autor de cada entrada. O doente e a
+        família <strong>não têm acesso</strong> a esta secção.
+      </p>
+
+      <div style="max-width:680px;">
+        <div class="field" style="margin-bottom:12px;">
+          <label for="com-categoria">Área que regista</label>
+          <select id="com-categoria">
+            <option value="Geral">Geral</option>
+            <option value="Cirurgia Plástica">Cirurgia Plástica</option>
+            <option value="Enfermagem">Enfermagem</option>
+            <option value="Fisioterapia">Fisioterapia</option>
+            <option value="Terapia Ocupacional">Terapia Ocupacional</option>
+            <option value="Psicologia">Psicologia</option>
+            <option value="Nutrição">Nutrição</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label for="com-mensagem">Nova informação</label>
+          <textarea id="com-mensagem" rows="3" placeholder="Ex.: Doente refere agravamento do prurido noturno; combinado reavaliar penso na próxima consulta."></textarea>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-star btn-sm" id="com-btn" onclick="registarComunicacao()">Adicionar ao histórico</button>
+          <span class="hint" style="margin:0;" id="com-estado"></span>
+        </div>
+      </div>
+
+      <hr class="divider" style="margin:26px 0 20px;">
+
+      <p class="eyebrow" style="margin-bottom:14px;">Histórico de interações</p>
+      <div id="com-historico"><p class="hint" style="margin:0;">A carregar...</p></div>
+    </div>
+
+    <!-- ---------- satisfação (PREM) ---------- -->
+    <div class="card" style="margin-bottom:28px;" id="cartao-satisfacao">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <p class="eyebrow" style="margin:0;">Avaliação da satisfação</p>
+        <span class="hint" style="margin:0;" id="satisfacao-media"></span>
+      </div>
+      <p class="hint" style="margin:0 0 16px;">
+        No fim da consulta, peça a avaliação ao doente. Ele recebe um email com a
+        ligação e um convite quando entrar na plataforma — e pode recusar, que
+        também fica registado.
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <button type="button" class="btn btn-star btn-sm" id="btn-pedir-breve" onclick="pedirSatisfacao('breve')">
+          Pedir avaliação desta consulta
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-pedir-final" onclick="pedirSatisfacao('final')">
+          Pedir avaliação final do acompanhamento
+        </button>
+        <span class="hint" style="margin:0;" id="satisfacao-estado"></span>
+      </div>
+      <hr class="divider" style="margin:22px 0 18px;">
+      <div id="satisfacao-lista"><p class="hint" style="margin:0;">A carregar...</p></div>
+    </div>
+
+    <!-- ---------- jornada ---------- -->
+    <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <p class="eyebrow" style="margin:0;">Jornada de recuperação, em resumo</p>
+      <a href="jornada.html" class="hint">Definir / editar metas →</a>
+    </div>
+    <div class="card" style="margin-bottom:32px;">
+      <div id="jornada-resumo"></div>
+    </div>
+
+    <!-- ---------- evolução PROMs ---------- -->
+    <p class="eyebrow">Evolução dos resultados reportados (PROMs)</p>
+    <p style="color:var(--ink-soft); font-size:.88rem; margin:-4px 0 16px; max-width:78ch;">
+      Os gráficos são os dos instrumentos que esta criança respondeu — e mudam com a idade dela.
+      Uma criança seguida desde os 4 anos até aos 12 troca de bateria duas vezes pelo caminho, e as
+      séries antigas não desaparecem: ficam, com a indicação de quem respondeu. Em todos,
+      <strong>subir é piorar</strong>.
+    </p>
+    <div id="proms-vazio" class="banner-info" style="margin-bottom:20px; display:none;">
+      ℹ️ Esta criança ainda não tem respostas a PROMs registadas. Os gráficos aparecem aqui assim que houver avaliações.
+    </div>
+    <div class="grid g-2" style="margin-bottom:12px;" id="grid-charts"></div>
+
+    <!-- ---------- check-in rápido de humor ---------- -->
+    <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:8px;">
+      <p class="eyebrow" style="margin:0;">Como a criança se tem sentido</p>
+      <span class="hint" style="margin:0;" id="humor-ultimo"></span>
+    </div>
+    <div class="card" style="margin-bottom:28px;">
+      <p style="color:var(--ink-soft); font-size:.88rem; margin:0 0 14px; max-width:70ch;">
+        Resposta rápida que a criança dá depois de cada avaliação. Não é um instrumento
+        clínico — serve para ver a tendência e não para classificar. As respostas
+        <strong>Muito em baixo</strong> e <strong>Preciso de ajuda</strong> geram alerta.
+      </p>
+      <div id="humor-vazio" class="hint" style="display:none;">Esta criança ainda não fez nenhum check-in de humor.</div>
+      <div class="chart-box" id="humor-grafico"><canvas id="chart-humor"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script>
+  let DOENTE = null;
+
+  function formatarData(dataISO){
+    if (!dataISO) return "";
+    const d = new Date(dataISO.slice(0, 10) + "T00:00:00");
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  const ICONES_EQUIPA = {
+    "Cirurgia Plástica": "🩺", "Enfermagem": "🩹", "Fisioterapia": "🧑‍⚕️",
+    "Terapia Ocupacional": "🖐️", "Psicologia": "💬", "Nutrição": "🥗"
+  };
+
+  async function carregarFicha(){
+    const processo = obterProcessoDaURL("PROC-2026-0142");
+    DOENTE = await lumiApi.obterDoentePorProcesso(processo);
+
+    document.getElementById("nome-doente").textContent = DOENTE.nome;
+    document.getElementById("sidebar-nome-doente").textContent = DOENTE.nome;
+    ligarSidebarAoProcesso(DOENTE.processo);
+    montarCabecalhoImpressao("Ficha de seguimento pós-alta", DOENTE);
+    document.getElementById("meta-doente").textContent =
+      `${DOENTE.processo}${DOENTE.data_alta ? " · Alta em " + formatarData(DOENTE.data_alta) : ""}`;
+    document.getElementById("ctx-tbsa").innerHTML = (DOENTE.tbsa != null ? DOENTE.tbsa : "—") + '<span style="font-size:1.1rem;">%TBSA</span>';
+    document.getElementById("ctx-profundidade").textContent = DOENTE.profundidade || "—";
+    document.getElementById("ctx-zona").textContent = DOENTE.zona_anatomica || "—";
+    document.getElementById("link-formulario-alta").href = `formulario-alta.html?processo=${encodeURIComponent(DOENTE.processo)}`;
+
+    document.getElementById("equipa-doente").innerHTML = (DOENTE.equipa || []).map(e =>
+      `<span class="badge-team">${ICONES_EQUIPA[e] || "•"} ${e}</span>`
+    ).join("") || `<p class="hint" style="margin:0;">Sem equipa atribuída ainda.</p>`;
+
+    // jornada em resumo
+    const metas = await lumiApi.listarMetas(DOENTE.id);
+    DEMO_PATIENT.milestones = metas.map(r => ({
+      id: r.id, label: r.label, tipo: r.tipo, categoria: r.categoria,
+      origem: r.origem, importante: r.importante, estado: r.estado,
+      data: r.data_alvo, foto: r.foto_url
+    }));
+    renderJornadaResumo("jornada-resumo", { linkHref: `jornada.html?processo=${encodeURIComponent(DOENTE.processo)}` });
+
+    // comunicação interna da equipa
+    carregarComunicacoesEquipa();
+
+    // avaliação da satisfação (PREM)
+    carregarSatisfacao();
+
+    // prioridade de seguimento, derivada do Formulário de Alta Hospitalar
+    carregarPrioridade();
+
+    // evolução do check-in rápido de humor
+    carregarHumor();
+
+
+    await desenharProms();
+  }
+
+  /* Os gráficos não podem estar escritos no HTML como estavam na versão de
+     adultos, onde os quatro instrumentos eram sempre os mesmos. Aqui
+     desenha-se um gráfico por instrumento que esta criança tenha respondido,
+     pela ordem em que INSTRUMENTOS_PROM os declara (dor, prurido, função,
+     cicatriz, psicossocial) — e não pela ordem alfabética, que separaria as
+     três escalas de dor. */
+  const CORES_PROM = { dor: () => corAlert(), prurido: () => corSkin(), outro: () => corTeal() };
+
+  function corDoInstrumento(codigo){
+    if (/FLACC|FPS-R|NRS-dor/.test(codigo)) return CORES_PROM.dor();
+    if (/ItchMan/.test(codigo))             return CORES_PROM.prurido();
+    return CORES_PROM.outro();
+  }
+
+  async function desenharProms(){
+    const grid = document.getElementById("grid-charts");
+    let respostas = [];
+    try {
+      respostas = await lumiApi.listarPromsDoente(DOENTE.id);
+    } catch (e) {
+      console.error("Erro ao carregar PROMs:", e);
+      document.getElementById("proms-vazio").innerHTML =
+        `⚠️ Não foi possível carregar os PROMs: ${e.message || e}. Veja a consola (F12) para mais detalhe.`;
+      document.getElementById("proms-vazio").style.display = "flex";
+      grid.style.display = "none";
+      return;
+    }
+
+    if (!respostas.length) {
+      document.getElementById("proms-vazio").style.display = "flex";
+      grid.style.display = "none";
+      return;
+    }
+
+    const porInstrumento = {};
+    respostas.forEach(r => { (porInstrumento[r.instrumento] = porInstrumento[r.instrumento] || []).push(r); });
+
+    const ordem = Object.keys(INSTRUMENTOS_PROM).filter(c => porInstrumento[c]);
+    // instrumentos gravados que a tabela de metadados não conhece — por
+    // exemplo de uma versão anterior da bateria — continuam a aparecer
+    Object.keys(porInstrumento).forEach(c => { if (ordem.indexOf(c) === -1) ordem.push(c); });
+
+    grid.innerHTML = ordem.map(codigo => {
+      const meta = INSTRUMENTOS_PROM[codigo] || { nome: codigo, maximo: null, quem: null };
+      const quem = meta.quem ? `<span class="pill pill-idade" style="margin-left:8px;">${meta.quem}</span>` : "";
+      const escala = meta.maximo ? ` <span class="hint" style="font-weight:400;">0–${meta.maximo}</span>` : "";
+      return `<div class="card">
+                <h3 style="font-size:1rem; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">${meta.nome}${escala}${quem}</h3>
+                <div class="chart-box"><canvas id="chart-${codigo}"></canvas></div>
+              </div>`;
+    }).join("");
+
+    ordem.forEach(codigo => {
+      const meta = INSTRUMENTOS_PROM[codigo] || {};
+      const linhas = porInstrumento[codigo];
+      const labels = linhas.map(r => formatarData(r.data_resposta));
+      const valores = linhas.map(r => (r.scores && r.scores.total != null) ? r.scores.total : null);
+      desenharGraficoLinha("chart-" + codigo, labels, valores, {
+        color: corDoInstrumento(codigo), min: 0, max: meta.maximo || undefined
+      });
+    });
+  }
+
+  /* ---------------------------------------------------------------------
+     Comunicação da equipa — mural interno da ficha deste doente.
+     Só é lido/escrito por profissionais: as políticas RLS da tabela
+     "comunicacoes_equipa" (006_comunicacao_equipa.sql) impedem qualquer
+     conta de doente ou familiar de aceder a estes registos.
+     --------------------------------------------------------------------- */
+  function escaparHtml(texto){
+    return String(texto == null ? "" : texto)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function formatarDataHora(iso){
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" })
+         + " · " + d.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function comunicacaoHTML(c){
+    const autor = escaparHtml(c.autor_nome || "Profissional");
+    const especialidade = c.autor_especialidade ? " · " + escaparHtml(c.autor_especialidade) : "";
+    const categoria = c.categoria ? `<span class="badge-team">${escaparHtml(c.categoria)}</span>` : "";
+    const texto = escaparHtml(c.mensagem).replace(/\n/g, "<br>");
+    return `
+      <div style="border-left:2px solid var(--line); padding:0 0 18px 16px; margin-bottom:2px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+          <strong style="color:var(--blue-deep); font-size:.9rem;">${autor}${especialidade}</strong>
+          ${categoria}
+          <span class="hint mono" style="margin:0; font-size:.75rem;">${formatarDataHora(c.criado_em)}</span>
+        </div>
+        <p style="margin:0; color:var(--ink); font-size:.92rem;">${texto}</p>
+      </div>`;
+  }
+
+  async function carregarComunicacoesEquipa(){
+    const el = document.getElementById("com-historico");
+    try {
+      const registos = await lumiApi.listarComunicacoesEquipa(DOENTE.id);
+      el.innerHTML = registos.length
+        ? registos.map(comunicacaoHTML).join("")
+        : `<p class="hint" style="margin:0;">Ainda não há informação registada pela equipa sobre este doente.</p>`;
+    } catch (e) {
+      console.error("Erro ao carregar a comunicação da equipa:", e);
+      el.innerHTML = `<div class="banner-alert">⚠️ Não foi possível carregar o histórico: ${escaparHtml(e.message || e)}</div>`;
+    }
+  }
+
+  /* ---------- avaliação da satisfação (PREM) ----------
+     A equipa pede, o doente responde ou recusa. Aqui vê-se o que foi pedido,
+     o que voltou e o que ficou por responder. A recusa aparece como qualquer
+     outro desfecho: é informação, não uma falha. */
+  const ROTULO_SATISFACAO = { breve: "Depois da consulta", final: "Fim do acompanhamento" };
+
+  async function pedirSatisfacao(tipo){
+    const estado = document.getElementById("satisfacao-estado");
+    const botoes = [document.getElementById("btn-pedir-breve"), document.getElementById("btn-pedir-final")];
+    if (tipo === "final" && !confirm("Pedir a avaliação final do acompanhamento a este doente?")) return;
+
+    botoes.forEach(b => b.disabled = true);
+    estado.textContent = "A enviar o convite...";
+    try {
+      await lumiApi.pedirAvaliacaoSatisfacao(DOENTE.id, tipo, null);
+      estado.textContent = "Convite enviado. O doente recebe o email e vê o convite ao entrar.";
+      await carregarSatisfacao();
+    } catch (e) {
+      console.error("Erro ao pedir a avaliação:", e);
+      estado.textContent = "Não foi possível pedir: " + (e.message || e);
+    } finally {
+      botoes.forEach(b => b.disabled = false);
+    }
+  }
+
+  function satisfacaoLinhaHTML(p){
+    const quando = new Date(p.criado_em).toLocaleDateString("pt-PT", { day:"2-digit", month:"short", year:"numeric" });
+    const selos = {
+      pendente:   '<span class="pill pill-pending">Por responder</span>',
+      respondida: '<span class="pill pill-ok">Respondida</span>',
+      recusada:   '<span class="pill pill-star">Dispensada pelo doente</span>'
+    };
+    let detalhe = "";
+    if (p.estado === "respondida" && p.respostas) {
+      const linhas = Object.keys(p.respostas).map(function(k){
+        const r = p.respostas[k];
+        const extra = r.detalhe ? ' <span class="hint">— ' + escaparHtml(r.detalhe) + "</span>" : "";
+        return "<li style=\"margin-bottom:5px;\"><span class=\"hint\">" + escaparHtml(r.pergunta) + "</span><br><strong>"
+             + escaparHtml(r.resposta) + "</strong>" + extra + "</li>";
+      }).join("");
+      detalhe = '<details style="margin-top:10px;"><summary class="hint" style="cursor:pointer;">Ver as respostas</summary>'
+              + '<ul style="margin:12px 0 0 18px; padding:0; font-size:.88rem;">' + linhas + "</ul></details>";
+    }
+    const nota = (p.estado === "respondida" && p.satisfacao_global != null)
+      ? '<span class="pill pill-ok" style="margin-left:6px;">' + p.satisfacao_global + "/10</span>" : "";
+
+    return '<div style="padding:12px 0; border-bottom:1px solid var(--line);">'
+         +   '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">'
+         +     (selos[p.estado] || "") + nota
+         +     '<span style="font-weight:600; font-size:.9rem;">' + (ROTULO_SATISFACAO[p.tipo] || p.tipo) + "</span>"
+         +     '<span class="hint" style="margin:0;">' + quando + " · pedida por " + escaparHtml(p.pedido_por_nome) + "</span>"
+         +   "</div>" + detalhe
+         + "</div>";
+  }
+
+  async function carregarSatisfacao(){
+    const lista = document.getElementById("satisfacao-lista");
+    const media = document.getElementById("satisfacao-media");
+    try {
+      const pedidos = await lumiApi.listarPedidosSatisfacao(DOENTE.id);
+      if (!pedidos.length) {
+        lista.innerHTML = '<p class="hint" style="margin:0;">Ainda não foi pedida nenhuma avaliação a este doente.</p>';
+        media.textContent = "";
+        return;
+      }
+      lista.innerHTML = pedidos.map(satisfacaoLinhaHTML).join("");
+
+      const notas = pedidos.filter(p => p.satisfacao_global != null).map(p => p.satisfacao_global);
+      const respondidas = pedidos.filter(p => p.estado === "respondida").length;
+      const partes = [respondidas + " de " + pedidos.length + " respondidas"];
+      if (notas.length) {
+        partes.push("média " + (notas.reduce((s,n) => s+n, 0) / notas.length).toFixed(1) + "/10");
+      }
+      media.textContent = partes.join(" · ");
+    } catch (e) {
+      console.error("Erro ao carregar as avaliações:", e);
+      lista.innerHTML = '<p class="hint" style="margin:0;">Não foi possível carregar as avaliações. '
+        + "Se a migração 017 ainda não foi executada, é normal.</p>";
+    }
+  }
+
+  async function registarComunicacao(){
+    const campoMensagem = document.getElementById("com-mensagem");
+    const estadoEl = document.getElementById("com-estado");
+    const botao = document.getElementById("com-btn");
+    const mensagem = campoMensagem.value.trim();
+
+    if (!mensagem) {
+      estadoEl.textContent = "Escreva a informação antes de adicionar.";
+      campoMensagem.focus();
+      return;
+    }
+
+    botao.disabled = true;
+    estadoEl.textContent = "A guardar...";
+    try {
+      await lumiApi.registarComunicacaoEquipa(
+        DOENTE.id, mensagem, document.getElementById("com-categoria").value
+      );
+      campoMensagem.value = "";
+      estadoEl.textContent = "Informação registada.";
+      await carregarComunicacoesEquipa();
+    } catch (e) {
+      console.error("Erro ao registar a comunicação da equipa:", e);
+      estadoEl.textContent = "Não foi possível guardar: " + (e.message || e);
+    } finally {
+      botao.disabled = false;
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     Evolução do check-in rápido de humor. Os estados são convertidos numa
+     escala de 1 a 6 (ESCALA_HUMOR, em main.js) só para poderem ser
+     desenhados; o eixo mostra os nomes, não os números, para ninguém ler
+     isto como uma pontuação clínica.
+     --------------------------------------------------------------------- */
+  async function carregarHumor(){
+    const vazio = document.getElementById("humor-vazio");
+    const grafico = document.getElementById("humor-grafico");
+    const ultimo = document.getElementById("humor-ultimo");
+
+    let registos;
+    try {
+      registos = await lumiApi.listarCheckinsHumor(DOENTE.id);
+    } catch (e) {
+      console.error("Erro ao carregar os check-ins de humor:", e);
+      vazio.innerHTML = `⚠️ Não foi possível carregar os check-ins: ${escaparHtml(e.message || e)}`;
+      vazio.style.display = "block";
+      grafico.style.display = "none";
+      return;
+    }
+
+    // Um doente sem check-ins e um doente cujos check-ins a equipa não tem
+    // permissão para ler dão exatamente o mesmo resultado: lista vazia. Por
+    // isso a mensagem cobre as duas hipóteses, em vez de afirmar a primeira.
+    const semDados = `Ainda não há check-ins para mostrar.
+      Aparecem aqui depois de o doente responder a "Como se sente hoje?", no fim de uma avaliação.
+      Se o doente já respondeu e continua vazio, falta correr a migração
+      <span class="mono">009_alertas_humor.sql</span>, que dá à equipa permissão para ler estes registos.`;
+
+    const conhecidos = registos.filter(r => ESCALA_HUMOR[r.valor]);
+    if (!conhecidos.length) {
+      vazio.innerHTML = registos.length
+        ? `Há ${registos.length} check-in(s) registado(s), mas com valores de uma escala antiga.
+           Corra a migração <span class="mono">008_checkins_humor_escala.sql</span> para os converter.`
+        : semDados;
+      vazio.style.display = "block";
+      grafico.style.display = "none";
+      return;
+    }
+
+    const rotulosY = {};
+    Object.keys(ESCALA_HUMOR).forEach(v => {
+      rotulosY[ESCALA_HUMOR[v].n] = ESCALA_HUMOR[v].emoji + " " + ESCALA_HUMOR[v].rotulo;
+    });
+
+    desenharGraficoLinha(
+      "chart-humor",
+      conhecidos.map(r => formatarDataHora(r.criado_em)),
+      conhecidos.map(r => ESCALA_HUMOR[r.valor].n),
+      { color: corSkin(), min: 1, max: 6, rotulosY }
+    );
+
+    const derradeiro = conhecidos[conhecidos.length - 1];
+    const e = ESCALA_HUMOR[derradeiro.valor];
+    ultimo.textContent = `Último: ${e.emoji} ${e.rotulo} · ${formatarDataHora(derradeiro.criado_em)}`;
+  }
+
+  /* ---------------------------------------------------------------------
+     Prioridade de seguimento, derivada do último Formulário de Alta Hospitalar.
+     A lógica e os pesos estão em main.js (calcularPrioridadeSeguimento).
+     Aqui só se apresenta — incluindo os fatores que contribuíram, porque
+     uma classificação que não se consegue explicar não deve ser seguida.
+     --------------------------------------------------------------------- */
+  function listaFatores(titulo, eixo) {
+    const niveis = { baixo: "baixo", medio: "intermédio", alto: "alto" };
+    const itens = eixo.fatores.length
+      ? eixo.fatores
+          .slice()
+          .sort((a, b) => b.pontos - a.pontos)
+          .map(f => `<li style="margin-bottom:4px;">${escaparHtml(f.texto)}
+                       <span class="mono hint" style="margin:0;">+${f.pontos}</span></li>`)
+          .join("")
+      : `<li class="hint">Sem fatores assinalados.</li>`;
+    return `
+      <div>
+        <p class="hint" style="margin:0 0 6px; font-weight:600; color:var(--blue-deep);">
+          ${titulo} — ${niveis[eixo.nivel]} <span class="mono">(${eixo.pontos} pontos)</span>
+        </p>
+        <ul style="margin:0; padding-left:18px; font-size:.88rem;">${itens}</ul>
+      </div>`;
+  }
+
+  async function carregarPrioridade() {
+    const el = document.getElementById("prioridade-conteudo");
+    let formulario;
+    try {
+      formulario = await lumiApi.obterUltimoFormularioAlta(DOENTE.id);
+    } catch (e) {
+      console.error("Erro ao carregar o Formulário de Alta Hospitalar para a prioridade:", e);
+      el.innerHTML = `<p class="hint" style="margin:0;">⚠️ Não foi possível calcular: ${escaparHtml(e.message || e)}</p>`;
+      return;
+    }
+    if (!formulario) {
+      el.innerHTML = `<p class="hint" style="margin:0;">A prioridade é calculada a partir do Formulário de Alta Hospitalar, que ainda não foi preenchido para este doente.</p>`;
+      return;
+    }
+
+    const anos = idadeEmAnos(DOENTE.data_nascimento);
+    const p = calcularPrioridadeSeguimento(formulario.dados, anos);
+    if (!p) {
+      el.innerHTML = `<p class="hint" style="margin:0;">O Formulário de Alta Hospitalar gravado não tem dados suficientes para calcular a prioridade.</p>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:6px;">
+        <span class="pill pill-${p.cor}" style="font-size:.82rem; padding:5px 14px;">${p.rotulo}</span>
+        <span style="color:var(--ink-soft); font-size:.9rem;">${p.descricao}</span>
+      </div>
+
+      <p style="margin:0 0 18px; font-size:.9rem;">
+        <strong>Cadência proposta:</strong>
+        <span class="mono">${descreverCadencia(p.cadencia)}</span> após a alta.
+      </p>
+
+      <div class="grid g-2" style="gap:22px; margin-bottom:16px;">
+        ${listaFatores("Carga clínica e funcional", p.clinico)}
+        ${listaFatores("Carga sintomática e psicossocial", p.psicossocial)}
+      </div>
+
+      <p class="hint" style="margin:0; border-top:1px dashed var(--line); padding-top:12px;">
+        Proposta de estratificação, não um instrumento validado. Os dois eixos são
+        contados em separado de propósito: a extensão da queimadura prediz o resultado
+        funcional, mas não prediz bem o ajustamento psicológico. A decisão sobre a
+        cadência é da equipa.
+      </p>`;
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+    carregarFicha();
+  })();
+</script>
+</body>
+</html>

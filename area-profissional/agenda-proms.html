@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda de PROMs — Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-2">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="uls-logo" href="https://www.ulssjose.min-saude.pt/" target="_blank" rel="noopener" aria-label="Website da ULS São José (abre em nova janela)">
+        <img src="../assets/img/uls-sao-jose-logo-negativo.png" alt="Unidade Local de Saúde São José">
+      </a>
+      <span class="brand-divider"></span>
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav>
+      <span class="badge-team" id="badge-profissional">A carregar...</span>
+      <a class="btn btn-ghost-light btn-sm" href="#" onclick="terminarSessao(event)">Sair</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html">📋 Crianças</a>
+    <div style="margin:14px 28px 10px; padding-top:14px; border-top:1px solid var(--line);">
+      <p class="hint" style="margin:0 0 2px; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em;">Doente selecionado</p>
+      <p style="margin:0; font-weight:600; color:var(--blue-deep); font-size:.88rem;" id="sidebar-nome-doente">A carregar...</p>
+    </div>
+    <a href="doente.html" data-processo-link>🗂️ Resumo</a>
+    <a href="formulario-alta.html" data-processo-link>📝 Formulário de Alta Hospitalar</a>
+    <a href="consulta-72h.html" data-processo-link>⏱️ 1.º Contacto</a>
+    <a href="consultas.html" data-processo-link>🩺 Consultas</a>
+    <a href="plano-tratamento.html" data-processo-link>🏋️ Plano de Tratamento</a>
+    <a href="jornada.html" data-processo-link>🎯 Jornada e Metas</a>
+    <a href="agenda-proms.html" data-processo-link class="active">📅 Agenda de PROMs</a>
+    <a href="duvidas.html" data-processo-link>💬 Dúvidas</a>
+    <a href="alta-seguimento.html" data-processo-link>🏁 Alta do seguimento</a>
+    <a href="historico.html" data-processo-link>🗓️ Histórico</a>
+  </aside>
+
+  <div class="main-area">
+
+    <a href="doente.html" class="hint" id="link-voltar" style="display:inline-block; margin-bottom:14px;">← Voltar à ficha da criança</a>
+
+    <p class="eyebrow" id="titulo-doente">Agenda de PROMs</p>
+    <h1 style="font-size:1.9rem;">Checkpoints de seguimento</h1>
+    <p style="color:var(--ink-soft); max-width:74ch; margin-top:6px;">
+      Momentos contados a partir da <strong>data de alta</strong> — e não da data da queimadura.
+      Foi a correção que os autores do núcleo de valor em queimados fizeram depois de o avaliarem
+      em prática clínica: os marcos contados desde a lesão não coincidiam com as consultas.
+      "Concluído" significa que existe pelo menos uma resposta à volta dessa data.
+    </p>
+    <p style="color:var(--ink-soft); max-width:74ch;">
+      A coluna da direita mostra o que a criança vai receber em cada momento, <strong>para a idade
+      que terá nessa altura</strong>. Uma criança que entra no seguimento com 10 anos faz os 12 meses
+      já na bateria dos 11-17 — e é por isso que a lista não é a mesma em todas as linhas.
+    </p>
+    <div id="faixa-atual" class="banner-info" style="margin:18px 0 0; display:none;"></div>
+
+    <div class="card card-flush" style="max-width:900px; margin-top:24px;">
+      <table>
+        <thead>
+          <tr><th>Momento</th><th>Data alvo</th><th>Estado</th><th>O que é pedido</th></tr>
+        </thead>
+        <tbody id="linhas-agenda">
+          <tr><td colspan="4" class="hint" style="padding:20px;">A calcular agenda...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-2"></script>
+<script src="../assets/js/proms-pediatricos.js?v=lumi-2"></script>
+<script>
+  /* Os momentos são os de MOMENTOS_PROM (proms-pediatricos.js), e não uma
+     lista própria desta página: se a cadência mudar, muda num sítio só.
+     O momento "anual" é desenhado à parte, por não ter data fixa. */
+  const CHECKPOINTS = MOMENTOS_PROM
+    .filter(function (m) { return m.id !== "alta" && m.id !== "anual"; })
+    .map(function (m) { return { id: m.id, label: m.rotulo, dias: m.dias }; });
+
+  function formatarData(data){
+    return data.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function somarDias(dataBase, dias){
+    const d = new Date(dataBase);
+    d.setDate(d.getDate() + dias);
+    return d;
+  }
+
+  async function carregarAgenda(doente){
+    const tbody = document.getElementById('linhas-agenda');
+
+    if (!doente.data_alta) {
+      tbody.innerHTML = `<tr><td colspan="4" class="hint" style="padding:20px;">Esta criança ainda não tem data de alta definida — a agenda só é calculada a partir dessa data (ver Formulário de Alta Hospitalar).</td></tr>`;
+      return;
+    }
+
+    const idadeHoje = idadeEmAnos(doente.data_nascimento);
+    const faixaHoje = faixaPromPorIdade(idadeHoje);
+    const aviso = document.getElementById("faixa-atual");
+    aviso.style.display = "flex";
+    aviso.innerHTML = idadeHoje == null
+      ? "⚠️ Sem data de nascimento no registo. Sem idade não há bateria: a agenda abaixo assume a faixa dos 5 aos 10 anos, que é a menos errada, mas a data deve ser preenchida na ficha."
+      : `ℹ️ ${doente.nome} tem <strong>${idadeHoje} anos</strong> — bateria dos <strong>${faixaHoje.rotulo}</strong>. ${faixaHoje.nota}`;
+
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    const dataAlta = new Date(doente.data_alta + "T00:00:00");
+    const respostas = await lumiApi.listarPromsDoente(doente.id);
+    const datasRespostas = respostas.map(r => new Date(r.data_resposta + "T00:00:00"));
+
+    const linhas = CHECKPOINTS.map(cp => {
+      const alvo = somarDias(dataAlta, cp.dias);
+      // a idade que a criança terá naquela data, e não a de hoje
+      const idadeNoMomento = idadeEmAnos(doente.data_nascimento) == null ? null
+        : Math.floor((alvo - new Date(doente.data_nascimento + "T00:00:00")) / 31557600000);
+      const selecao = instrumentosPara(idadeNoMomento, cp.id);
+      const janelaInicio = somarDias(alvo, -7);
+      const janelaFim = somarDias(alvo, 21);
+      const concluido = datasRespostas.some(d => d >= janelaInicio && d <= janelaFim);
+
+      let estado, corPill;
+      if (concluido) { estado = "Concluído"; corPill = "pill-ok"; }
+      else if (alvo < hoje) { estado = "Em atraso"; corPill = "pill-alert"; }
+      else if (alvo <= somarDias(hoje, 14)) { estado = "Esta quinzena"; corPill = "pill-pending"; }
+      else { estado = "Agendado"; corPill = ""; }
+
+      return { cp, alvo, estado, corPill, selecao, idadeNoMomento };
+    });
+
+    tbody.innerHTML = linhas.map(l => `
+      <tr>
+        <td>${l.cp.label}</td>
+        <td class="mono">${formatarData(l.alvo)}</td>
+        <td><span class="pill ${l.corPill}" ${!l.corPill ? 'style="background:var(--paper-tint); color:var(--ink-soft);"' : ''}>${l.estado}</span></td>
+        <td style="font-size:.84rem; color:var(--ink-soft);">
+          ${l.selecao.instrumentos.map(i => i.nome).join(' · ')}
+          <span class="hint" style="display:block; margin-top:4px;">
+            ${contarItens(l.selecao.instrumentos)} perguntas${l.idadeNoMomento == null ? '' : ` · ${l.idadeNoMomento} anos · faixa ${l.selecao.faixa.rotulo}`}
+          </span>
+        </td>
+      </tr>`).join('') + `
+      <tr>
+        <td>Anual</td>
+        <td class="mono">a partir dos 12 meses</td>
+        <td><span class="pill" style="background:var(--paper-tint); color:var(--ink-soft);">Recorrente</span></td>
+        <td style="font-size:.84rem; color:var(--ink-soft);">
+          Repete a avaliação dos 12 meses.
+          <span class="hint" style="display:block; margin-top:4px;">
+            Em pediatria o seguimento não encerra ao fim de um ano: a cicatriz acompanha o
+            crescimento, e o momento em que volta a limitar costuma ser um estirão.
+          </span>
+        </td>
+      </tr>`;
+  }
+
+  function terminarSessao(ev){
+    ev.preventDefault();
+    lumiApi.logout().then(() => { window.location.href = "../index.html#acesso"; });
+  }
+
+  (async function iniciar(){
+    const sessao = await lumiApi.utilizadorAtual();
+    if (!sessao || !sessao.perfil || sessao.perfil.papel !== "profissional") {
+      window.location.href = "../index.html#acesso";
+      return;
+    }
+    document.getElementById("badge-profissional").textContent = sessao.perfil.nome + " · " + (sessao.perfil.especialidade || "Equipa clínica");
+
+    const doente = await lumiApi.obterDoentePorProcesso(obterProcessoDaURL("PROC-2026-0142"));
+    document.getElementById("titulo-doente").textContent = "Agenda de avaliações — " + doente.nome;
+    document.getElementById("sidebar-nome-doente").textContent = doente.nome;
+    document.getElementById("link-voltar").href = `doente.html?processo=${encodeURIComponent(doente.processo)}`;
+    ligarSidebarAoProcesso(doente.processo);
+    carregarAgenda(doente);
+  })();
+</script>
+</body>
+</html>
