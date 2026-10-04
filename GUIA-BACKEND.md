@@ -133,6 +133,18 @@ Duas delas merecem nota:
   `duvidas.contacto_telefonico`, e com elas o Histórico, os Agendamentos, o
   check-in de humor e o "foi útil?" dos recursos.
 
+- **`023_privilegios.sql` é indispensável num projeto Supabase criado
+  recentemente.** O esquema nunca concedeu privilégios nas tabelas: apoiava-se
+  em os projetos Supabase antigos virem com `alter default privileges ... grant
+  all on tables to anon, authenticated`. Os projetos novos já não trazem isso —
+  concedem as permissões inócuas (truncar, referenciar, gatilhos) e retiram o
+  acesso aos dados. Sem esta migração a instalação parece perfeita (tabelas
+  criadas, RLS ligada, perfis ligados às contas) e o login falha na mesma, com
+  *"Este login não tem um perfil associado na tabela 'perfis'"* — porque o site
+  não consegue ler a linha que lá está. Concede a `authenticated` e a mais
+  ninguém: um visitante sem sessão continua barrado antes de a RLS ser
+  sequer consultada.
+
 - **`022_colunas_em_falta.sql` corrige um buraco herdado da plataforma de
   adultos.** O Formulário de Alta escreve três campos em `doentes` — `email`,
   `genero` e `gestor_caso_id` — que existiam na base de dados de produção
