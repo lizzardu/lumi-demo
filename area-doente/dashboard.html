@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A nossa jornada — Lumi</title>
 <link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
-<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-4">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-5">
 </head>
 <body class="page-tint">
 <header class="topbar">
@@ -137,14 +137,19 @@
 <script src="../assets/js/vendor/supabase.js"></script>
 <script src="../assets/js/supabase-config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
-<script src="../assets/js/main.js?v=lumi-4"></script>
+<script src="../assets/js/main.js?v=lumi-5"></script>
 <script>
   let DOENTE_ID = null;
 
-  const ICONES_EQUIPA = {
-    "Cirurgia Plástica": "🩺", "Enfermagem": "🩹", "Fisioterapia": "🧑‍⚕️",
-    "Terapia Ocupacional": "🖐️", "Psicologia": "💬", "Nutrição": "🥗"
-  };
+  /* As figuras vivem em main.js (FIGURAS_EQUIPA), partilhadas com a secção da
+     equipa na página inicial. Uma especialidade sem figura mostra só o nome. */
+  function linhaEquipa(especialidade, gestor){
+    const img = figuraEquipa(especialidade, "../");
+    return '<li class="equipa-linha">'
+         + (img ? '<img src="' + img + '" alt="" loading="lazy">' : '<span style="width:34px; text-align:center;">•</span>')
+         + '<span' + (gestor ? ' class="gestor"' : '') + '>' + especialidade + '</span>'
+         + '</li>';
+  }
 
   function formatarData(dataISO){
     if (!dataISO) return "";
@@ -191,16 +196,20 @@
 
     if (nome) document.getElementById("titulo-jornada").textContent = "O caminho d" + (/a$/i.test(nome) ? "a " : "o ") + nome + ".";
 
-    let itensEquipa = (doente.equipa || []).map(e =>
-      `<li>${ICONES_EQUIPA[e] || "•"} ${e}</li>`
-    ).join('');
+    let itensEquipa = (doente.equipa || []).map(e => linhaEquipa(e, false)).join('');
 
     if (doente.gestor_caso_id) {
       try {
         const equipa = await lumiApi.listarEquipaProfissionais();
         const gestor = equipa.find(p => p.id === doente.gestor_caso_id);
         if (gestor) {
-          itensEquipa = `<li style="font-weight:600; color:var(--blue-deep);">⭐ Gestor de caso — ${gestor.nome}${gestor.especialidade ? ` <span style="font-weight:400; color:var(--ink-soft);">(${gestor.especialidade})</span>` : ""}</li>` + itensEquipa;
+          const img = figuraEquipa(gestor.especialidade, "../");
+          itensEquipa =
+            '<li class="equipa-linha">'
+            + (img ? '<img src="' + img + '" alt="" loading="lazy">' : '<span style="width:34px; text-align:center;">⭐</span>')
+            + '<span class="gestor">⭐ Gestor de caso — ' + gestor.nome
+            + (gestor.especialidade ? ' <span style="font-weight:400; color:var(--ink-soft);">(' + gestor.especialidade + ')</span>' : '')
+            + '</span></li>' + itensEquipa;
         }
       } catch (e) {
         console.error("Não foi possível identificar o gestor de caso:", e);

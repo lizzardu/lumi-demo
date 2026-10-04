@@ -96,6 +96,38 @@ function primeiroNome(nome) {
   return (nome || "").trim().split(/\s+/)[0] || "";
 }
 
+/* ========================================================================
+   AS FIGURAS DA EQUIPA
+   ------------------------------------------------------------------------
+   Liga o nome da especialidade, tal como fica gravado em doentes.equipa, à
+   figura que a representa. A Fisioterapia e a Terapia Ocupacional partilham
+   figura: andam juntas na unidade e a criança não as distingue.
+
+   Uma especialidade sem figura não quebra nada — figuraEquipa devolve null e
+   quem chama mostra o nome sozinho.
+   ======================================================================== */
+const FIGURAS_EQUIPA = {
+  "Cirurgia Plástica": "cirurgia-plastica",
+  "Enfermagem": "enfermagem",
+  "Anestesiologia": "anestesiologia",
+  "Pediatria": "pediatria",
+  "Fisiatria": "fisiatria",
+  "Medicina Física e de Reabilitação": "fisiatria",
+  "Fisioterapia": "fisioterapia",
+  "Terapia Ocupacional": "fisioterapia",
+  "Técnica Auxiliar de Saúde": "tecnica-auxiliar",
+  "Educação de Infância": "educacao",
+  "Psicologia": "psicologia",
+  "Pedopsiquiatria": "pedopsiquiatria",
+  "Nutrição": "nutricao",
+  "Serviço Social": "servico-social"
+};
+
+function figuraEquipa(especialidade, prefixo) {
+  const slug = FIGURAS_EQUIPA[especialidade];
+  return slug ? (prefixo || "") + "assets/img/equipa/" + slug + ".png" : null;
+}
+
 const DEMO_PATIENT = {
   nome: "Doente Demonstração",
   processo: "PROC-2026-0142",

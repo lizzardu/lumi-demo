@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A rotina do Lumi — jogo · Lumi</title>
+<link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-5">
+<style>
+  .passos{ display:flex; flex-direction:column; gap:12px; margin:0; padding:0; list-style:none; }
+  .passo{
+    display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+    background:#fff; border:2px solid var(--line); border-radius:var(--radius-lg);
+    padding:14px 18px; font:inherit; font-size:1rem; color:var(--ink); cursor:pointer;
+    transition:transform .12s ease, border-color .15s ease, background .15s ease;
+  }
+  .passo:hover:not(:disabled){ transform:translateY(-2px); border-color:var(--blue-light); }
+  .passo:disabled{ cursor:default; }
+  .passo .emoji{ font-size:1.8rem; line-height:1; flex:none; }
+  .passo .num{
+    flex:none; width:30px; height:30px; border-radius:50%; display:flex;
+    align-items:center; justify-content:center; font-family:var(--f-mono);
+    font-size:.84rem; background:var(--paper-tint); color:var(--ink-soft);
+  }
+  .passo.certo{ border-color:var(--ok); background:var(--ok-mist); }
+  .passo.certo .num{ background:var(--ok); color:#fff; }
+  .passo.errado{ border-color:var(--alert); background:var(--alert-mist); animation:tremer .3s; }
+  @keyframes tremer{ 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+
+  .placar{ display:flex; gap:18px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+  .estrelas{ font-size:1.5rem; letter-spacing:4px; }
+  #aviso{ min-height:1.6em; font-weight:600; }
+</style>
+</head>
+<body class="page-tint">
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandbar">
+      <a class="brand" href="../index.html">
+        <span class="brand-plate"><img src="../assets/img/lumi-lockup-pequeno.png" alt="Lumi"></span>
+        <span class="brand-name"><small>Unidade de Queimados Pediátricos</small></span>
+      </a>
+    </div>
+    <nav><a class="btn btn-ghost-light btn-sm" href="recursos.html">← Voltar aos recursos</a></nav>
+  </div>
+</header>
+
+<main class="wrap-narrow" style="padding:44px 32px 90px;">
+
+  <div id="mascote-jogo" style="margin-bottom:26px;"></div>
+
+  <p class="eyebrow">Jogo · a partir dos 5 anos</p>
+  <h1 style="font-size:1.9rem;">A rotina do Lumi</h1>
+  <p style="color:var(--ink-soft);">
+    Todos os dias, depois do banho, há cinco coisas a fazer pela pele — e a ordem conta.
+    Toca nelas pela ordem certa. Se te enganares não faz mal: tenta outra vez.
+  </p>
+
+  <div class="card" style="margin-top:26px;">
+    <div class="placar">
+      <span class="pill pill-ok" id="progresso">0 de 5</span>
+      <span class="estrelas" id="estrelas" aria-hidden="true"></span>
+      <span class="hint" style="margin:0;" id="tentativas"></span>
+    </div>
+
+    <p id="aviso" role="status" aria-live="polite" style="color:var(--ink-soft);">Qual é a primeira?</p>
+
+    <ul class="passos" id="passos"></ul>
+
+    <div id="fim" style="display:none; margin-top:22px;">
+      <div class="nota-proxy" style="background:var(--ok-mist); border-color:var(--ok); color:#1F5E3C;">
+        <span>🌟</span>
+        <span id="fim-texto"></span>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+        <button class="btn btn-primary" type="button" onclick="comecar()">Jogar outra vez</button>
+        <a class="btn btn-ghost" href="recursos.html">Voltar aos recursos</a>
+      </div>
+    </div>
+  </div>
+
+  <details class="card" style="margin-top:20px; background:var(--paper-tint);">
+    <summary style="cursor:pointer; font-weight:600; color:var(--blue-deep);">Para quem cuida — porquê esta ordem</summary>
+    <ul style="margin:14px 0 0; padding-left:20px; font-size:.9rem; line-height:1.7; color:var(--ink-soft);">
+      <li><strong>Lavar antes de tudo</strong>, com água morna e sabão suave. Água quente sobre pele nova aumenta o prurido.</li>
+      <li><strong>Secar com toques</strong>, nunca a esfregar: a pele cicatrizada é mais fina e levanta com facilidade.</li>
+      <li><strong>Creme e massagem</strong> sobre pele limpa e seca. A massagem é o que mantém a cicatriz maleável — e precisa de ser diária.</li>
+      <li><strong>A malha depois do creme</strong>, nunca antes: a malha vestida sobre pele seca repuxa, e sobre creme fresco escorrega.</li>
+      <li><strong>Protetor solar só à saída.</strong> Uma cicatriz nova queima-se com muito pouco sol, e a mancha que fica pode ser definitiva.</li>
+    </ul>
+    <p class="hint" style="margin:14px 0 0;">
+      Se a equipa vos tiver dado uma ordem diferente, é a dela que vale — esta é a rotina habitual, não uma prescrição.
+    </p>
+  </details>
+
+</main>
+
+<footer>
+  <div class="wrap"><span>Lumi — protótipo de demonstração, dados fictícios.</span></div>
+</footer>
+
+<script src="../assets/js/vendor/supabase.js"></script>
+<script src="../assets/js/supabase-config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/main.js?v=lumi-5"></script>
+<script>
+  /* ======================================================================
+     A ordem é a da rotina de cuidados à pele cicatrizada. O jogo não inventa
+     nada: as cinco etapas e a razão de cada uma estão no quadro "para quem
+     cuida", em baixo, para o adulto poder confirmar o que a criança acabou
+     de aprender.
+
+     Não grava nada na base de dados. É um jogo, não um instrumento — e uma
+     criança que erre três vezes a ordem do creme não deve ficar com isso
+     registado no processo clínico.
+     ====================================================================== */
+  const PASSOS = [
+    { emoji: "🛁", texto: "Lavar com água morna e sabão suave" },
+    { emoji: "🧻", texto: "Secar com toques, sem esfregar" },
+    { emoji: "🧴", texto: "Pôr o creme e massajar a cicatriz" },
+    { emoji: "🧦", texto: "Vestir a malha de pressão" },
+    { emoji: "🧢", texto: "Protetor solar, se fores sair" }
+  ];
+
+  let porAcertar = [];
+  let seguinte = 0;
+  let enganos = 0;
+
+  function baralhar(a){
+    const c = a.slice();
+    for (let i = c.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [c[i], c[j]] = [c[j], c[i]];
+    }
+    return c;
+  }
+
+  function desenhar(){
+    const ul = document.getElementById("passos");
+    ul.innerHTML = porAcertar.map(function(i){
+      const p = PASSOS[i];
+      return '<li><button type="button" class="passo" data-indice="' + i + '" onclick="escolher(this)">'
+           +   '<span class="num" aria-hidden="true">?</span>'
+           +   '<span class="emoji" aria-hidden="true">' + p.emoji + '</span>'
+           +   '<span>' + p.texto + '</span>'
+           + '</button></li>';
+    }).join("");
+  }
+
+  function atualizarPlacar(){
+    document.getElementById("progresso").textContent = seguinte + " de " + PASSOS.length;
+    document.getElementById("estrelas").textContent = "⭐".repeat(seguinte) + "☆".repeat(PASSOS.length - seguinte);
+    document.getElementById("tentativas").textContent = enganos ? (enganos === 1 ? "1 engano" : enganos + " enganos") : "";
+  }
+
+  function escolher(botao){
+    const indice = Number(botao.dataset.indice);
+
+    if (indice === seguinte) {
+      botao.classList.add("certo");
+      botao.disabled = true;
+      botao.querySelector(".num").textContent = seguinte + 1;
+      seguinte++;
+      atualizarPlacar();
+      document.getElementById("aviso").textContent =
+        seguinte < PASSOS.length ? "Boa! E agora, qual é a seguir?" : "";
+      if (seguinte === PASSOS.length) terminar();
+      return;
+    }
+
+    enganos++;
+    atualizarPlacar();
+    botao.classList.add("errado");
+    setTimeout(function(){ botao.classList.remove("errado"); }, 320);
+    document.getElementById("aviso").textContent = dica();
+  }
+
+  /* A dica aponta para o passo certo sem o entregar: dizer "é o creme" acaba
+     o jogo; dizer "ainda tens a pele molhada" ensina o porquê. */
+  function dica(){
+    return [
+      "Ainda não! Antes de tudo, a pele tem de estar lavada.",
+      "Devagar — a pele ainda está molhada. O que se faz a seguir ao banho?",
+      "Quase! A pele já está seca. O que é que a deixa macia?",
+      "Ainda não. A malha veste-se depois do creme, nunca antes.",
+      "Falta o último: só se põe à saída, por causa do sol."
+    ][seguinte];
+  }
+
+  function terminar(){
+    document.querySelectorAll(".passo").forEach(function(b){ b.disabled = true; });
+    document.getElementById("aviso").textContent = "";
+    document.getElementById("fim").style.display = "block";
+    document.getElementById("fim-texto").textContent = enganos === 0
+      ? "Pela ordem certa, à primeira. Esta é a rotina de todos os dias — e é a massagem diária que mantém a cicatriz maleável."
+      : "Conseguiste! Esta é a rotina de todos os dias. Se quiseres saber porque é esta a ordem, abre o quadro aqui em baixo.";
+  }
+
+  function comecar(){
+    porAcertar = baralhar(PASSOS.map(function(_, i){ return i; }));
+    seguinte = 0;
+    enganos = 0;
+    document.getElementById("fim").style.display = "none";
+    document.getElementById("aviso").textContent = "Qual é a primeira?";
+    desenhar();
+    atualizarPlacar();
+  }
+
+  (async function iniciar(){
+    comecar();
+
+    // a mascote é um extra: se a sessão falhar, o jogo tem de funcionar na mesma
+    try {
+      const sessao = await lumiApi.utilizadorAtual();
+      const doente = sessao && sessao.perfil ? await lumiApi.obterDoente(sessao.perfil.doente_id) : null;
+      const idade = doente ? idadeEmAnos(doente.data_nascimento) : null;
+      renderMascote("mascote-jogo", idade,
+        "<strong>Consegues pôr isto por ordem?</strong> É o que fazemos todos os dias à pele, " +
+        "depois do banho. Há uma ordem certa — e eu dou-te dicas se te enganares.",
+        { prefixo: "../" });
+    } catch (e) {
+      renderMascote("mascote-jogo", null,
+        "<strong>Consegues pôr isto por ordem?</strong> É o que fazemos todos os dias à pele, depois do banho.",
+        { prefixo: "../" });
+    }
+  })();
+</script>
+</body>
+</html>

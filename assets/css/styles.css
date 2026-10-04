@@ -983,3 +983,58 @@ body.page-tint{ background:var(--paper-tint); }
 
 /* ---------- cartão de instrumento, na lista de instrumentos ---------- */
 .inst-idade{ font-family:var(--f-mono); font-size:.72rem; color:var(--ink-soft); white-space:nowrap; }
+
+/* ========================================================================
+   A EQUIPA MULTIDISCIPLINAR
+   ------------------------------------------------------------------------
+   As figuras são do mesmo mundo do Lumi, de propósito: quem chega a esta
+   página não vai ler doze cargos, vai reconhecer doze pessoas. Para uma
+   criança, "a senhora que me lê histórias" e "o senhor da máscara verde" são
+   categorias mais úteis do que "educadora de infância" e "anestesista".
+   ======================================================================== */
+.equipa-grelha{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:26px;
+}
+.equipa-cartao{
+  background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:18px 16px 20px; text-align:center;
+  display:flex; flex-direction:column; align-items:center;
+}
+.equipa-figura{
+  height:118px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:12px;
+}
+.equipa-figura img{ height:100%; width:auto; object-fit:contain; }
+.equipa-cartao h3{
+  font-size:1rem; margin:0 0 6px; color:var(--blue-deep); line-height:1.25;
+}
+.equipa-cartao p{
+  margin:0; font-size:.84rem; line-height:1.5; color:var(--ink-soft);
+}
+@media (max-width:980px){ .equipa-grelha{ grid-template-columns:repeat(3,1fr); } }
+@media (max-width:680px){
+  .equipa-grelha{ grid-template-columns:repeat(2,1fr); gap:14px; }
+  .equipa-figura{ height:96px; }
+  .equipa-cartao{ padding:14px 12px 16px; }
+}
+
+/* a mesma figura, em miniatura, na lista da equipa da área da família */
+.equipa-linha{ display:flex; align-items:center; gap:10px; }
+.equipa-linha img{ height:34px; width:auto; flex:none; }
+.equipa-linha .gestor{ font-weight:600; color:var(--blue-deep); }
+
+/* ========================================================================
+   JOGOS — área de recursos
+   ======================================================================== */
+.jogos-grelha{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:16px; }
+.jogo-cartao{
+  background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:20px; display:flex; flex-direction:column; gap:10px;
+}
+.jogo-cartao .emoji{ font-size:2rem; line-height:1; }
+.jogo-cartao h3{ margin:0; font-size:1.02rem; color:var(--blue-deep); }
+.jogo-cartao p{ margin:0; font-size:.86rem; color:var(--ink-soft); line-height:1.5; flex:1; }
+.jogo-cartao .rodape{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.jogo-idade{ font-family:var(--f-mono); font-size:.7rem; color:var(--ink-soft); }
+.jogo-cartao.indisponivel{ background:var(--paper-tint); border-style:dashed; }
+@media (max-width:900px){ .jogos-grelha{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:600px){ .jogos-grelha{ grid-template-columns:1fr; } }

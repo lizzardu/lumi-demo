@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Recursos — Lumi</title>
 <link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
-<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-4">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-5">
 <style>
   /* Avaliação (👍/👎) de cada recurso — não existe em styles.css, por isso
      reutilizam-se aqui as mesmas variáveis de cor do resto do site. */
@@ -256,6 +256,82 @@
 
   </div>
 
+
+  <!-- ======================= JOGOS ======================= -->
+  <p class="eyebrow" style="margin-top:48px;">Jogos</p>
+  <h2 style="font-size:1.5rem; margin:0 0 6px;">Aprender a cuidar da pele, a brincar</h2>
+  <p style="color:var(--ink-soft); max-width:70ch; margin-bottom:0;">
+    Jogos curtos, para fazer com a criança. Não substituem o que a equipa ensinou — servem para
+    ela repetir sozinha o que já ouviu, que é como se fixa. Cada um indica a idade a que se dirige.
+  </p>
+
+  <div class="jogos-grelha">
+      <div class="jogo-cartao">
+        <span class="emoji" aria-hidden="true">🧴</span>
+        <h3>A rotina do Lumi</h3>
+        <p>As cinco coisas que se fazem à pele depois do banho, por ordem. A ordem não é um pormenor: a malha veste-se depois do creme, e o creme sobre pele seca.</p>
+        <div class="rodape">
+          <span class="jogo-idade">a partir dos 5 anos</span>
+          <a class="btn btn-primary btn-sm" href="jogo-rotina.html">Jogar</a>
+        </div>
+          <div class="rating-row" data-recurso-id="jogo-rotina" data-recurso-tipo="jogo">
+            <span class="hint">Foi útil?</span>
+            <button type="button" class="rating-btn" data-valor="up" onclick="avaliarRecurso(this)" aria-label="Gostei">👍</button>
+            <button type="button" class="rating-btn" data-valor="down" onclick="avaliarRecurso(this)" aria-label="Não gostei">👎</button>
+          </div>
+      </div>
+      <div class="jogo-cartao indisponivel">
+        <span class="emoji" aria-hidden="true">🔥</span>
+        <h3>O que é que queima?</h3>
+        <p>Uma cozinha, uma casa de banho, uma sala. Toca no que pode queimar e descobre porquê — a chaleira, a torneira da água quente, o ferro que ficou ligado.</p>
+        <div class="rodape">
+          <span class="jogo-idade">3 aos 8 anos</span>
+          <span class="pill" style="background:var(--star-mist); color:var(--star-deep);">Em preparação</span>
+        </div>
+      </div>
+      <div class="jogo-cartao indisponivel">
+        <span class="emoji" aria-hidden="true">🧦</span>
+        <h3>Vestir a malha</h3>
+        <p>Vestir a malha de pressão sem a torcer nem fazer dobras, que é onde magoa. Com o truque do saco de plástico no pé, que a fisioterapia ensina.</p>
+        <div class="rodape">
+          <span class="jogo-idade">5 aos 10 anos</span>
+          <span class="pill" style="background:var(--star-mist); color:var(--star-deep);">Em preparação</span>
+        </div>
+      </div>
+      <div class="jogo-cartao indisponivel">
+        <span class="emoji" aria-hidden="true">💬</span>
+        <h3>E se me perguntarem?</h3>
+        <p>Alguém na escola pergunta pela cicatriz. Escolhe o que responder e vê como corre. Não há respostas erradas — há respostas que deixam quem responde mais à vontade.</p>
+        <div class="rodape">
+          <span class="jogo-idade">8 aos 14 anos</span>
+          <span class="pill" style="background:var(--star-mist); color:var(--star-deep);">Em preparação</span>
+        </div>
+      </div>
+      <div class="jogo-cartao indisponivel">
+        <span class="emoji" aria-hidden="true">🫁</span>
+        <h3>Respirar antes do penso</h3>
+        <p>Um exercício de respiração com o Lumi, para fazer nos minutos antes do penso. Distração e respiração lenta reduzem a dor sentida — não é sugestão, está estudado.</p>
+        <div class="rodape">
+          <span class="jogo-idade">a partir dos 6 anos</span>
+          <span class="pill" style="background:var(--star-mist); color:var(--star-deep);">Em preparação</span>
+        </div>
+      </div>
+      <div class="jogo-cartao indisponivel">
+        <span class="emoji" aria-hidden="true">🩹</span>
+        <h3>A pele nova</h3>
+        <p>O que acontece por baixo, da ferida fechada à cicatriz madura, e porque demora meses. Para perceber porque é que a pele ainda está vermelha quando já não dói.</p>
+        <div class="rodape">
+          <span class="jogo-idade">6 aos 12 anos</span>
+          <span class="pill" style="background:var(--star-mist); color:var(--star-deep);">Em preparação</span>
+        </div>
+      </div>
+  </div>
+
+  <p class="hint" style="margin-top:14px;">
+    Os jogos assinalados como <strong>em preparação</strong> estão desenhados mas por construir.
+    A ideia e a idade a que se destinam já estão decididas; falta o trabalho de os fazer.
+  </p>
+
   <!-- ======================= FOLHETOS ======================= -->
   <p class="eyebrow" style="margin-top:48px;">Folhetos e guias para descarregar</p>
   <div class="card card-flush" style="margin-top:16px;">
@@ -422,7 +498,7 @@
 <script src="../assets/js/vendor/supabase.js"></script>
 <script src="../assets/js/supabase-config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
-<script src="../assets/js/main.js?v=lumi-4"></script>
+<script src="../assets/js/main.js?v=lumi-5"></script>
 <script>
   let DOENTE_ID = null;
   let AVALIACOES = {}; // recurso_id -> true (👍) | false (👎)
