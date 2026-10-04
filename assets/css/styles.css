@@ -356,11 +356,31 @@ tr.row-link:hover{ background:var(--paper-tint); }
 /* ---------- logo Lumi em destaque no hero ---------- */
 /* Contorno branco próprio da imagem (ver assets/img/lumi-lockup.png)
    — sem placa de fundo, assenta diretamente no azul-escuro do hero. */
-.hero-logo-wrap{ text-align:center; margin-bottom:8px; }
-.hero-logo-plate{ display:inline-block; filter:drop-shadow(0 10px 26px rgba(0,0,0,.30)); }
-.hero-logo{ height:132px; width:auto; display:block; margin:0 auto; }
+/* A mascote à esquerda do logótipo, as duas alinhadas pela base — é daí que
+   vem o ar de estarem assentes no mesmo chão. A figura é ligeiramente mais
+   alta que o lockup de propósito: assim a cabeça sobressai e o conjunto não
+   fica a parecer uma linha de ícones. */
+.hero-logo-wrap{
+  display:flex; align-items:flex-end; justify-content:center;
+  gap:clamp(12px, 3vw, 34px); margin-bottom:8px;
+}
+.hero-mascote{
+  height:188px; width:auto; flex:none; display:block;
+  filter:drop-shadow(0 12px 26px rgba(0,0,0,.32));
+}
+.hero-logo-plate{ display:block; filter:drop-shadow(0 10px 26px rgba(0,0,0,.30)); padding-bottom:22px; }
+.hero-logo{ height:132px; width:auto; display:block; }
 .hero-tagline{ font-size:clamp(1.3rem,2.6vw,1.9rem); line-height:1.3; margin:0; }
-@media (max-width:640px){ .hero-logo{ height:auto; width:min(100%,280px); } }
+
+/* Em ecrãs estreitos a mascote encolhe em vez de empurrar o logótipo para
+   fora: lado a lado continua a ler-se, empilhado roubava o ecrã todo antes
+   de se chegar ao texto. */
+@media (max-width:640px){
+  .hero-logo-wrap{ gap:10px; }
+  .hero-mascote{ height:112px; }
+  .hero-logo{ height:auto; width:min(52vw,230px); }
+  .hero-logo-plate{ padding-bottom:12px; }
+}
 
 /* ========================================================================
    Formulário de Alta (avaliação clínica pré-alta)
