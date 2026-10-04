@@ -90,7 +90,7 @@ As duas referências que sustentam estas escolhas:
 index.html                      página de entrada e login
 area-doente/                    o lado da criança e de quem cuida
   prom.html                     a avaliação, montada a partir da bateria da idade
-  dashboard.html                a jornada, com a Lumi
+  dashboard.html                a jornada, com o Lumi
 area-profissional/              o portal clínico
   formulario-alta.html          as 9 secções da avaliação de alta
   agenda-proms.html             o que cada criança recebe, e quando

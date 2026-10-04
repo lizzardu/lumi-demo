@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avaliação · Lumi</title>
 <link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
-<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-3">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-4">
 <style>
   /* Pop-up "Como te sentes hoje?" — mostrado depois de submeter a avaliação. */
   .modal-overlay{
@@ -118,8 +118,8 @@
 <script src="../assets/js/vendor/supabase.js"></script>
 <script src="../assets/js/supabase-config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
-<script src="../assets/js/main.js?v=lumi-3"></script>
-<script src="../assets/js/proms-pediatricos.js?v=lumi-3"></script>
+<script src="../assets/js/main.js?v=lumi-4"></script>
+<script src="../assets/js/proms-pediatricos.js?v=lumi-4"></script>
 <script>
   /* ======================================================================
      A AVALIAÇÃO É MONTADA, NÃO ESCRITA
@@ -393,9 +393,9 @@
 
     renderMascote("mascote-prom", IDADE,
       FAIXA.respondente === "cuidador"
-        ? "<strong>Sou a Lumi.</strong> Estas perguntas são para quem cuida " + (nome ? "d" + (nome.match(/a$/i) ? "a " : "o ") + escapar(nome) : "da criança") +
+        ? "<strong>Sou o Lumi.</strong> Estas perguntas são para quem cuida " + (nome ? "d" + (nome.match(/a$/i) ? "a " : "o ") + escapar(nome) : "da criança") +
           " — é quem melhor repara nas coisas nesta idade."
-        : "<strong>Sou a Lumi!</strong> Estas perguntas são sobre ti. Se houver alguma difícil, pede ajuda a quem está contigo.",
+        : "<strong>Sou o Lumi!</strong> Estas perguntas são sobre ti. Se houver alguma difícil, pede ajuda a quem está contigo.",
       { prefixo: "../" });
 
     document.getElementById("form-prom").style.display = "block";

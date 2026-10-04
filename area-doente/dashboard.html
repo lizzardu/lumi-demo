@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A nossa jornada — Lumi</title>
 <link rel="icon" type="image/png" href="../assets/img/lumi-logo-icon.png">
-<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-3">
+<link rel="stylesheet" href="../assets/css/styles.css?v=lumi-4">
 </head>
 <body class="page-tint">
 <header class="topbar">
@@ -137,7 +137,7 @@
 <script src="../assets/js/vendor/supabase.js"></script>
 <script src="../assets/js/supabase-config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
-<script src="../assets/js/main.js?v=lumi-3"></script>
+<script src="../assets/js/main.js?v=lumi-4"></script>
 <script>
   let DOENTE_ID = null;
 
@@ -180,12 +180,12 @@
   async function carregarDashboard(){
     const doente = await lumiApi.obterDoente(DOENTE_ID);
 
-    /* A Lumi é a primeira coisa que aparece, e muda de figura aos 3 anos.
+    /* O Lumi é a primeira coisa que aparece, e muda de figura aos 3 anos.
        É aqui que a plataforma deixa de parecer a de adultos. */
     const idade = idadeEmAnos(doente.data_nascimento);
     const nome = primeiroNome(doente.nome);
     renderMascote("mascote-inicio", idade,
-      "<strong>Olá" + (nome ? ", " + nome : "") + "!</strong> Sou a Lumi, e vou acompanhar-te nesta caminhada. " +
+      "<strong>Olá" + (nome ? ", " + nome : "") + "!</strong> Sou o Lumi, e vou acompanhar-te nesta caminhada. " +
       "Aqui vais ver o que já conseguiste e o que vem a seguir.",
       { prefixo: "../" });
 

@@ -461,7 +461,7 @@ parâmetros). Nessa modalidade nada é gravado.
 ### A mascote tem seis idades
 `assets/js/main.js`, `FIGURAS_LUMI`
 
-A Lumi cresce com quem a vê: até aos 3, dos 3 aos 6, dos 6 aos 8, dos 8 aos 10,
+O Lumi cresce com quem o vê: até aos 3, dos 3 aos 6, dos 6 aos 8, dos 8 aos 10,
 dos 10 aos 15 e dos 15 aos 18. Um jovem de catorze anos que abre a plataforma e
 encontra um bebé de fralda percebe de imediato que aquilo não é para ele — e
 deixa de ler o resto.

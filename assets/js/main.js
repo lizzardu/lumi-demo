@@ -17,12 +17,12 @@ const BADGES = {
 /* ========================================================================
    A MASCOTE LUMI
    ------------------------------------------------------------------------
-   A Lumi aparece sempre que o ecrã fala com a criança — e nunca nos ecrãs da
+   O Lumi aparece sempre que o ecrã fala com a criança — e nunca nos ecrãs da
    equipa clínica, onde seria ruído.
 
    SÃO SEIS FIGURAS, NÃO DUAS
 
-   A Lumi cresce com quem a vê. Um menino de catorze anos que abre a aplicação
+   O Lumi cresce com quem o vê. Um menino de catorze anos que abre a aplicação
    e encontra um bebé de fralda percebe, de imediato, que aquilo não é para
    ele — e deixa de ler o resto. A figura é o primeiro sinal de a quem o ecrã
    está a falar, e tem de acertar.
@@ -41,12 +41,12 @@ const BADGES = {
    mais velha do que isso.
    ======================================================================== */
 const FIGURAS_LUMI = [
-  { ate: 3,    id: "ate-3",  rotulo: "Até aos 3",  alt: "A Lumi em bebé, com a sua mantinha-cão" },
-  { ate: 6,    id: "3-6",    rotulo: "3 aos 6",    alt: "A Lumi em pequena, com um cubo de brincar" },
-  { ate: 8,    id: "6-8",    rotulo: "6 aos 8",    alt: "A Lumi com mochila e um foguetão" },
-  { ate: 10,   id: "8-10",   rotulo: "8 aos 10",   alt: "A Lumi com uma maqueta do sistema solar" },
-  { ate: 15,   id: "10-15",  rotulo: "10 aos 15",  alt: "A Lumi mais crescida, com um drone" },
-  { ate: 999,  id: "15-18",  rotulo: "15 aos 18",  alt: "A Lumi adolescente, de camisola com capuz" }
+  { ate: 3,    id: "ate-3",  rotulo: "Até aos 3",  alt: "O Lumi em bebé, com a sua mantinha-cão" },
+  { ate: 6,    id: "3-6",    rotulo: "3 aos 6",    alt: "O Lumi em pequeno, com um cubo de brincar" },
+  { ate: 8,    id: "6-8",    rotulo: "6 aos 8",    alt: "O Lumi com mochila e um foguetão" },
+  { ate: 10,   id: "8-10",   rotulo: "8 aos 10",   alt: "O Lumi com uma maqueta do sistema solar" },
+  { ate: 15,   id: "10-15",  rotulo: "10 aos 15",  alt: "O Lumi mais crescido, com um drone" },
+  { ate: 999,  id: "15-18",  rotulo: "15 aos 18",  alt: "O Lumi adolescente, de camisola com capuz" }
 ];
 
 const FIGURA_LUMI_OMISSAO = "8-10";
@@ -91,7 +91,7 @@ function renderMascote(containerId, idade, mensagem, opts) {
     '<div class="lumi-fala"><div class="balao">' + mensagem + '</div></div>';
 }
 
-/** Primeiro nome, para a Lumi tratar a criança pelo nome. */
+/** Primeiro nome, para o Lumi tratar a criança pelo nome. */
 function primeiroNome(nome) {
   return (nome || "").trim().split(/\s+/)[0] || "";
 }
